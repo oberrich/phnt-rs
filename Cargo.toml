@@ -1,12 +1,13 @@
 [package]
-name       = "phnt"
-version    = "0.0.1"
-license    = "MIT"
-authors    = ["oberrich <oberrich.llvm@proton.me>"]
-repository = "https://github.com/oberrich/phnt-rs"
-homepage   = "https://github.com/oberrich/phnt-rs"
-edition    = "2021"
-build      = "src/build.rs"
+name        = "phnt"
+version     = "0.0.1"
+license     = "MIT"
+authors     = ["oberrich <oberrich.llvm@proton.me>"]
+repository  = "https://github.com/oberrich/phnt-rs"
+homepage    = "https://github.com/oberrich/phnt-rs"
+edition     = "2021"
+build       = "src/build.rs"
+description = "Rust bindings to the System Informer's (formerly known as Process Hacker) `phnt` native Windows headers"
 
 [build-dependencies]
 windows.features = ["Win32_Foundation"]
