@@ -1,0 +1,24 @@
+[package]
+name       = "phnt"
+version    = "0.0.1"
+license    = "MIT"
+authors    = ["oberrich <oberrich.llvm@proton.me>"]
+repository = "https://github.com/oberrich/phnt-rs"
+homepage   = "https://github.com/oberrich/phnt-rs"
+edition    = "2021"
+build      = "src/build.rs"
+
+[build-dependencies]
+windows.features = ["Win32_Foundation"]
+windows-targets = ">=0.52.0"
+windows.version = ">=0.52.0"
+bindgen = "0.69.4"
+regex   = "1.10.3"
+chrono  = "0.4.37"
+
+[dependencies]
+windows.features = ["Win32_Foundation"]
+windows-targets = ">=0.52.0"
+windows.version = ">=0.52.0"
+nt-string = "0.1.1"
+cty       = "0.2.2"
