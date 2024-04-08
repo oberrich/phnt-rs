@@ -9,7 +9,7 @@ This crate provides Rust with access to the **[System Informer][sysinf]**'s (for
 
 A nightly copy of the phnt is fetched from [phnt-nightly][phnt.nightly].
 
-**crate version:** 0.0.1 aka work-in-progress.
+**crate version:** 0.0.x aka work-in-progress.
 
 [github]: https://github.com/oberrich/phnt-rs/actions/workflows/rust.yml
 [github.img]: https://github.com/oberrich/phnt-rs/actions/workflows/rust.yml/badge.svg
