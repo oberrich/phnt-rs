@@ -11,8 +11,8 @@ A nightly copy of the phnt is fetched from [phnt-nightly][phnt.nightly].
 
 **crate version:** 0.0.1 aka work-in-progress.
 
-[github]: https://github.com/oberrich/phnt-rs/actions/workflows/rust.yml?query=branch=master
-[github.img]: https://github.com/oberrich/phnt-rs/actions/workflows/rust.yml/badge.svg?branch=master
+[github]: https://github.com/oberrich/phnt-rs/actions/workflows/rust.yml
+[github.img]: https://github.com/oberrich/phnt-rs/actions/workflows/rust.yml/badge.svg
 [crates-io]: https://crates.io/crates/phnt
 [crates-io.img]: https://img.shields.io/crates/v/phnt.svg
 [docs-rs]: https://docs.rs/phnt
