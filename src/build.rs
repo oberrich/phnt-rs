@@ -95,7 +95,7 @@ impl BindgenConfig {
          .vtable_generation(true)
          .generate_comments(true)
          .generate_block(true)
-         .detect_include_paths(true)
+         .detect_include_paths(false)
          .prepend_enum_name(false)
          .block_extern_crate(false)
          .fit_macro_constants(false)
