@@ -1,6 +1,6 @@
 [package]
 name        = "phnt"
-version     = "0.0.4"
+version     = "0.0.5"
 license     = "MIT"
 authors     = ["oberrich <oberrich.llvm@proton.me>"]
 repository  = "https://github.com/oberrich/phnt-rs"
@@ -11,7 +11,9 @@ description = "Rust bindings to the System Informer's (formerly known as Process
 # exclude     = ["deps"]
 
 [package.metadata.docs.rs]
+all-features = true
 default-target = "x86_64-pc-windows-msvc"
+targets = []
 
 [build-dependencies]
 windows.features = ["Win32_Foundation"]
