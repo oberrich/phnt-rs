@@ -70,7 +70,7 @@ impl BindgenConfig {
       ];
 
       bindgen::builder()
-         .header(concat!(env!("CARGO_MANIFEST_DIR"), "\\src\\ffi\\wrapper.h"))
+         .header(concat!(env!("CARGO_MANIFEST_DIR"), "/src/ffi/wrapper.h"))
          .raw_line(raw_lines.join("\r\n").as_str())
          .clang_args(clang_args)
          .allowlist_file(allowlist_regexpr.as_str())
