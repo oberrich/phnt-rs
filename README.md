@@ -13,10 +13,10 @@ A nightly copy of the phnt is fetched from [phnt-nightly][phnt.nightly].
 
 [github]: https://github.com/oberrich/phnt-rs/actions/workflows/rust.yml?query=branch=master
 [github.img]: https://github.com/oberrich/phnt-rs/actions/workflows/rust.yml/badge.svg?branch=master
-[crates-io]: https://crates.io/crates/phnt-rs
-[crates-io.img]: https://img.shields.io/crates/v/phnt-rs.svg
-[docs-rs]: https://docs.rs/phnt-rs
-[docs-rs.img]: https://docs.rs/phnt-rs/badge.svg
+[crates-io]: https://crates.io/crates/phnt
+[crates-io.img]: https://img.shields.io/crates/v/phnt.svg
+[docs-rs]: https://docs.rs/phnt
+[docs-rs.img]: https://docs.rs/phnt/badge.svg
 
 [sysinf]: https://github.com/winsiderss/systeminformer
 [sysinf.phnt]: https://github.com/winsiderss/systeminformer/tree/master/phnt
