@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::env;
+use std::path::PathBuf;
 
 use regex::Regex;
 
@@ -118,13 +119,12 @@ fn main() {
       "\\deps\\phnt-nightly"
    ));
 
+   let out_path = PathBuf::from(env::var("OUT_DIR").unwrap()).join("generated.rs");
+
    BindgenConfig::default()
       .generate_bindings()
       .expect("Unable to generate bindings!")
-      .write_to_file(concat!(
-         env!("CARGO_MANIFEST_DIR"),
-         "\\src\\ffi\\generated.rs"
-      ))
+      .write_to_file(out_path)
       .expect("Unable to write bindings");
 
    println!("Generated bindings successfully.");

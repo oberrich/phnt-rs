@@ -6,8 +6,7 @@
    non_upper_case_globals
 )]
 pub mod ffi {
-   mod generated;
-   pub use crate::ffi::generated::*;
+   include!(concat!(env!("OUT_DIR"), "\\generated.rs"));
 
    use std::arch::asm;
 
