@@ -8,7 +8,7 @@ homepage    = "https://github.com/oberrich/phnt-rs"
 edition     = "2021"
 build       = "src/build.rs"
 description = "Rust bindings to the System Informer's (formerly known as Process Hacker) `phnt` native Windows headers"
-exclude     = ["deps"]
+# exclude     = ["deps"]
 
 [build-dependencies]
 windows.features = ["Win32_Foundation"]
