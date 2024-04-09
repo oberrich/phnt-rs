@@ -119,6 +119,11 @@ fn main() {
       "\\deps\\phnt-nightly"
    ));
 
+   if cfg!(doc) {
+      println!("Skipping regeneration of bindings for docs.");
+      return;
+   }
+
    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap()).join("generated.rs");
 
    BindgenConfig::default()
