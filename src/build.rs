@@ -109,13 +109,15 @@ impl BindgenConfig {
    }
 }
 
-#[cfg(not(docsrs))]
+#[cfg_attr(docsrs, doc(cfg(any(feature = "vendored", docsrs))))]
+#[cfg(any(feature = "vendored", docsrs))]
 fn main() {
-   if cfg!(docsrs) {
-      println!("Skipping regeneration of bindings for docs.rs.");
-      return;
-   }
+   println!("Using vendored bindings, build script skipped.");
+}
 
+#[cfg_attr(docsrs, doc(cfg(all(not(feature = "vendored"), not(docsrs)))))]
+#[cfg(all(not(feature = "vendored"), not(docsrs)))]
+fn main() {
    std::process::Command::new("git")
       .args(["submodule", "update", "--remote", "--recursive"])
       .output()
