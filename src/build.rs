@@ -91,6 +91,8 @@ impl BindgenConfig {
          .size_t_is_usize(true)
          .allowlist_recursively(true)
          .merge_extern_blocks(true)
+         // TODO(improve): Build C++ manually and pass -fkeep-inline-functions/-fno-inline-functions
+         // see https://rust-lang.github.io/rust-bindgen/faq.html#why-isnt-bindgen-generating-bindings-to-inline-functions
          .generate_inline_functions(true)
          .vtable_generation(true)
          .generate_comments(true)
@@ -108,6 +110,11 @@ impl BindgenConfig {
 }
 
 fn main() {
+   if cfg!(doc) {
+      println!("Skipping regeneration of bindings for docs.");
+      return;
+   }
+
    std::process::Command::new("git")
       .args(["submodule", "update", "--remote", "--recursive"])
       .output()
@@ -118,11 +125,6 @@ fn main() {
       env!("CARGO_MANIFEST_DIR"),
       "\\deps\\phnt-nightly"
    ));
-
-   if cfg!(doc) {
-      println!("Skipping regeneration of bindings for docs.");
-      return;
-   }
 
    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap()).join("generated.rs");
 
