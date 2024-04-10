@@ -11,8 +11,8 @@ description = "Rust bindings to the System Informer's (formerly known as Process
 # exclude     = ["deps"]
 
 [features]
+default = ["docsrs"]
 docsrs = []
-default = []
 
 [package.metadata.docs.rs]
 features = ["docsrs"]

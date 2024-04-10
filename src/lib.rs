@@ -5,8 +5,11 @@
    non_camel_case_types,
    non_upper_case_globals
 )]
-#[cfg(not(feature="docsrs"))]
 pub mod ffi {
+   // use vendored `generated.rs` for docs.rs
+   #[cfg(feature="docsrs")]
+   include!("ffi/generated.rs");
+
    #[cfg(not(feature="docsrs"))]
    include!(concat!(env!("OUT_DIR"), "\\generated.rs"));
 
