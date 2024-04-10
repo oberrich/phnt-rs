@@ -110,7 +110,7 @@ impl BindgenConfig {
 }
 
 fn main() {
-   if cfg!(feature = "docsrs") {
+   if cfg!(docsrs) {
       println!("Skipping regeneration of bindings for docs.rs.");
       return;
    }
