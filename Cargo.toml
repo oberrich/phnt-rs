@@ -1,6 +1,6 @@
 [package]
 name        = "phnt"
-version     = "0.0.11"
+version     = "0.0.12"
 license     = "MIT"
 authors     = ["oberrich <oberrich.llvm@proton.me>"]
 repository  = "https://github.com/oberrich/phnt-rs"
@@ -12,7 +12,7 @@ description = "Rust bindings to the System Informer's (formerly known as Process
 
 [package.metadata.docs.rs]
 all-features = true
-default-target = ""
+default-target = "x86_64-pc-windows-msvc"
 targets = []
 
 [build-dependencies]
