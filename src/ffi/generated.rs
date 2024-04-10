@@ -2,11 +2,11 @@
 
 // Generated at 2024-04-10 11:51:38.944305 +02:00
 use cty;
-pub use windows::Win32::Foundation::BOOLEAN as BOOLEAN;
-pub use windows::Win32::Foundation::NTSTATUS as NTSTATUS;
 pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
 pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
-pub use windows::Win32::Foundation::BOOL as BOOL;
+pub use windows::Win32::Foundation::BOOL;
+pub use windows::Win32::Foundation::BOOLEAN;
+pub use windows::Win32::Foundation::NTSTATUS;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
