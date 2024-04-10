@@ -1,6 +1,6 @@
 [package]
 name        = "phnt"
-version     = "0.0.13"
+version     = "0.0.14"
 license     = "MIT"
 authors     = ["oberrich <oberrich.llvm@proton.me>"]
 repository  = "https://github.com/oberrich/phnt-rs"
@@ -11,7 +11,7 @@ description = "Rust bindings to the System Informer's (formerly known as Process
 # exclude     = ["deps"]
 
 [features]
-default = ["docsrs"]
+default = []
 docsrs = []
 
 [package.metadata.docs.rs]
