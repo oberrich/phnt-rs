@@ -1,6 +1,6 @@
 [package]
 name        = "phnt"
-version     = "0.0.19"
+version     = "0.0.20"
 license     = "MIT"
 authors     = ["oberrich <oberrich.llvm@proton.me>"]
 repository  = "https://github.com/oberrich/phnt-rs"
