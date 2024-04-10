@@ -110,8 +110,10 @@ impl BindgenConfig {
 }
 
 fn main() {
-   println!("Skipping regeneration of bindings for docs.");
-   return;
+   if cfg!(feature = "docsrs") {
+      println!("Skipping regeneration of bindings for docs.");
+      return;
+   }
 
    std::process::Command::new("git")
       .args(["submodule", "update", "--remote", "--recursive"])

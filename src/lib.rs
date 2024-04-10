@@ -5,7 +5,9 @@
    non_camel_case_types,
    non_upper_case_globals
 )]
+#[cfg(not(feature="docsrs"))]
 pub mod ffi {
+   #[cfg(not(feature="docsrs"))]
    include!(concat!(env!("OUT_DIR"), "\\generated.rs"));
 
    use std::arch::asm;

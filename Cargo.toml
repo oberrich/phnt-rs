@@ -10,7 +10,12 @@ build       = "src/build.rs"
 description = "Rust bindings to the System Informer's (formerly known as Process Hacker) `phnt` native Windows headers"
 # exclude     = ["deps"]
 
+[features]
+docsrs = []
+default = []
+
 [package.metadata.docs.rs]
+features = ["docsrs"]
 all-features = true
 default-target = "x86_64-pc-windows-msvc"
 targets = []
