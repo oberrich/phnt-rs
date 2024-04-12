@@ -23,7 +23,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 use std::collections::HashMap;
 use std::env;
-#[cfg(all(not(feature = "vendored"), not(docsrs)))]
+#[cfg(feature = "regenerate")]
 use std::path::PathBuf;
 
 use regex::Regex;
@@ -133,14 +133,15 @@ impl BindgenConfig {
    }
 }
 
-#[cfg_attr(docsrs, doc(cfg(any(feature = "vendored", docsrs))))]
-#[cfg(any(feature = "vendored", docsrs))]
+#[cfg_attr(docsrs, doc(cfg(not(feature = "regenerate"))))]
+#[cfg(not(feature = "regenerate"))]
 fn main() {
    println!("Using vendored bindings, build script skipped.");
 }
 
-#[cfg_attr(docsrs, doc(cfg(all(not(feature = "vendored"), not(docsrs)))))]
-#[cfg(all(not(feature = "vendored"), not(docsrs)))]
+// TODO(chore): Make vendored the default behavior and instead respect the "regenerate"
+#[cfg_attr(docsrs, doc(cfg(feature = "regenerate")))]
+#[cfg(feature = "regenerate")]
 fn main() {
    std::process::Command::new("git")
       .args(["submodule", "update", "--remote", "--recursive"])

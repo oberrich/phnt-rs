@@ -1,20 +1,19 @@
 [package]
-name        = "phnt"
-version     = "0.0.21"
-license     = "MIT"
-authors     = ["oberrich <oberrich.llvm@proton.me>"]
-repository  = "https://github.com/oberrich/phnt-rs"
-homepage    = "https://github.com/oberrich/phnt-rs"
-edition     = "2021"
-build       = "src/build.rs"
+name = "phnt"
+version = "0.0.22"
+license = "MIT"
+authors = ["oberrich <oberrich.llvm@proton.me>"]
+repository = "https://github.com/oberrich/phnt-rs"
+homepage = "https://github.com/oberrich/phnt-rs"
+edition = "2021"
+build = "src/build.rs"
 description = "Rust bindings to the System Informer's (formerly known as Process Hacker) `phnt` native Windows headers"
 # exclude     = ["deps"]
 
 [features]
-vendored = []
+regenerate = []
 
 [package.metadata.docs.rs]
-all-features = true
 default-target = "x86_64-pc-windows-msvc"
 targets = ["x86_64-pc-windows-msvc"]
 rustdoc-args = ["--cfg", "docsrs"]
@@ -25,12 +24,12 @@ windows.features = ["Win32_Foundation"]
 windows-targets = "0.52.0"
 windows.version = "0.52.0"
 bindgen = "0.69.4"
-regex   = "1.10.3"
-chrono  = "0.4.37"
+regex = "1.10.3"
+chrono = "0.4.37"
 
 [dependencies]
 windows.features = ["Win32_Foundation"]
 windows-targets = "0.52.0"
 windows.version = "0.52.0"
 nt-string = "0.1.1"
-cty       = "0.2.2"
+cty = "0.2.2"
