@@ -8,10 +8,9 @@ homepage = "https://github.com/oberrich/phnt-rs"
 edition = "2021"
 build = "src/build.rs"
 description = "Rust bindings to the System Informer's (formerly known as Process Hacker) `phnt` native Windows headers"
-# exclude     = ["deps"]
 
 [features]
-regenerate = []
+regenerate = ["dep:regex", "dep:bindgen", "dep:chrono"]
 
 [package.metadata.docs.rs]
 default-target = "x86_64-pc-windows-msvc"
@@ -23,9 +22,11 @@ rustc-args = ["--cfg", "docsrs"]
 windows.features = ["Win32_Foundation"]
 windows-targets = "0.52.0"
 windows.version = "0.52.0"
-bindgen = "0.69.4"
-regex = "1.10.3"
-chrono = "0.4.37"
+
+# optional
+regex   = { version = "1.10.3", optional = true }
+bindgen = { version = "0.69.4", optional = true }
+chrono  = { version = "0.4.37", optional = true }
 
 [dependencies]
 windows.features = ["Win32_Foundation"]
