@@ -115,8 +115,6 @@ impl BindgenConfig {
          .size_t_is_usize(true)
          .allowlist_recursively(true)
          .merge_extern_blocks(true)
-         // TODO(improve): Build C++ manually and pass -fkeep-inline-functions/-fno-inline-functions
-         // see https://rust-lang.github.io/rust-bindgen/faq.html#why-isnt-bindgen-generating-bindings-to-inline-functions
          .generate_inline_functions(true)
          .vtable_generation(true)
          .generate_comments(true)
