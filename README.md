@@ -50,8 +50,7 @@ Crate Overview
 [docs-rs-ext-functions]: ext/index.html#functions
 [docs-rs-ext-macros]: #macros
 
-[build-rs]: https://github.com/oberrich/phnt-rs/src/build.rs
-[lib-rs]: https://github.com/oberrich/phnt-rs/src/lib.rs
+[build-rs]: https://github.com/oberrich/phnt-rs/blob/master/src/build.rs
 
 [bindgen]: https://crates.io/crates/bindgen
 [sysinf]: https://github.com/winsiderss/systeminformer
