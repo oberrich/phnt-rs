@@ -27,7 +27,7 @@ Crate Overview
   - [Macros][docs-rs-ext-macros]
 
 
-**crate version:** 0.0.21 - unstable api
+**crate version:** 0.0.23 - unstable api
 
 [github]: https://github.com/oberrich/phnt-rs/actions/workflows/rust.yml
 [github.img]: https://github.com/oberrich/phnt-rs/actions/workflows/rust.yml/badge.svg
@@ -36,19 +36,19 @@ Crate Overview
 [docs-rs]: https://docs.rs/phnt
 [docs-rs.img]: https://docs.rs/phnt/badge.svg
 
-[docs-rs-ffi]: ffi/index.html
-[docs-rs-ffi-reexports]: ffi/index.html#reexports
-[docs-rs-ffi-structs]: ffi/index.html#structs
-[docs-rs-ffi-enums]: ffi/index.html#enums
-[docs-rs-ffi-constants]: ffi/index.html#constants
-[docs-rs-ffi-statics]: ffi/index.html#statics
-[docs-rs-ffi-functions]: ffi/index.html#functions
-[docs-rs-ffi-type-aliases]: ffi/index.html#types
-[docs-rs-ffi-unions]: ffi/index.html#unions
+[docs-rs-ffi]: https://docs.rs/phnt/latest/phnt/ffi/index.html
+[docs-rs-ffi-reexports]: https://docs.rs/phnt/latest/phnt/ffi/index.html#reexports
+[docs-rs-ffi-structs]: https://docs.rs/phnt/latest/phnt/ffi/index.html#structs
+[docs-rs-ffi-enums]: https://docs.rs/phnt/latest/phnt/ffi/index.html#enums
+[docs-rs-ffi-constants]: https://docs.rs/phnt/latest/phnt/ffi/index.html#constants
+[docs-rs-ffi-statics]: https://docs.rs/phnt/latest/phnt/ffi/index.html#statics
+[docs-rs-ffi-functions]: https://docs.rs/phnt/latest/phnt/ffi/index.html#functions
+[docs-rs-ffi-type-aliases]: https://docs.rs/phnt/latest/phnt/ffi/index.html#types
+[docs-rs-ffi-unions]: https://docs.rs/phnt/latest/phnt/ffi/index.html#unions
 
-[docs-rs-ext]: ext/index.html
-[docs-rs-ext-functions]: ext/index.html#functions
-[docs-rs-ext-macros]: #macros
+[docs-rs-ext]: https://docs.rs/phnt/latest/phnt/ext/index.html
+[docs-rs-ext-functions]: https://docs.rs/phnt/latest/phnt/ext/index.html
+[docs-rs-ext-macros]: https://docs.rs/phnt/latest/phnt/index.html#macros
 
 [build-rs]: https://github.com/oberrich/phnt-rs/blob/master/src/build.rs
 
