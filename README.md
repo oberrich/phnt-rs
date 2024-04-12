@@ -1,4 +1,4 @@
-[phnt][github.com]: Rust bindings to the [System Informer][github.com/sysinf]'s [phnt][docs.rs]
+[phnt][github.com]: Rust bindings to the [System Informer][github.com/sysinf]'s [phnt][github.com/sysinf/phnt]
 ========================================
 
 [![phnt GitHub Actions][github.com/ci/img]][github.com/ci]
