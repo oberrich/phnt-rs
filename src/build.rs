@@ -23,6 +23,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 use std::collections::HashMap;
 use std::env;
+#[cfg_attr(docsrs, doc(cfg(feature = "regenerate")))]
 #[cfg(feature = "regenerate")]
 use std::path::PathBuf;
 
