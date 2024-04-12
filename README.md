@@ -47,7 +47,7 @@ Crate Overview
 [docs-rs-ffi-unions]: https://docs.rs/phnt/latest/phnt/ffi/index.html#unions
 
 [docs-rs-ext]: https://docs.rs/phnt/latest/phnt/ext/index.html
-[docs-rs-ext-functions]: https://docs.rs/phnt/latest/phnt/ext/index.html
+[docs-rs-ext-functions]: https://docs.rs/phnt/latest/phnt/ext/index.html#functions
 [docs-rs-ext-macros]: https://docs.rs/phnt/latest/phnt/index.html#macros
 
 [build-rs]: https://github.com/oberrich/phnt-rs/blob/master/src/build.rs
