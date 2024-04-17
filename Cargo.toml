@@ -18,19 +18,15 @@ targets = ["x86_64-pc-windows-msvc"]
 rustdoc-args = ["--cfg", "docsrs"]
 rustc-args = ["--cfg", "docsrs"]
 
-[build-dependencies]
-windows.features = ["Win32_Foundation"]
-windows-targets = "0.52.0"
-windows.version = "0.52.0"
-
-# optional
+[build-dependencies] # optional
 regex   = { version = "1.10.3", optional = true }
 bindgen = { version = "0.69.4", optional = true }
 chrono  = { version = "0.4.37", optional = true }
 
+[dependencies.windows-sys]
+version = "0.27.0"
+features = ["Win32_Foundation"]
+
 [dependencies]
-windows.features = ["Win32_Foundation"]
-windows-targets = "0.52.0"
-windows.version = "0.52.0"
 nt-string = "0.1.1"
 cty = "0.2.2"

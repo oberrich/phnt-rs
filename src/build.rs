@@ -50,9 +50,9 @@ mod regen {
    impl Default for BindgenConfig {
       fn default() -> Self {
          let type_overrides: HashMap<_, _> = HashMap::from([
-            ("NTSTATUS", "windows::Win32::Foundation::NTSTATUS"),
-            ("BOOL"    , "windows::Win32::Foundation::BOOL"),
-            ("BOOLEAN" , "windows::Win32::Foundation::BOOLEAN"),
+            ("NTSTATUS", "windows_sys::Win32::Foundation::NTSTATUS"),
+            ("BOOL"    , "windows_sys::Win32::Foundation::BOOL"),
+            ("BOOLEAN" , "windows_sys::Win32::Foundation::BOOLEAN"),
             ( "UNICODE_STRING", "nt_string::unicode_string::NtUnicodeString"),
             ("_UNICODE_STRING", "nt_string::unicode_string::NtUnicodeString"),
          ])
@@ -146,7 +146,7 @@ mod regen {
 
    pub fn main() {
       std::process::Command::new("git")
-         .args(["submodule", "update", "--remote", "--recursive"])
+         .args(["submodule", "update", "--init", "--remote", "--recursive"])
          .output()
          .expect("phnt/build.rs: failed to update the `phnt-nightly` submodule!");
 
@@ -161,9 +161,9 @@ mod regen {
       BindgenConfig::default()
          .generate_bindings()
          .expect("Unable to generate bindings!")
-         .write_to_file(out_path)
+         .write_to_file(out_path.clone())
          .expect("Unable to write bindings");
 
-      println!("Generated bindings successfully.");
+      println!("cargo:info=Wrote phnt bindings to `{}`", out_path.display());
    }
 }
