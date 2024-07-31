@@ -1,6 +1,6 @@
 [package]
 name = "phnt"
-version = "0.0.26"
+version = "0.0.27"
 license = "MIT"
 authors = ["oberrich <oberrich.llvm@proton.me>"]
 repository = "https://github.com/oberrich/phnt-rs"
@@ -26,6 +26,10 @@ chrono  = { version = "0.4.37", optional = true }
 [dependencies.windows-sys]
 version = "0.42.0"
 features = ["Win32_Foundation"]
+
+[dev-dependencies.windows-sys]
+version = "0.42.0"
+features = ["Win32_System_Threading"]
 
 [dependencies]
 nt-string = "0.1.1"
