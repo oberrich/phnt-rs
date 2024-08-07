@@ -50,15 +50,16 @@ pub mod ext {
 
    #[macro_export]
    macro_rules! InitializeObjectAttributes {
-      ($p:expr, $n:expr, $a:expr, $r:expr, $s:expr) => {{
-         let _o = $p;
-         _o.Length = mem::size_of::<ffi::OBJECT_ATTRIBUTES>() as u32;
-         _o.RootDirectory = $r;
-         _o.ObjectName = $n;
-         _o.Attributes = $a;
-         _o.SecurityDescriptor = $s;
-         _o.SecurityQualityOfService = ptr::null_mut();
-      }};
+      ($p:expr, $n:expr, $a:expr, $r:expr, $s:expr) => {
+         let attrs = $p;
+         attrs.Length =
+            unsafe { u32::try_from(core::mem::size_of::<ffi::OBJECT_ATTRIBUTES>()).unwrap_unchecked() };
+         attrs.RootDirectory = $r;
+         attrs.ObjectName = $n;
+         attrs.Attributes = $a;
+         attrs.SecurityDescriptor = $s;
+         attrs.SecurityQualityOfService = core::ptr::null_mut();
+      };
    }
 
    #[inline]
