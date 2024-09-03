@@ -75,11 +75,11 @@ pub mod ext {
 
    #[inline]
    pub unsafe fn NtCurrentTeb() -> *mut TEB {
-      const TEB_OFFSET = mem::offset_of!(NT_TIB, Self_) as u32;
+      const TEB_OFFSET: u32 = mem::offset_of!(NT_TIB, Self_) as u32;
       #[cfg(target_arch = "x86_64")]
-      __readgsqword(TEB_OFFSET) as _
+      { __readgsqword(TEB_OFFSET) as _ }
       #[cfg(target_arch = "x86")]
-      __readfsdword(TEB_OFFSET) as _
+      { __readfsdword(TEB_OFFSET) as _ }
    }
 
    #[cfg(test)]
