@@ -10,7 +10,6 @@ build = "src/build.rs"
 description = "Rust bindings to the System Informer's (formerly known as Process Hacker) `phnt` native Windows headers"
 
 [features]
-default = ["regenerate"]
 regenerate = ["dep:regex", "dep:bindgen", "dep:chrono"]
 
 [package.metadata.docs.rs]
