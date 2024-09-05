@@ -96,6 +96,7 @@ mod regen {
 
          let mut raw_lines = vec![
             format!("// Generated at {}", chrono::offset::Local::now()),
+            format!("// Architecture: {}", std::env::consts::ARCH),
             "use cty;".into(),
          ];
          raw_lines.append(&mut self.raw_lines.clone());
@@ -107,6 +108,7 @@ mod regen {
          ];
 
          bindgen::builder()
+            .disable_header_comment()
             .header(concat!(env!("CARGO_MANIFEST_DIR"), "/src/ffi/wrapper.h"))
             .raw_line(raw_lines.join("\r\n").as_str())
             .clang_args(clang_args)

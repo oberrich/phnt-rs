@@ -26,7 +26,7 @@ Crate Overview
   - [Functions][docs.rs/ext/functions]
   - [Macros][docs.rs/ext/macros]
 
-**crate version:** 0.0.27 - unstable api
+**crate version:** 0.0.28 - unstable api
 
 [github.com]:               https://github.com/oberrich/phnt-rs
 [github.com/ci]:            https://github.com/oberrich/phnt-rs/actions/workflows/rust.yml
