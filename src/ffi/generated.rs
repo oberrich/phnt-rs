@@ -1,11 +1,11 @@
-// Generated at 2024-09-05 21:31:56.716587600 +02:00
+// Generated at 2024-09-05 21:49:18.398251200 +02:00
 // Architecture: x86_64
 use cty;
-pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
-pub use windows_sys::Win32::Foundation::BOOLEAN as BOOLEAN;
 pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
 pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
-pub use windows_sys::Win32::Foundation::BOOL as BOOL;
+pub use windows_sys::Win32::Foundation::BOOL;
+pub use windows_sys::Win32::Foundation::BOOLEAN;
+pub use windows_sys::Win32::Foundation::NTSTATUS;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -87,6 +87,47 @@ where
       }
    }
 }
+pub const INT_ERROR: i32 = -1;
+pub const MICROSOFT_WINDOWS_WINBASE_H_DEFINE_INTERLOCKED_CPLUSPLUS_OVERLOADS: u32 = 0;
+pub const DESKTOP_ALL_ACCESS: u32 = 983551;
+pub const DESKTOP_GENERIC_READ: u32 = 131137;
+pub const DESKTOP_GENERIC_WRITE: u32 = 131262;
+pub const DESKTOP_GENERIC_EXECUTE: u32 = 131328;
+pub const WINSTA_GENERIC_READ: u32 = 131843;
+pub const WINSTA_GENERIC_WRITE: u32 = 131100;
+pub const WINSTA_GENERIC_EXECUTE: u32 = 131168;
+pub const WMIGUID_GENERIC_READ: u32 = 131085;
+pub const WMIGUID_GENERIC_WRITE: u32 = 131170;
+pub const WMIGUID_GENERIC_EXECUTE: u32 = 134800;
+pub const PHNT_MODE_KERNEL: u32 = 0;
+pub const PHNT_MODE_USER: u32 = 1;
+pub const PHNT_WIN2K: u32 = 50;
+pub const PHNT_WINXP: u32 = 51;
+pub const PHNT_WS03: u32 = 52;
+pub const PHNT_VISTA: u32 = 60;
+pub const PHNT_WIN7: u32 = 61;
+pub const PHNT_WIN8: u32 = 62;
+pub const PHNT_WINBLUE: u32 = 63;
+pub const PHNT_THRESHOLD: u32 = 100;
+pub const PHNT_THRESHOLD2: u32 = 101;
+pub const PHNT_REDSTONE: u32 = 102;
+pub const PHNT_REDSTONE2: u32 = 103;
+pub const PHNT_REDSTONE3: u32 = 104;
+pub const PHNT_REDSTONE4: u32 = 105;
+pub const PHNT_REDSTONE5: u32 = 106;
+pub const PHNT_19H1: u32 = 107;
+pub const PHNT_19H2: u32 = 108;
+pub const PHNT_20H1: u32 = 109;
+pub const PHNT_20H2: u32 = 110;
+pub const PHNT_21H1: u32 = 111;
+pub const PHNT_WIN10_21H2: u32 = 112;
+pub const PHNT_WIN10_22H2: u32 = 113;
+pub const PHNT_WIN11: u32 = 114;
+pub const PHNT_WIN11_22H2: u32 = 115;
+pub const PHNT_WIN11_23H2: u32 = 116;
+pub const PHNT_WIN11_24H2: u32 = 117;
+pub const PHNT_MODE: u32 = 1;
+pub const PHNT_VERSION: u32 = 114;
 pub const NT_CUSTOMER_SHIFT: u32 = 29;
 pub const NT_FACILITY_MASK: u32 = 4095;
 pub const NT_FACILITY_SHIFT: u32 = 16;
@@ -330,10 +371,11 @@ pub const FLG_HEAP_PAGE_ALLOCS: u32 = 33554432;
 pub const FLG_DEBUG_INITIAL_COMMAND_EX: u32 = 67108864;
 pub const FLG_DISABLE_DBGPRINT: u32 = 134217728;
 pub const FLG_CRITSEC_EVENT_CREATION: u32 = 268435456;
-pub const FLG_STOP_ON_UNHANDLED_EXCEPTION: u32 = 536870912;
+pub const FLG_LDR_TOP_DOWN: u32 = 536870912;
 pub const FLG_ENABLE_HANDLE_EXCEPTIONS: u32 = 1073741824;
 pub const FLG_DISABLE_PROTDLLS: u32 = 2147483648;
 pub const FLG_VALID_BITS: u32 = 4294966783;
+pub const FLG_USERMODE_VALID_BITS: u32 = 2989595123;
 pub const FLG_BOOTONLY_VALID_BITS: u32 = 67788804;
 pub const FLG_KERNELMODE_VALID_BITS: u32 = 1237582859;
 pub const BCD_OBJECT_DESCRIPTION_VERSION: u32 = 1;
@@ -344,6 +386,38 @@ pub const SEC_DRIVER_IMAGE: u32 = 1048576;
 pub const SEC_BASED: u32 = 2097152;
 pub const SEC_NO_CHANGE: u32 = 4194304;
 pub const SEC_GLOBAL: u32 = 536870912;
+pub const MEMORY_BLOCK_NOT_ACCESSED: u32 = 0;
+pub const MEMORY_BLOCK_READONLY: u32 = 1;
+pub const MEMORY_BLOCK_EXECUTABLE: u32 = 2;
+pub const MEMORY_BLOCK_EXECUTABLE_READONLY: u32 = 3;
+pub const MEMORY_BLOCK_READWRITE: u32 = 4;
+pub const MEMORY_BLOCK_COPYONWRITE: u32 = 5;
+pub const MEMORY_BLOCK_EXECUTABLE_READWRITE: u32 = 6;
+pub const MEMORY_BLOCK_EXECUTABLE_COPYONWRITE: u32 = 7;
+pub const MEMORY_BLOCK_NOT_ACCESSED_2: u32 = 8;
+pub const MEMORY_BLOCK_NON_CACHEABLE_READONLY: u32 = 9;
+pub const MEMORY_BLOCK_NON_CACHEABLE_EXECUTABLE: u32 = 10;
+pub const MEMORY_BLOCK_NON_CACHEABLE_EXECUTABLE_READONLY: u32 = 11;
+pub const MEMORY_BLOCK_NON_CACHEABLE_READWRITE: u32 = 12;
+pub const MEMORY_BLOCK_NON_CACHEABLE_COPYONWRITE: u32 = 13;
+pub const MEMORY_BLOCK_NON_CACHEABLE_EXECUTABLE_READWRITE: u32 = 14;
+pub const MEMORY_BLOCK_NON_CACHEABLE_EXECUTABLE_COPYONWRITE: u32 = 15;
+pub const MEMORY_BLOCK_NOT_ACCESSED_3: u32 = 16;
+pub const MEMORY_BLOCK_GUARD_READONLY: u32 = 17;
+pub const MEMORY_BLOCK_GUARD_EXECUTABLE: u32 = 18;
+pub const MEMORY_BLOCK_GUARD_EXECUTABLE_READONLY: u32 = 19;
+pub const MEMORY_BLOCK_GUARD_READWRITE: u32 = 20;
+pub const MEMORY_BLOCK_GUARD_COPYONWRITE: u32 = 21;
+pub const MEMORY_BLOCK_GUARD_EXECUTABLE_READWRITE: u32 = 22;
+pub const MEMORY_BLOCK_GUARD_EXECUTABLE_COPYONWRITE: u32 = 23;
+pub const MEMORY_BLOCK_NOT_ACCESSED_4: u32 = 24;
+pub const MEMORY_BLOCK_NON_CACHEABLE_GUARD_READONLY: u32 = 25;
+pub const MEMORY_BLOCK_NON_CACHEABLE_GUARD_EXECUTABLE: u32 = 26;
+pub const MEMORY_BLOCK_NON_CACHEABLE_GUARD_EXECUTABLE_READONLY: u32 = 27;
+pub const MEMORY_BLOCK_NON_CACHEABLE_GUARD_READWRITE: u32 = 28;
+pub const MEMORY_BLOCK_NON_CACHEABLE_GUARD_COPYONWRITE: u32 = 29;
+pub const MEMORY_BLOCK_NON_CACHEABLE_GUARD_EXECUTABLE_READWRITE: u32 = 30;
+pub const MEMORY_BLOCK_NON_CACHEABLE_GUARD_EXECUTABLE_COPYONWRITE: u32 = 31;
 pub const MMPFNLIST_ZERO: u32 = 0;
 pub const MMPFNLIST_FREE: u32 = 1;
 pub const MMPFNLIST_STANDBY: u32 = 2;
@@ -897,6 +971,12 @@ pub const MAILSLOT_CLASS_SECONDCLASS: u32 = 2;
 pub const MOUNTMGR_DEVICE_NAME: &[u8; 26] = b"\\Device\\MountPointManager\0";
 pub const MOUNTMGRCONTROLTYPE: u32 = 109;
 pub const MOUNTDEVCONTROLTYPE: u32 = 77;
+pub const FLT_SYMLINK_NAME: &[u8; 17] = b"\\Global??\\FltMgr\0";
+pub const FLT_MSG_SYMLINK_NAME: &[u8; 20] = b"\\Global??\\FltMgrMsg\0";
+pub const FLT_DEVICE_NAME: &[u8; 27] = b"\\FileSystem\\Filters\\FltMgr\0";
+pub const FLT_MSG_DEVICE_NAME: &[u8; 30] = b"\\FileSystem\\Filters\\FltMgrMsg\0";
+pub const FLT_PORT_EA_NAME: &[u8; 8] = b"FLTPORT\0";
+pub const FLT_PORT_CONTEXT_MAX: u32 = 65512;
 pub const IRP_MJ_CREATE: u32 = 0;
 pub const IRP_MJ_CREATE_NAMED_PIPE: u32 = 1;
 pub const IRP_MJ_CLOSE: u32 = 2;
@@ -1098,6 +1178,8 @@ pub const LPC_DEBUG_EVENT: u32 = 8;
 pub const LPC_ERROR_EVENT: u32 = 9;
 pub const LPC_CONNECTION_REQUEST: u32 = 10;
 pub const LPC_CONTINUATION_REQUIRED: u32 = 8192;
+pub const LPC_NO_IMPERSONATE: u32 = 16384;
+pub const LPC_KERNELMODE_MESSAGE: u32 = 32768;
 pub const PORT_VALID_OBJECT_ATTRIBUTES: u32 = 64;
 pub const PORT_MAXIMUM_MESSAGE_LENGTH: u32 = 512;
 pub const ALPC_PORFLG_LPC_MODE: u32 = 4096;
@@ -1134,6 +1216,8 @@ pub const ALPC_HANDLEFLG_DUPLICATE_SAME_ATTRIBUTES: u32 = 131072;
 pub const ALPC_HANDLEFLG_DUPLICATE_INHERIT: u32 = 524288;
 pub const ALPC_SECFLG_CREATE_HANDLE: u32 = 131072;
 pub const ALPC_SECFLG_NOSECTIONHANDLE: u32 = 262144;
+pub const ALPC_VIEWFLG_UNMAP_EXISTING: u32 = 65536;
+pub const ALPC_VIEWFLG_AUTO_RELEASE: u32 = 131072;
 pub const ALPC_VIEWFLG_NOT_SECURE: u32 = 262144;
 pub const ALPC_CREATEPORTSECTIONFLG_SECURE: u32 = 262144;
 pub const ALPC_MSGFLG_REPLY_MESSAGE: u32 = 1;
@@ -7654,6 +7738,21 @@ pub struct _TP_IO {
    _unused: [u8; 0],
 }
 pub type PTP_IO = *mut _TP_IO;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct HWND__ {
+   pub unused: cty::c_int,
+}
+pub type HWND = *mut HWND__;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct tagRECT {
+   pub left: LONG,
+   pub top: LONG,
+   pub right: LONG,
+   pub bottom: LONG,
+}
+pub type RECT = tagRECT;
 pub type PTHREAD_START_ROUTINE =
    ::core::option::Option<unsafe extern "C" fn(lpThreadParameter: LPVOID) -> DWORD>;
 pub type LPTHREAD_START_ROUTINE = PTHREAD_START_ROUTINE;
@@ -8097,6 +8196,7 @@ impl Default for _ETW_BUFFER_CONTEXT {
    }
 }
 pub type ETW_BUFFER_CONTEXT = _ETW_BUFFER_CONTEXT;
+pub type DOUBLE = f64;
 pub type PGUID = *mut GUID;
 pub type PCGUID = *const GUID;
 #[repr(C)]
@@ -12401,15 +12501,6 @@ pub type SYSTEM_PROCESSOR_PERFORMANCE_HITCOUNT = _SYSTEM_PROCESSOR_PERFORMANCE_H
 pub type PSYSTEM_PROCESSOR_PERFORMANCE_HITCOUNT = *mut _SYSTEM_PROCESSOR_PERFORMANCE_HITCOUNT;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
-pub struct _SYSTEM_PROCESSOR_PERFORMANCE_HITCOUNT_WIN8 {
-   pub Hits: ULONG,
-   pub PercentFrequency: UCHAR,
-}
-pub type SYSTEM_PROCESSOR_PERFORMANCE_HITCOUNT_WIN8 = _SYSTEM_PROCESSOR_PERFORMANCE_HITCOUNT_WIN8;
-pub type PSYSTEM_PROCESSOR_PERFORMANCE_HITCOUNT_WIN8 =
-   *mut _SYSTEM_PROCESSOR_PERFORMANCE_HITCOUNT_WIN8;
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
 pub struct _SYSTEM_PROCESSOR_PERFORMANCE_STATE_DISTRIBUTION {
    pub ProcessorNumber: ULONG,
    pub StateCount: ULONG,
@@ -12419,6 +12510,26 @@ pub type SYSTEM_PROCESSOR_PERFORMANCE_STATE_DISTRIBUTION =
    _SYSTEM_PROCESSOR_PERFORMANCE_STATE_DISTRIBUTION;
 pub type PSYSTEM_PROCESSOR_PERFORMANCE_STATE_DISTRIBUTION =
    *mut _SYSTEM_PROCESSOR_PERFORMANCE_STATE_DISTRIBUTION;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _SYSTEM_PROCESSOR_PERFORMANCE_HITCOUNT_WIN8 {
+   pub Hits: ULONG,
+   pub PercentFrequency: UCHAR,
+}
+pub type SYSTEM_PROCESSOR_PERFORMANCE_HITCOUNT_WIN8 = _SYSTEM_PROCESSOR_PERFORMANCE_HITCOUNT_WIN8;
+pub type PSYSTEM_PROCESSOR_PERFORMANCE_HITCOUNT_WIN8 =
+   *mut _SYSTEM_PROCESSOR_PERFORMANCE_HITCOUNT_WIN8;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _SYSTEM_PROCESSOR_PERFORMANCE_STATE_DISTRIBUTION_WIN8 {
+   pub ProcessorNumber: ULONG,
+   pub StateCount: ULONG,
+   pub States: [SYSTEM_PROCESSOR_PERFORMANCE_HITCOUNT_WIN8; 1usize],
+}
+pub type SYSTEM_PROCESSOR_PERFORMANCE_STATE_DISTRIBUTION_WIN8 =
+   _SYSTEM_PROCESSOR_PERFORMANCE_STATE_DISTRIBUTION_WIN8;
+pub type PSYSTEM_PROCESSOR_PERFORMANCE_STATE_DISTRIBUTION_WIN8 =
+   *mut _SYSTEM_PROCESSOR_PERFORMANCE_STATE_DISTRIBUTION_WIN8;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _SYSTEM_PROCESSOR_PERFORMANCE_DISTRIBUTION {
@@ -21747,7 +21858,8 @@ pub enum _MEMORY_INFORMATION_CLASS {
    MemoryPhysicalContiguityInformation = 11,
    MemoryBadInformation = 12,
    MemoryBadInformationAllProcesses = 13,
-   MaxMemoryInfoClass = 14,
+   MemoryImageExtensionInformation = 14,
+   MaxMemoryInfoClass = 15,
 }
 pub use self::_MEMORY_INFORMATION_CLASS as MEMORY_INFORMATION_CLASS;
 #[repr(C)]
@@ -22892,6 +23004,191 @@ impl Default for _MEMORY_PHYSICAL_CONTIGUITY_INFORMATION {
 }
 pub type MEMORY_PHYSICAL_CONTIGUITY_INFORMATION = _MEMORY_PHYSICAL_CONTIGUITY_INFORMATION;
 pub type PMEMORY_PHYSICAL_CONTIGUITY_INFORMATION = *mut _MEMORY_PHYSICAL_CONTIGUITY_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _RTL_SCP_CFG_ARM64_HEADER {
+   pub EcInvalidCallHandlerRva: ULONG,
+   pub EcCfgCheckRva: ULONG,
+   pub EcCfgCheckESRva: ULONG,
+   pub EcCallCheckRva: ULONG,
+   pub CpuInitializationCompleteLoadRva: ULONG,
+   pub LdrpValidateEcCallTargetInitRva: ULONG,
+   pub SyscallFfsSizeRva: ULONG,
+   pub SyscallFfsBaseRva: ULONG,
+}
+pub type RTL_SCP_CFG_ARM64_HEADER = _RTL_SCP_CFG_ARM64_HEADER;
+pub type PRTL_SCP_CFG_ARM64_HEADER = *mut _RTL_SCP_CFG_ARM64_HEADER;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _RTL_SCP_CFG_PAGE_TYPE {
+   RtlScpCfgPageTypeNop = 0,
+   RtlScpCfgPageTypeDefault = 1,
+   RtlScpCfgPageTypeExportSuppression = 2,
+   RtlScpCfgPageTypeFptr = 3,
+   RtlScpCfgPageTypeMax = 4,
+   RtlScpCfgPageTypeNone = 5,
+}
+pub use self::_RTL_SCP_CFG_PAGE_TYPE as RTL_SCP_CFG_PAGE_TYPE;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _RTL_SCP_CFG_COMMON_HEADER {
+   pub CfgDispatchRva: ULONG,
+   pub CfgDispatchESRva: ULONG,
+   pub CfgCheckRva: ULONG,
+   pub CfgCheckESRva: ULONG,
+   pub InvalidCallHandlerRva: ULONG,
+   pub FnTableRva: ULONG,
+}
+pub type RTL_SCP_CFG_COMMON_HEADER = _RTL_SCP_CFG_COMMON_HEADER;
+pub type PRTL_SCP_CFG_COMMON_HEADER = *mut _RTL_SCP_CFG_COMMON_HEADER;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _RTL_SCP_CFG_HEADER {
+   pub Common: RTL_SCP_CFG_COMMON_HEADER,
+}
+pub type RTL_SCP_CFG_HEADER = _RTL_SCP_CFG_HEADER;
+pub type PRTL_SCP_CFG_HEADER = *mut _RTL_SCP_CFG_HEADER;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _RTL_SCP_CFG_REGION_BOUNDS {
+   pub StartAddress: PVOID,
+   pub EndAddress: PVOID,
+}
+impl Default for _RTL_SCP_CFG_REGION_BOUNDS {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type RTL_SCP_CFG_REGION_BOUNDS = _RTL_SCP_CFG_REGION_BOUNDS;
+pub type PRTL_SCP_CFG_REGION_BOUNDS = *mut _RTL_SCP_CFG_REGION_BOUNDS;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _RTL_SCP_CFG_NTDLL_EXPORTS {
+   pub ScpRegions: [RTL_SCP_CFG_REGION_BOUNDS; 4usize],
+   pub CfgDispatchFptr: PVOID,
+   pub CfgDispatchESFptr: PVOID,
+   pub CfgCheckFptr: PVOID,
+   pub CfgCheckESFptr: PVOID,
+   pub IllegalCallHandler: PVOID,
+}
+impl Default for _RTL_SCP_CFG_NTDLL_EXPORTS {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type RTL_SCP_CFG_NTDLL_EXPORTS = _RTL_SCP_CFG_NTDLL_EXPORTS;
+pub type PRTL_SCP_CFG_NTDLL_EXPORTS = *mut _RTL_SCP_CFG_NTDLL_EXPORTS;
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct _RTL_SCP_CFG_NTDLL_EXPORTS_ARM64EC {
+   pub EcInvalidCallHandler: PVOID,
+   pub EcCfgCheckFptr: PVOID,
+   pub EcCfgCheckESFptr: PVOID,
+   pub EcCallCheckFptr: PVOID,
+   pub CpuInitializationComplete: PVOID,
+   pub LdrpValidateEcCallTargetInit: PVOID,
+   pub __bindgen_anon_1: _RTL_SCP_CFG_NTDLL_EXPORTS_ARM64EC__bindgen_ty_1,
+   pub SyscallFfsBase: PVOID,
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct _RTL_SCP_CFG_NTDLL_EXPORTS_ARM64EC__bindgen_ty_1 {
+   pub SyscallFfsSize: PVOID,
+   pub __bindgen_anon_1: _RTL_SCP_CFG_NTDLL_EXPORTS_ARM64EC__bindgen_ty_1__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union _RTL_SCP_CFG_NTDLL_EXPORTS_ARM64EC__bindgen_ty_1__bindgen_ty_1 {
+   pub Ptr: PVOID,
+   pub Value: ULONG,
+}
+impl Default for _RTL_SCP_CFG_NTDLL_EXPORTS_ARM64EC__bindgen_ty_1__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for _RTL_SCP_CFG_NTDLL_EXPORTS_ARM64EC__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for _RTL_SCP_CFG_NTDLL_EXPORTS_ARM64EC {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type RTL_SCP_CFG_NTDLL_EXPORTS_ARM64EC = _RTL_SCP_CFG_NTDLL_EXPORTS_ARM64EC;
+pub type PRTL_SCP_CFG_NTDLL_EXPORTS_ARM64EC = *mut _RTL_SCP_CFG_NTDLL_EXPORTS_ARM64EC;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _RTL_RETPOLINE_ROUTINES {
+   pub SwitchtableJump: [ULONG; 16usize],
+   pub CfgIndirectRax: ULONG,
+   pub NonCfgIndirectRax: ULONG,
+   pub ImportR10: ULONG,
+   pub JumpHpat: ULONG,
+}
+pub type RTL_RETPOLINE_ROUTINES = _RTL_RETPOLINE_ROUTINES;
+pub type PRTL_RETPOLINE_ROUTINES = *mut _RTL_RETPOLINE_ROUTINES;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _RTL_KSCP_ROUTINES {
+   pub UnwindDataOffset: ULONG,
+   pub RetpolineRoutines: RTL_RETPOLINE_ROUTINES,
+   pub CfgDispatchSmep: ULONG,
+   pub CfgDispatchNoSmep: ULONG,
+}
+pub type RTL_KSCP_ROUTINES = _RTL_KSCP_ROUTINES;
+pub type PRTL_KSCP_ROUTINES = *mut _RTL_KSCP_ROUTINES;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _MEMORY_IMAGE_EXTENSION_TYPE {
+   MemoryImageExtensionCfgScp = 0,
+   MemoryImageExtensionCfgEmulatedScp = 1,
+   MemoryImageExtensionTypeMax = 2,
+}
+pub use self::_MEMORY_IMAGE_EXTENSION_TYPE as MEMORY_IMAGE_EXTENSION_TYPE;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _MEMORY_IMAGE_EXTENSION_INFORMATION {
+   pub ExtensionType: MEMORY_IMAGE_EXTENSION_TYPE,
+   pub Flags: ULONG,
+   pub ExtensionImageBaseRva: PVOID,
+   pub ExtensionSize: SIZE_T,
+}
+impl Default for _MEMORY_IMAGE_EXTENSION_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type MEMORY_IMAGE_EXTENSION_INFORMATION = _MEMORY_IMAGE_EXTENSION_INFORMATION;
+pub type PMEMORY_IMAGE_EXTENSION_INFORMATION = *mut _MEMORY_IMAGE_EXTENSION_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _MEMORY_FRAME_INFORMATION {
@@ -24820,7 +25117,7 @@ pub type PCOMPATIBILITY_CONTEXT_ELEMENT_LEGACY = *mut _COMPATIBILITY_CONTEXT_ELE
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _ACTIVATION_CONTEXT_COMPATIBILITY_INFORMATION_LEGACY {
-   pub ElementCount: DWORD,
+   pub ElementCount: ULONG,
    pub Elements: [COMPATIBILITY_CONTEXT_ELEMENT_LEGACY; 1usize],
 }
 impl Default for _ACTIVATION_CONTEXT_COMPATIBILITY_INFORMATION_LEGACY {
@@ -30703,6 +31000,56 @@ pub enum _MEMORY_RESERVE_TYPE {
    MemoryReserveTypeMax = 2,
 }
 pub use self::_MEMORY_RESERVE_TYPE as MEMORY_RESERVE_TYPE;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _PSSNT_CAPTURE_FLAGS {
+   PSSNT_CAPTURE_NONE = 0,
+   PSSNT_CAPTURE_VA_CLONE = 1,
+   PSSNT_CAPTURE_RESERVED_00000002 = 2,
+   PSSNT_CAPTURE_HANDLES = 4,
+   PSSNT_CAPTURE_HANDLE_NAME_INFORMATION = 8,
+   PSSNT_CAPTURE_HANDLE_BASIC_INFORMATION = 16,
+   PSSNT_CAPTURE_HANDLE_TYPE_SPECIFIC_INFORMATION = 32,
+   PSSNT_CAPTURE_HANDLE_TRACE = 64,
+   PSSNT_CAPTURE_THREADS = 128,
+   PSSNT_CAPTURE_THREAD_CONTEXT = 256,
+   PSSNT_CAPTURE_THREAD_CONTEXT_EXTENDED = 512,
+   PSSNT_CAPTURE_RESERVED_00000400 = 1024,
+   PSSNT_CAPTURE_VA_SPACE = 2048,
+   PSSNT_CAPTURE_VA_SPACE_SECTION_INFORMATION = 4096,
+   PSSNT_CAPTURE_IPT_TRACE = 8192,
+   PSSNT_CAPTURE_RESERVED_00004000 = 16384,
+   PSSNT_CREATE_BREAKAWAY_OPTIONAL = 67108864,
+   PSSNT_CREATE_BREAKAWAY = 134217728,
+   PSSNT_CREATE_FORCE_BREAKAWAY = 268435456,
+   PSSNT_CREATE_USE_VM_ALLOCATIONS = 536870912,
+   PSSNT_CREATE_MEASURE_PERFORMANCE = 1073741824,
+   PSSNT_CREATE_RELEASE_SECTION = -2147483648,
+}
+pub use self::_PSSNT_CAPTURE_FLAGS as PSSNT_CAPTURE_FLAGS;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _PSSNT_DUPLICATE_FLAGS {
+   PSSNT_DUPLICATE_NONE = 0,
+   PSSNT_DUPLICATE_CLOSE_SOURCE = 1,
+}
+pub use self::_PSSNT_DUPLICATE_FLAGS as PSSNT_DUPLICATE_FLAGS;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _PSSNT_QUERY_INFORMATION_CLASS {
+   PSSNT_QUERY_PROCESS_INFORMATION = 0,
+   PSSNT_QUERY_VA_CLONE_INFORMATION = 1,
+   PSSNT_QUERY_AUXILIARY_PAGES_INFORMATION = 2,
+   PSSNT_QUERY_VA_SPACE_INFORMATION = 3,
+   PSSNT_QUERY_HANDLE_INFORMATION = 4,
+   PSSNT_QUERY_THREAD_INFORMATION = 5,
+   PSSNT_QUERY_HANDLE_TRACE_INFORMATION = 6,
+   PSSNT_QUERY_PERFORMANCE_COUNTERS = 7,
+}
+pub use self::_PSSNT_QUERY_INFORMATION_CLASS as PSSNT_QUERY_INFORMATION_CLASS;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _NTPSS_MEMORY_BULK_INFORMATION {
@@ -33561,6 +33908,145 @@ pub struct _MOUNTMGR_VOLUME_PATHS {
 }
 pub type MOUNTMGR_VOLUME_PATHS = _MOUNTMGR_VOLUME_PATHS;
 pub type PMOUNTMGR_VOLUME_PATHS = *mut _MOUNTMGR_VOLUME_PATHS;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _FLT_CONNECT_CONTEXT {
+   pub PortName: PUNICODE_STRING,
+   pub PortName64: PUNICODE_STRING64,
+   pub SizeOfContext: USHORT,
+   pub Padding: [UCHAR; 6usize],
+   pub Context: [UCHAR; 1usize],
+}
+impl Default for _FLT_CONNECT_CONTEXT {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type FLT_CONNECT_CONTEXT = _FLT_CONNECT_CONTEXT;
+pub type PFLT_CONNECT_CONTEXT = *mut _FLT_CONNECT_CONTEXT;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _FLT_PORT_FULL_EA {
+   pub NextEntryOffset: ULONG,
+   pub Flags: UCHAR,
+   pub EaNameLength: UCHAR,
+   pub EaValueLength: USHORT,
+   pub EaName: [CHAR; 8usize],
+   pub EaValue: FLT_CONNECT_CONTEXT,
+}
+impl Default for _FLT_PORT_FULL_EA {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type FLT_PORT_FULL_EA = _FLT_PORT_FULL_EA;
+pub type PFLT_PORT_FULL_EA = *mut _FLT_PORT_FULL_EA;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _FLT_LOAD_PARAMETERS {
+   pub FilterNameSize: USHORT,
+   pub FilterName: [WCHAR; 1usize],
+}
+pub type FLT_LOAD_PARAMETERS = _FLT_LOAD_PARAMETERS;
+pub type PFLT_LOAD_PARAMETERS = *mut _FLT_LOAD_PARAMETERS;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _FLT_LINK_TYPE {
+   FILTER = 0,
+   FILTER_INSTANCE = 1,
+   FILTER_VOLUME = 2,
+   FILTER_MANAGER = 3,
+   FILTER_MANAGER_VOLUME = 4,
+}
+pub use self::_FLT_LINK_TYPE as FLT_LINK_TYPE;
+pub type PFLT_LINK_TYPE = *mut _FLT_LINK_TYPE;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _FLT_LINK {
+   pub Type: FLT_LINK_TYPE,
+   pub ParametersOffset: ULONG,
+}
+impl Default for _FLT_LINK {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type FLT_LINK = _FLT_LINK;
+pub type PFLT_LINK = *mut _FLT_LINK;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _FLT_FILTER_PARAMETERS {
+   pub FilterNameSize: USHORT,
+   pub FilterNameOffset: USHORT,
+}
+pub type FLT_FILTER_PARAMETERS = _FLT_FILTER_PARAMETERS;
+pub type PFLT_FILTER_PARAMETERS = *mut _FLT_FILTER_PARAMETERS;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _FLT_INSTANCE_PARAMETERS {
+   pub FilterNameSize: USHORT,
+   pub FilterNameOffset: USHORT,
+   pub VolumeNameSize: USHORT,
+   pub VolumeNameOffset: USHORT,
+   pub InstanceNameSize: USHORT,
+   pub InstanceNameOffset: USHORT,
+}
+pub type FLT_INSTANCE_PARAMETERS = _FLT_INSTANCE_PARAMETERS;
+pub type PFLT_INSTANCE_PARAMETERS = *mut _FLT_INSTANCE_PARAMETERS;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _FLT_VOLUME_PARAMETERS {
+   pub VolumeNameSize: USHORT,
+   pub VolumeNameOffset: USHORT,
+}
+pub type FLT_VOLUME_PARAMETERS = _FLT_VOLUME_PARAMETERS;
+pub type PFLT_VOLUME_PARAMETERS = *mut _FLT_VOLUME_PARAMETERS;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _ATTACH_TYPE {
+   AltitudeBased = 0,
+   InstanceNameBased = 1,
+}
+pub use self::_ATTACH_TYPE as ATTACH_TYPE;
+pub type PATTACH_TYPE = *mut _ATTACH_TYPE;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _FLT_ATTACH {
+   pub FilterNameSize: USHORT,
+   pub FilterNameOffset: USHORT,
+   pub VolumeNameSize: USHORT,
+   pub VolumeNameOffset: USHORT,
+   pub Type: ATTACH_TYPE,
+   pub InstanceNameSize: USHORT,
+   pub InstanceNameOffset: USHORT,
+   pub AltitudeSize: USHORT,
+   pub AltitudeOffset: USHORT,
+}
+impl Default for _FLT_ATTACH {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type FLT_ATTACH = _FLT_ATTACH;
+pub type PFLT_ATTACH = *mut _FLT_ATTACH;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -41709,7 +42195,7 @@ pub type PTOKEN_SECURITY_ATTRIBUTE_FQBN_VALUE = *mut _TOKEN_SECURITY_ATTRIBUTE_F
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _TOKEN_SECURITY_ATTRIBUTE_OCTET_STRING_VALUE {
-   pub pValue: PVOID,
+   pub Value: PVOID,
    pub ValueLength: ULONG,
 }
 impl Default for _TOKEN_SECURITY_ATTRIBUTE_OCTET_STRING_VALUE {
@@ -41762,6 +42248,44 @@ impl Default for _TOKEN_SECURITY_ATTRIBUTE_V1 {
 }
 pub type TOKEN_SECURITY_ATTRIBUTE_V1 = _TOKEN_SECURITY_ATTRIBUTE_V1;
 pub type PTOKEN_SECURITY_ATTRIBUTE_V1 = *mut _TOKEN_SECURITY_ATTRIBUTE_V1;
+#[repr(C)]
+pub struct _TOKEN_SECURITY_ATTRIBUTE_RELATIVE_V1 {
+   pub Name: UNICODE_STRING,
+   pub ValueType: USHORT,
+   pub Reserved: USHORT,
+   pub Flags: ULONG,
+   pub ValueCount: ULONG,
+   pub Values: _TOKEN_SECURITY_ATTRIBUTE_RELATIVE_V1__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union _TOKEN_SECURITY_ATTRIBUTE_RELATIVE_V1__bindgen_ty_1 {
+   pub pInt64: [ULONG; 1usize],
+   pub pUint64: [ULONG; 1usize],
+   pub ppString: [ULONG; 1usize],
+   pub pFqbn: [ULONG; 1usize],
+   pub pOctetString: [ULONG; 1usize],
+}
+impl Default for _TOKEN_SECURITY_ATTRIBUTE_RELATIVE_V1__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for _TOKEN_SECURITY_ATTRIBUTE_RELATIVE_V1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type TOKEN_SECURITY_ATTRIBUTE_RELATIVE_V1 = _TOKEN_SECURITY_ATTRIBUTE_RELATIVE_V1;
+pub type PTOKEN_SECURITY_ATTRIBUTE_RELATIVE_V1 = *mut _TOKEN_SECURITY_ATTRIBUTE_RELATIVE_V1;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _TOKEN_SECURITY_ATTRIBUTES_INFORMATION {
@@ -52165,7 +52689,117 @@ impl Default for _TELEMETRY_COVERAGE_POINT {
 }
 pub type TELEMETRY_COVERAGE_POINT = _TELEMETRY_COVERAGE_POINT;
 pub type PTELEMETRY_COVERAGE_POINT = *mut _TELEMETRY_COVERAGE_POINT;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _WINDOWINFOCLASS {
+   WindowProcess = 0,
+   WindowRealProcess = 1,
+   WindowThread = 2,
+   WindowActiveWindow = 3,
+   WindowFocusWindow = 4,
+   WindowIsHung = 5,
+   WindowClientBase = 6,
+   WindowIsForegroundThread = 7,
+   WindowDefaultImeWindow = 8,
+   WindowDefaultInputContext = 9,
+}
+pub use self::_WINDOWINFOCLASS as WINDOWINFOCLASS;
+pub type PWINDOWINFOCLASS = *mut _WINDOWINFOCLASS;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _CONSOLECONTROL {
+   ConsoleSetVDMCursorBounds = 0,
+   ConsoleNotifyConsoleApplication = 1,
+   ConsoleFullscreenSwitch = 2,
+   ConsoleSetCaretInfo = 3,
+   ConsoleSetReserveKeys = 4,
+   ConsoleSetForeground = 5,
+   ConsoleSetWindowOwner = 6,
+   ConsoleEndTask = 7,
+}
+pub use self::_CONSOLECONTROL as CONSOLECONTROL;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _CONSOLE_PROCESS_INFO {
+   pub ProcessID: ULONG,
+   pub Flags: ULONG,
+}
+pub type CONSOLE_PROCESS_INFO = _CONSOLE_PROCESS_INFO;
+pub type PCONSOLE_PROCESS_INFO = *mut _CONSOLE_PROCESS_INFO;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _CONSOLE_CARET_INFO {
+   pub WindowHandle: HWND,
+   pub Rect: RECT,
+}
+impl Default for _CONSOLE_CARET_INFO {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type CONSOLE_CARET_INFO = _CONSOLE_CARET_INFO;
+pub type PCONSOLE_CARET_INFO = *mut _CONSOLE_CARET_INFO;
+#[repr(C)]
+pub struct _CONSOLESETFOREGROUND {
+   pub ProcessHandle: HANDLE,
+   pub Foreground: BOOL,
+}
+impl Default for _CONSOLESETFOREGROUND {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type CONSOLESETFOREGROUND = _CONSOLESETFOREGROUND;
+pub type PCONSOLESETFOREGROUND = *mut _CONSOLESETFOREGROUND;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _CONSOLEWINDOWOWNER {
+   pub WindowHandle: HWND,
+   pub ProcessId: ULONG,
+   pub ThreadId: ULONG,
+}
+impl Default for _CONSOLEWINDOWOWNER {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type CONSOLEWINDOWOWNER = _CONSOLEWINDOWOWNER;
+pub type PCONSOLEWINDOWOWNER = *mut _CONSOLEWINDOWOWNER;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _CONSOLEENDTASK {
+   pub ProcessId: HANDLE,
+   pub WindowHandle: HWND,
+   pub ConsoleEventCode: ULONG,
+   pub ConsoleFlags: ULONG,
+}
+impl Default for _CONSOLEENDTASK {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type CONSOLEENDTASK = _CONSOLEENDTASK;
+pub type PCONSOLEENDTASK = *mut _CONSOLEENDTASK;
 extern "C" {
+   pub static GUID_NULL: GUID;
    pub static mut NlsAnsiCodePage: USHORT;
    pub static mut NlsMbCodePageTag: BOOLEAN;
    pub static mut NlsMbOemCodePageTag: BOOLEAN;
@@ -53685,8 +54319,23 @@ extern "C" {
    pub fn PssNtCaptureSnapshot(
       SnapshotHandle: PHANDLE,
       ProcessHandle: HANDLE,
-      CaptureFlags: ULONG,
+      CaptureFlags: PSSNT_CAPTURE_FLAGS,
       ThreadContextFlags: ULONG,
+   ) -> NTSTATUS;
+   pub fn PssNtDuplicateSnapshot(
+      SourceProcessHandle: HANDLE,
+      SnapshotHandle: HANDLE,
+      TargetProcessHandle: HANDLE,
+      TargetSnapshotHandle: PHANDLE,
+      Flags: PSSNT_DUPLICATE_FLAGS,
+   ) -> NTSTATUS;
+   pub fn PssNtFreeSnapshot(SnapshotHandle: HANDLE) -> NTSTATUS;
+   pub fn PssNtFreeRemoteSnapshot(ProcessHandle: HANDLE, SnapshotHandle: HANDLE) -> NTSTATUS;
+   pub fn PssNtQuerySnapshot(
+      SnapshotHandle: HANDLE,
+      InformationClass: PSSNT_QUERY_INFORMATION_CLASS,
+      Buffer: PVOID,
+      BufferLength: ULONG,
    ) -> NTSTATUS;
    pub fn NtPssCaptureVaSpaceBulk(
       ProcessHandle: HANDLE,
@@ -54914,7 +55563,6 @@ extern "C" {
    ) -> NTSTATUS;
    pub fn RtlWakeAddressAll(Address: PVOID);
    pub fn RtlWakeAddressSingle(Address: PVOID);
-   pub fn RtlReadHandleNoFence(Address: *const HANDLE) -> HANDLE;
    pub fn RtlInitEmptyAnsiString(AnsiString: PANSI_STRING, Buffer: PCHAR, MaximumLength: USHORT);
    pub fn RtlInitString(DestinationString: PSTRING, SourceString: PCSTR);
    pub fn RtlInitStringEx(DestinationString: PSTRING, SourceString: PCSZ) -> NTSTATUS;
@@ -59030,7 +59678,11 @@ extern "C" {
       OutputParametersLength: ULONG,
       OutputParameters: PVOID,
    ) -> NTSTATUS;
-   pub fn ZwCreateIRTimer(TimerHandle: PHANDLE, DesiredAccess: ACCESS_MASK) -> NTSTATUS;
+   pub fn ZwCreateIRTimer(
+      TimerHandle: PHANDLE,
+      Reserved: PVOID,
+      DesiredAccess: ACCESS_MASK,
+   ) -> NTSTATUS;
    pub fn ZwCreateJobObject(
       JobHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -60610,6 +61262,14 @@ extern "C" {
       SourceFileCount: ULONG,
       TargetFile: HANDLE,
    ) -> NTSTATUS;
+   pub fn ZwSetCachedSigningLevel2(
+      Flags: ULONG,
+      InputSigningLevel: SE_SIGNING_LEVEL,
+      SourceFiles: PHANDLE,
+      SourceFileCount: ULONG,
+      TargetFile: HANDLE,
+      CacheInformation: *mut SE_SET_FILE_CACHE_INFORMATION,
+   ) -> NTSTATUS;
    pub fn ZwSetContextThread(ThreadHandle: HANDLE, ThreadContext: PCONTEXT) -> NTSTATUS;
    pub fn ZwSetDebugFilterState(ComponentId: ULONG, Level: ULONG, State: BOOLEAN) -> NTSTATUS;
    pub fn ZwSetDefaultHardErrorPort(DefaultHardErrorPort: HANDLE) -> NTSTATUS;
@@ -60878,7 +61538,7 @@ extern "C" {
    pub fn ZwThawRegistry() -> NTSTATUS;
    pub fn ZwThawTransactions() -> NTSTATUS;
    pub fn ZwTraceControl(
-      TraceControlCode: ETWTRACECONTROLCODE,
+      FunctionCode: ETWTRACECONTROLCODE,
       InputBuffer: PVOID,
       InputBufferLength: ULONG,
       OutputBuffer: PVOID,
@@ -61012,4 +61672,11 @@ extern "C" {
       NumberOfBytesWritten: PSIZE_T,
    ) -> NTSTATUS;
    pub fn ZwYieldExecution() -> NTSTATUS;
+   pub fn NtUserQueryWindow(WindowHandle: HWND, WindowInfo: WINDOWINFOCLASS) -> ULONG_PTR;
+   #[doc = " Performs special kernel operations for console host applications.\n\n This includes reparenting the console window, allowing the console to pass foreground rights\n on to launched console subsystem applications and terminating attached processes.\n\n @param Command One of the CONSOLECONTROL values indicating which console control function should be executed.\n @param ConsoleInformation A pointer to one of the  structures specifying additional data for the requested console control function.\n @param ConsoleInformationLength The size of the structure pointed to by the ConsoleInformation parameter.\n @return Successful or errant status."]
+   pub fn NtUserConsoleControl(
+      Command: CONSOLECONTROL,
+      ConsoleInformation: PVOID,
+      ConsoleInformationLength: ULONG,
+   ) -> NTSTATUS;
 }

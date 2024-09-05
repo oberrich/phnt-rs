@@ -5,5 +5,6 @@
 #undef WIN32_NO_STATUS
 #include <ntstatus.h>
 
-#include "../../deps/phnt-nightly/phnt_windows.h"
-#include "../../deps/phnt-nightly/phnt.h"
+#include <phnt_windows.h>
+#include <phnt.h>
+#include <ntuser.h>
