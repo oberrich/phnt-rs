@@ -98,15 +98,23 @@ mod regen {
             format!("// Generated at {}", chrono::offset::Local::now()),
             format!("#[cfg(not(target_arch = \"{}\"))]", std::env::consts::ARCH),
             format!("compile_error!(\"These bindings can only be used on `{}` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.\");", std::env::consts::ARCH),
+            "".into(),
             "use cty;".into(),
          ];
          raw_lines.append(&mut self.raw_lines.clone());
 
-         let clang_args = vec![
-            "-Iwindows.h",
-            "-Iwinnt.h",
-            concat!("-I", env!("CARGO_MANIFEST_DIR"), "\\deps\\phnt-nightly/"),
+         let mut clang_args: Vec<String> = vec![
+            "-Iwindows.h".to_owned(),
+            "-Iwinnt.h".to_owned(),
+            concat!("-I", env!("CARGO_MANIFEST_DIR"), "\\deps\\phnt-nightly/").to_owned(),
          ];
+
+         for name in ["PHNT_VERSION", "PHNT_MODE"] {
+            println!("cargo:rerun-if-changed={}", name);
+            if let Ok(str) = env::var(name) {
+               clang_args.push(format!("-D{}={}", name, str));
+            }
+         }
 
          bindgen::builder()
             .disable_header_comment()
