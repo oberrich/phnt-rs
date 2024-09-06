@@ -1,5 +1,6 @@
-// Generated at 2024-09-05 21:49:18.398251200 +02:00
-// Architecture: x86_64
+// Generated at 2024-09-06 06:32:50.616625400 +02:00
+#[cfg(not(target_arch = "x86_64"))]
+compile_error!("These bindings can only be used on `x86_64` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.");
 use cty;
 pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
 pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
@@ -1206,10 +1207,10 @@ pub const ALPC_PORFLG_OBJECT_TYPE_TOKEN: u32 = 512;
 pub const ALPC_PORFLG_OBJECT_TYPE_COMPOSITION: u32 = 1024;
 pub const ALPC_PORFLG_OBJECT_TYPE_JOB: u32 = 2048;
 pub const ALPC_PORFLG_OBJECT_TYPE_ALL: u32 = 4093;
-pub const ALPC_MESSAGE_SECURITY_ATTRIBUTE: u32 = 2147483648;
-pub const ALPC_MESSAGE_VIEW_ATTRIBUTE: u32 = 1073741824;
-pub const ALPC_MESSAGE_CONTEXT_ATTRIBUTE: u32 = 536870912;
 pub const ALPC_MESSAGE_HANDLE_ATTRIBUTE: u32 = 268435456;
+pub const ALPC_MESSAGE_CONTEXT_ATTRIBUTE: u32 = 536870912;
+pub const ALPC_MESSAGE_VIEW_ATTRIBUTE: u32 = 1073741824;
+pub const ALPC_MESSAGE_SECURITY_ATTRIBUTE: u32 = 2147483648;
 pub const ALPC_COMPLETION_LIST_BUFFER_GRANULARITY_MASK: u32 = 63;
 pub const ALPC_HANDLEFLG_DUPLICATE_SAME_ACCESS: u32 = 65536;
 pub const ALPC_HANDLEFLG_DUPLICATE_SAME_ATTRIBUTES: u32 = 131072;
@@ -53571,31 +53572,47 @@ extern "C" {
    pub static GUID_WINDOWS_SETUP_PCAT: GUID;
    pub static GUID_WINDOWS_SETUP_RAMDISK_OPTIONS: GUID;
    pub static GUID_WINDOWS_SETUP_BOOT_ENTRY: GUID;
+   #[doc = " Sets the logging level and callback routine for BCD messages.\n\n @param BcdLoggingLevel The logging level to set.\n @param BcdMessageCallbackRoutine The callback routine for BCD messages.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdSetLogging(
       BcdLoggingLevel: BCD_MESSAGE_TYPE,
       BcdMessageCallbackRoutine: BCD_MESSAGE_CALLBACK,
    ) -> NTSTATUS;
+   #[doc = " Initializes the BCD synchronization mutant."]
    pub fn BcdInitializeBcdSyncMutant();
+   #[doc = " Retrieves the file name for the BCD.\n\n @param BcdSystemStorePath The pointer to receive the system store path.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdGetSystemStorePath(BcdSystemStorePath: *mut PWSTR) -> NTSTATUS;
+   #[doc = " Sets the device for the system BCD store.\n\n @param SystemPartition The system partition to set.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdSetSystemStoreDevice(SystemPartition: UNICODE_STRING) -> NTSTATUS;
+   #[doc = " Opens the BCD system store.\n\n @param BcdStoreHandle The handle to receive the system store.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdOpenSystemStore(BcdStoreHandle: PHANDLE) -> NTSTATUS;
+   #[doc = " Opens a BCD store from a file.\n\n @param BcdFilePath The file path of the BCD store.\n @param BcdStoreHandle The handle to receive the BCD store.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdOpenStoreFromFile(BcdFilePath: UNICODE_STRING, BcdStoreHandle: PHANDLE) -> NTSTATUS;
+   #[doc = " Creates a BCD store.\n\n @param BcdFilePath The file path to create the BCD store.\n @param BcdStoreHandle The handle to receive the BCD store.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdCreateStore(BcdFilePath: UNICODE_STRING, BcdStoreHandle: PHANDLE) -> NTSTATUS;
+   #[doc = " Exports the BCD store to a file.\n\n @param BcdFilePath The file path to export the BCD store.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdExportStore(BcdFilePath: UNICODE_STRING) -> NTSTATUS;
+   #[doc = " Imports a BCD store from a file.\n\n @param BcdFilePath The file path to import the BCD store.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdImportStore(BcdFilePath: UNICODE_STRING) -> NTSTATUS;
+   #[doc = " Imports a BCD store from a file with additional flags.\n\n @param BcdFilePath The file path to import the BCD store.\n @param BcdImportFlags The flags for importing the store.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdImportStoreWithFlags(
       BcdFilePath: UNICODE_STRING,
       BcdImportFlags: BCD_IMPORT_FLAGS,
    ) -> NTSTATUS;
+   #[doc = " Deletes object references in the BCD store.\n\n @param BcdStoreHandle The handle to the BCD store.\n @param Identifier The identifier of the object to delete references for.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdDeleteObjectReferences(BcdStoreHandle: HANDLE, Identifier: PGUID) -> NTSTATUS;
+   #[doc = " Deletes the system store for BCD.\n\n @return NTSTATUS Successful or errant status."]
    pub fn BcdDeleteSystemStore() -> NTSTATUS;
+   #[doc = " Opens a BCD store with additional flags.\n\n @param BcdFilePath The file path of the BCD store.\n @param BcdOpenFlags The flags for opening the store.\n @param BcdStoreHandle The handle to receive the BCD store.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdOpenStore(
       BcdFilePath: UNICODE_STRING,
       BcdOpenFlags: BCD_OPEN_FLAGS,
       BcdStoreHandle: PHANDLE,
    ) -> NTSTATUS;
+   #[doc = " Closes a BCD store.\n\n @param BcdStoreHandle The handle to the BCD store.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdCloseStore(BcdStoreHandle: HANDLE) -> NTSTATUS;
+   #[doc = " Flushes a BCD store.\n\n @param BcdStoreHandle The handle to the BCD store.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdFlushStore(BcdStoreHandle: HANDLE) -> NTSTATUS;
+   #[doc = " Forcibly unloads a BCD store.\n\n @param BcdStoreHandle The handle to the BCD store.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdForciblyUnloadStore(BcdStoreHandle: HANDLE) -> NTSTATUS;
    pub fn BcdMarkAsSystemStore(BcdStoreHandle: HANDLE) -> NTSTATUS;
    pub fn BcdEnumerateObjects(
