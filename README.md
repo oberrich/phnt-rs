@@ -26,8 +26,6 @@ Crate Overview
   - [Functions][docs.rs/ext/functions]
   - [Macros][docs.rs/ext/macros]
 
-**crate version:** 0.0.30 - unstable api
-
 [github.com]:               https://github.com/oberrich/phnt-rs
 [github.com/ci]:            https://github.com/oberrich/phnt-rs/actions/workflows/rust.yml
 [github.com/ci/img]:        https://github.com/oberrich/phnt-rs/actions/workflows/rust.yml/badge.svg

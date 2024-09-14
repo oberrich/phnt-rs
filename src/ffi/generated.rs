@@ -1,12 +1,16 @@
-// Generated at 2024-09-06 06:32:50.616625400 +02:00
+// Generated at 2024-09-14 10:44:40.498218300 +02:00
 #[cfg(not(target_arch = "x86_64"))]
 compile_error!("These bindings can only be used on `x86_64` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.");
+
 use cty;
+pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
+pub use windows_sys::Win32::Foundation::BOOLEAN as BOOLEAN;
+pub use windows_sys::Win32::Foundation::BOOL as BOOL;
 pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
 pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
-pub use windows_sys::Win32::Foundation::BOOL;
-pub use windows_sys::Win32::Foundation::BOOLEAN;
-pub use windows_sys::Win32::Foundation::NTSTATUS;
+
+pub const PHNT_VERSION: u32 = self::PHNT_WIN11_24H2;
+pub const PHNT_MODE: u32 = self::PHNT_MODE_USER;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -89,6 +93,7 @@ where
    }
 }
 pub const INT_ERROR: i32 = -1;
+pub const MAXLONGLONG: u64 = 9223372036854775807;
 pub const MICROSOFT_WINDOWS_WINBASE_H_DEFINE_INTERLOCKED_CPLUSPLUS_OVERLOADS: u32 = 0;
 pub const DESKTOP_ALL_ACCESS: u32 = 983551;
 pub const DESKTOP_GENERIC_READ: u32 = 131137;
@@ -127,8 +132,9 @@ pub const PHNT_WIN11: u32 = 114;
 pub const PHNT_WIN11_22H2: u32 = 115;
 pub const PHNT_WIN11_23H2: u32 = 116;
 pub const PHNT_WIN11_24H2: u32 = 117;
-pub const PHNT_MODE: u32 = 1;
-pub const PHNT_VERSION: u32 = 114;
+pub const MAXUCHAR: u32 = 255;
+pub const MAXUSHORT: u32 = 65535;
+pub const MAXULONG: u32 = 4294967295;
 pub const NT_CUSTOMER_SHIFT: u32 = 29;
 pub const NT_FACILITY_MASK: u32 = 4095;
 pub const NT_FACILITY_SHIFT: u32 = 16;
@@ -470,10 +476,6 @@ pub const DUPLICATE_SAME_ATTRIBUTES: u32 = 4;
 pub const OBJECT_BOUNDARY_DESCRIPTOR_VERSION: u32 = 1;
 pub const PROCESS_SET_PORT: u32 = 2048;
 pub const THREAD_ALERT: u32 = 4;
-pub const GDI_HANDLE_BUFFER_SIZE32: u32 = 34;
-pub const GDI_HANDLE_BUFFER_SIZE64: u32 = 60;
-pub const GDI_HANDLE_BUFFER_SIZE: u32 = 60;
-pub const TLS_EXPANSION_SLOTS: u32 = 1024;
 pub const ACTIVATION_CONTEXT_DATA_FORMAT_WHISTLER: u32 = 1;
 pub const ACTIVATION_CONTEXT_FLAG_NO_INHERIT: u32 = 1;
 pub const ACTIVATION_CONTEXT_DATA_TOC_HEADER_DENSE: u32 = 1;
@@ -572,6 +574,10 @@ pub const KACF_ALLOCDEBUGINFOFORCRITSECTIONS: u32 = 4194304;
 pub const KACF_OLEAUT32ENABLEUNSAFELOADTYPELIBRELATIVE: u32 = 8388608;
 pub const KACF_ALLOWMAXIMIZEDWINDOWGAMMA: u32 = 16777216;
 pub const KACF_DONOTADDTOCACHE: u32 = 2147483648;
+pub const GDI_HANDLE_BUFFER_SIZE32: u32 = 34;
+pub const GDI_HANDLE_BUFFER_SIZE64: u32 = 60;
+pub const GDI_HANDLE_BUFFER_SIZE: u32 = 60;
+pub const TLS_EXPANSION_SLOTS: u32 = 1024;
 pub const GDI_BATCH_BUFFER_SIZE: u32 = 310;
 pub const STATIC_UNICODE_BUFFER_LENGTH: u32 = 261;
 pub const WIN32_CLIENT_INFO_LENGTH: u32 = 62;
@@ -592,27 +598,6 @@ pub const PROCESS_HANDLE_TRACING_MAX_STACKS: u32 = 16;
 pub const PROCESS_HANDLE_TRACE_TYPE_OPEN: u32 = 1;
 pub const PROCESS_HANDLE_TRACE_TYPE_CLOSE: u32 = 2;
 pub const PROCESS_HANDLE_TRACE_TYPE_BADREF: u32 = 3;
-pub const ProcessDEPPolicy: u32 = 0;
-pub const ProcessASLRPolicy: u32 = 1;
-pub const ProcessDynamicCodePolicy: u32 = 2;
-pub const ProcessStrictHandleCheckPolicy: u32 = 3;
-pub const ProcessSystemCallDisablePolicy: u32 = 4;
-pub const ProcessMitigationOptionsMask: u32 = 5;
-pub const ProcessExtensionPointDisablePolicy: u32 = 6;
-pub const ProcessControlFlowGuardPolicy: u32 = 7;
-pub const ProcessSignaturePolicy: u32 = 8;
-pub const ProcessFontDisablePolicy: u32 = 9;
-pub const ProcessImageLoadPolicy: u32 = 10;
-pub const ProcessSystemCallFilterPolicy: u32 = 11;
-pub const ProcessPayloadRestrictionPolicy: u32 = 12;
-pub const ProcessChildProcessPolicy: u32 = 13;
-pub const ProcessSideChannelIsolationPolicy: u32 = 14;
-pub const ProcessUserShadowStackPolicy: u32 = 15;
-pub const ProcessRedirectionTrustPolicy: u32 = 16;
-pub const ProcessUserPointerAuthPolicy: u32 = 17;
-pub const ProcessSEHOPPolicy: u32 = 18;
-pub const ProcessActivationContextTrustPolicy: u32 = 19;
-pub const MaxProcessMitigationPolicy: u32 = 20;
 pub const PROCESS_WORKING_SET_CONTROL_VERSION: u32 = 3;
 pub const PS_PROTECTED_SIGNER_MASK: u32 = 255;
 pub const PS_PROTECTED_AUDIT_MASK: u32 = 8;
@@ -640,7 +625,7 @@ pub const PROCESS_CREATE_FLAGS_LARGE_PAGE_SYSTEM_DLL: u32 = 32;
 pub const PROCESS_CREATE_FLAGS_PROTECTED_PROCESS: u32 = 64;
 pub const PROCESS_CREATE_FLAGS_CREATE_SESSION: u32 = 128;
 pub const PROCESS_CREATE_FLAGS_INHERIT_FROM_PARENT: u32 = 256;
-pub const PROCESS_CREATE_FLAGS_SUSPENDED: u32 = 512;
+pub const PROCESS_CREATE_FLAGS_CREATE_SUSPENDED: u32 = 512;
 pub const PROCESS_CREATE_FLAGS_FORCE_BREAKAWAY: u32 = 1024;
 pub const PROCESS_CREATE_FLAGS_MINIMAL_PROCESS: u32 = 2048;
 pub const PROCESS_CREATE_FLAGS_RELEASE_SECTION: u32 = 4096;
@@ -655,7 +640,7 @@ pub const PROCESS_GET_NEXT_FLAGS_PREVIOUS_PROCESS: u32 = 1;
 pub const STATECHANGE_SET_ATTRIBUTES: u32 = 1;
 pub const QUEUE_USER_APC_FLAGS_NONE: u32 = 0;
 pub const QUEUE_USER_APC_FLAGS_SPECIAL_USER_APC: u32 = 1;
-pub const QUEUE_USER_APC_CALLBACK_DATA_CONTEXT: u32 = 65536;
+pub const QUEUE_USER_APC_FLAGS_CALLBACK_DATA_CONTEXT: u32 = 65536;
 pub const ProcThreadAttributeParentProcess: u32 = 0;
 pub const ProcThreadAttributeExtendedFlags: u32 = 1;
 pub const ProcThreadAttributeHandleList: u32 = 2;
@@ -955,6 +940,11 @@ pub const FILE_ACTION_MODIFIED_STREAM: u32 = 8;
 pub const FILE_ACTION_REMOVED_BY_DELETE: u32 = 9;
 pub const FILE_ACTION_ID_NOT_TUNNELLED: u32 = 10;
 pub const FILE_ACTION_TUNNELLED_ID_COLLISION: u32 = 11;
+pub const FILE_NAME_FLAG_HARDLINK: u32 = 0;
+pub const FILE_NAME_FLAG_NTFS: u32 = 1;
+pub const FILE_NAME_FLAG_DOS: u32 = 2;
+pub const FILE_NAME_FLAG_BOTH: u32 = 3;
+pub const FILE_NAME_FLAGS_UNSPECIFIED: u32 = 128;
 pub const IO_COMPLETION_QUERY_STATE: u32 = 1;
 pub const SYMLINK_FLAG_RELATIVE: u32 = 1;
 pub const SYMLINK_DIRECTORY: u32 = 2147483648;
@@ -1369,6 +1359,7 @@ pub const POWER_REQUEST_SUPPORTED_TYPES_V1: u32 = 3;
 pub const POWER_REQUEST_SUPPORTED_TYPES_V2: u32 = 9;
 pub const POWER_REQUEST_SUPPORTED_TYPES_V3: u32 = 5;
 pub const POWER_REQUEST_SUPPORTED_TYPES_V4: u32 = 6;
+pub const POWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_VERSION: u32 = 1;
 pub const REG_INIT_BOOT_SM: u32 = 0;
 pub const REG_INIT_BOOT_SETUP: u32 = 1;
 pub const REG_INIT_BOOT_ACCEPTED_BASE: u32 = 2;
@@ -1587,6 +1578,11 @@ pub const IMAGE_DVRT_ARM64X_FIXUP_SIZE_4BYTES: u32 = 2;
 pub const IMAGE_DVRT_ARM64X_FIXUP_SIZE_8BYTES: u32 = 3;
 pub const IMAGE_DYNAMIC_RELOCATION_ARM64X: u32 = 6;
 pub const IMAGE_DYNAMIC_RELOCATION_MM_SHARED_USER_DATA_VA: u32 = 2147352576;
+pub const IMAGE_DYNAMIC_RELOCATION_FUNCTION_OVERRIDE: u32 = 7;
+pub const IMAGE_FUNCTION_OVERRIDE_INVALID: u32 = 0;
+pub const IMAGE_FUNCTION_OVERRIDE_X64_REL32: u32 = 1;
+pub const IMAGE_FUNCTION_OVERRIDE_ARM64_BRANCH26: u32 = 2;
+pub const IMAGE_FUNCTION_OVERRIDE_ARM64_THUNK: u32 = 3;
 pub const IMAGE_DLLCHARACTERISTICS_EX_FORWARD_CFI_COMPAT: u32 = 64;
 pub const IMAGE_DLLCHARACTERISTICS_EX_HOTPATCH_COMPATIBLE: u32 = 128;
 pub const SE_MIN_WELL_KNOWN_PRIVILEGE: u32 = 2;
@@ -3107,6 +3103,7 @@ pub struct LIST_ENTRY32 {
    pub Flink: DWORD,
    pub Blink: DWORD,
 }
+pub type PLIST_ENTRY32 = *mut LIST_ENTRY32;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _GUID {
@@ -4111,6 +4108,30 @@ pub enum _HARDWARE_COUNTER_TYPE {
    MaxHardwareCounterType = 1,
 }
 pub use self::_HARDWARE_COUNTER_TYPE as HARDWARE_COUNTER_TYPE;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _PROCESS_MITIGATION_POLICY {
+   ProcessDEPPolicy = 0,
+   ProcessASLRPolicy = 1,
+   ProcessDynamicCodePolicy = 2,
+   ProcessStrictHandleCheckPolicy = 3,
+   ProcessSystemCallDisablePolicy = 4,
+   ProcessMitigationOptionsMask = 5,
+   ProcessExtensionPointDisablePolicy = 6,
+   ProcessControlFlowGuardPolicy = 7,
+   ProcessSignaturePolicy = 8,
+   ProcessFontDisablePolicy = 9,
+   ProcessImageLoadPolicy = 10,
+   ProcessSystemCallFilterPolicy = 11,
+   ProcessPayloadRestrictionPolicy = 12,
+   ProcessChildProcessPolicy = 13,
+   ProcessSideChannelIsolationPolicy = 14,
+   ProcessUserShadowStackPolicy = 15,
+   ProcessRedirectionTrustPolicy = 16,
+   MaxProcessMitigationPolicy = 17,
+}
+pub use self::_PROCESS_MITIGATION_POLICY as PROCESS_MITIGATION_POLICY;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _PROCESS_MITIGATION_ASLR_POLICY {
@@ -4238,82 +4259,6 @@ impl Default for _PROCESS_MITIGATION_ASLR_POLICY {
    }
 }
 pub type PROCESS_MITIGATION_ASLR_POLICY = _PROCESS_MITIGATION_ASLR_POLICY;
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct _PROCESS_MITIGATION_SEHOP_POLICY {
-   pub __bindgen_anon_1: _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1,
-}
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub union _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1 {
-   pub Flags: DWORD,
-   pub __bindgen_anon_1: _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1__bindgen_ty_1,
-}
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1__bindgen_ty_1 {
-   pub _bitfield_align_1: [u32; 0],
-   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize]>,
-}
-impl _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1__bindgen_ty_1 {
-   #[inline]
-   pub fn EnableSehop(&self) -> DWORD {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u32) }
-   }
-   #[inline]
-   pub fn set_EnableSehop(&mut self, val: DWORD) {
-      unsafe {
-         let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(0usize, 1u8, val as u64)
-      }
-   }
-   #[inline]
-   pub fn ReservedFlags(&self) -> DWORD {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
-   }
-   #[inline]
-   pub fn set_ReservedFlags(&mut self, val: DWORD) {
-      unsafe {
-         let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(1usize, 31u8, val as u64)
-      }
-   }
-   #[inline]
-   pub fn new_bitfield_1(
-      EnableSehop: DWORD,
-      ReservedFlags: DWORD,
-   ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
-      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
-      __bindgen_bitfield_unit.set(0usize, 1u8, {
-         let EnableSehop: u32 = unsafe { ::core::mem::transmute(EnableSehop) };
-         EnableSehop as u64
-      });
-      __bindgen_bitfield_unit.set(1usize, 31u8, {
-         let ReservedFlags: u32 = unsafe { ::core::mem::transmute(ReservedFlags) };
-         ReservedFlags as u64
-      });
-      __bindgen_bitfield_unit
-   }
-}
-impl Default for _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1 {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-impl Default for _PROCESS_MITIGATION_SEHOP_POLICY {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type PROCESS_MITIGATION_SEHOP_POLICY = _PROCESS_MITIGATION_SEHOP_POLICY;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY {
@@ -5738,25 +5683,14 @@ impl _PROCESS_MITIGATION_SIDE_CHANNEL_ISOLATION_POLICY__bindgen_ty_1__bindgen_ty
       }
    }
    #[inline]
-   pub fn RestrictCoreSharing(&self) -> DWORD {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 1u8) as u32) }
-   }
-   #[inline]
-   pub fn set_RestrictCoreSharing(&mut self, val: DWORD) {
-      unsafe {
-         let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(4usize, 1u8, val as u64)
-      }
-   }
-   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 27u8) as u32) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 28u8) as u32) }
    }
    #[inline]
    pub fn set_ReservedFlags(&mut self, val: DWORD) {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(5usize, 27u8, val as u64)
+         self._bitfield_1.set(4usize, 28u8, val as u64)
       }
    }
    #[inline]
@@ -5765,7 +5699,6 @@ impl _PROCESS_MITIGATION_SIDE_CHANNEL_ISOLATION_POLICY__bindgen_ty_1__bindgen_ty
       IsolateSecurityDomain: DWORD,
       DisablePageCombine: DWORD,
       SpeculativeStoreBypassDisable: DWORD,
-      RestrictCoreSharing: DWORD,
       ReservedFlags: DWORD,
    ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
       let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
@@ -5787,11 +5720,7 @@ impl _PROCESS_MITIGATION_SIDE_CHANNEL_ISOLATION_POLICY__bindgen_ty_1__bindgen_ty
             unsafe { ::core::mem::transmute(SpeculativeStoreBypassDisable) };
          SpeculativeStoreBypassDisable as u64
       });
-      __bindgen_bitfield_unit.set(4usize, 1u8, {
-         let RestrictCoreSharing: u32 = unsafe { ::core::mem::transmute(RestrictCoreSharing) };
-         RestrictCoreSharing as u64
-      });
-      __bindgen_bitfield_unit.set(5usize, 27u8, {
+      __bindgen_bitfield_unit.set(4usize, 28u8, {
          let ReservedFlags: u32 = unsafe { ::core::mem::transmute(ReservedFlags) };
          ReservedFlags as u64
       });
@@ -6047,83 +5976,6 @@ impl Default for _PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY {
 pub type PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY = _PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY;
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY {
-   pub __bindgen_anon_1: _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1,
-}
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub union _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1 {
-   pub Flags: DWORD,
-   pub __bindgen_anon_1: _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1__bindgen_ty_1,
-}
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1__bindgen_ty_1 {
-   pub _bitfield_align_1: [u32; 0],
-   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize]>,
-}
-impl _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1__bindgen_ty_1 {
-   #[inline]
-   pub fn EnablePointerAuthUserIp(&self) -> DWORD {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u32) }
-   }
-   #[inline]
-   pub fn set_EnablePointerAuthUserIp(&mut self, val: DWORD) {
-      unsafe {
-         let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(0usize, 1u8, val as u64)
-      }
-   }
-   #[inline]
-   pub fn ReservedFlags(&self) -> DWORD {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
-   }
-   #[inline]
-   pub fn set_ReservedFlags(&mut self, val: DWORD) {
-      unsafe {
-         let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(1usize, 31u8, val as u64)
-      }
-   }
-   #[inline]
-   pub fn new_bitfield_1(
-      EnablePointerAuthUserIp: DWORD,
-      ReservedFlags: DWORD,
-   ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
-      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
-      __bindgen_bitfield_unit.set(0usize, 1u8, {
-         let EnablePointerAuthUserIp: u32 =
-            unsafe { ::core::mem::transmute(EnablePointerAuthUserIp) };
-         EnablePointerAuthUserIp as u64
-      });
-      __bindgen_bitfield_unit.set(1usize, 31u8, {
-         let ReservedFlags: u32 = unsafe { ::core::mem::transmute(ReservedFlags) };
-         ReservedFlags as u64
-      });
-      __bindgen_bitfield_unit
-   }
-}
-impl Default for _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1 {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-impl Default for _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY = _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY;
-#[repr(C)]
-#[derive(Copy, Clone)]
 pub struct _PROCESS_MITIGATION_REDIRECTION_TRUST_POLICY {
    pub __bindgen_anon_1: _PROCESS_MITIGATION_REDIRECTION_TRUST_POLICY__bindgen_ty_1,
 }
@@ -6311,9 +6163,7 @@ pub enum _JOBOBJECTINFOCLASS {
    JobObjectReserved23Information = 45,
    JobObjectReserved24Information = 46,
    JobObjectReserved25Information = 47,
-   JobObjectReserved26Information = 48,
-   JobObjectReserved27Information = 49,
-   MaxJobObjectInfoClass = 50,
+   MaxJobObjectInfoClass = 48,
 }
 pub use self::_JOBOBJECTINFOCLASS as JOBOBJECTINFOCLASS;
 #[repr(i32)]
@@ -6711,8 +6561,7 @@ pub enum POWER_INFORMATION_LEVEL {
    UpdateBlackBoxRecorder = 94,
    SessionAllowExternalDmaDevices = 95,
    SendSuspendResumeNotification = 96,
-   BlackBoxRecorderDirectAccessBuffer = 97,
-   PowerInformationLevelMaximum = 98,
+   PowerInformationLevelMaximum = 97,
 }
 #[repr(i32)]
 #[non_exhaustive]
@@ -7303,7 +7152,7 @@ pub struct _RTL_CRITICAL_SECTION_DEBUG {
    pub ContentionCount: DWORD,
    pub Flags: DWORD,
    pub CreatorBackTraceIndexHigh: WORD,
-   pub Identifier: WORD,
+   pub SpareWORD: WORD,
 }
 impl Default for _RTL_CRITICAL_SECTION_DEBUG {
    fn default() -> Self {
@@ -7368,6 +7217,7 @@ impl Default for _RTL_CONDITION_VARIABLE {
    }
 }
 pub type PRTL_CONDITION_VARIABLE = *mut _RTL_CONDITION_VARIABLE;
+pub type PAPCFUNC = ::core::option::Option<unsafe extern "C" fn(Parameter: ULONG_PTR)>;
 pub type PVECTORED_EXCEPTION_HANDLER =
    ::core::option::Option<unsafe extern "C" fn(ExceptionInfo: *mut _EXCEPTION_POINTERS) -> LONG>;
 #[repr(i32)]
@@ -24618,9 +24468,6 @@ pub enum _SYMBOLIC_LINK_INFO_CLASS {
    MaxnSymbolicLinkInfoClass = 3,
 }
 pub use self::_SYMBOLIC_LINK_INFO_CLASS as SYMBOLIC_LINK_INFO_CLASS;
-pub type GDI_HANDLE_BUFFER = [ULONG; 60usize];
-pub type GDI_HANDLE_BUFFER32 = [ULONG; 34usize];
-pub type GDI_HANDLE_BUFFER64 = [ULONG; 60usize];
 #[repr(C)]
 pub struct _PEB_LDR_DATA {
    pub Length: ULONG,
@@ -24678,22 +24525,6 @@ impl Default for _INITIAL_TEB {
 }
 pub type INITIAL_TEB = _INITIAL_TEB;
 pub type PINITIAL_TEB = *mut _INITIAL_TEB;
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct _WOW64_PROCESS {
-   pub Wow64: PVOID,
-}
-impl Default for _WOW64_PROCESS {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type WOW64_PROCESS = _WOW64_PROCESS;
-pub type PWOW64_PROCESS = *mut _WOW64_PROCESS;
 pub type PRTL_USER_PROCESS_PARAMETERS = *mut _RTL_USER_PROCESS_PARAMETERS;
 pub type PSILO_USER_SHARED_DATA = *mut _SILO_USER_SHARED_DATA;
 #[repr(C)]
@@ -25349,6 +25180,9 @@ impl _TELEMETRY_COVERAGE_HEADER__bindgen_ty_1 {
 }
 pub type TELEMETRY_COVERAGE_HEADER = _TELEMETRY_COVERAGE_HEADER;
 pub type PTELEMETRY_COVERAGE_HEADER = *mut _TELEMETRY_COVERAGE_HEADER;
+pub type GDI_HANDLE_BUFFER = [ULONG; 60usize];
+pub type GDI_HANDLE_BUFFER32 = [ULONG; 34usize];
+pub type GDI_HANDLE_BUFFER64 = [ULONG; 60usize];
 #[repr(C)]
 pub struct _PEB {
    pub InheritedAddressSpace: BOOLEAN,
@@ -27766,6 +27600,162 @@ pub type PROCESS_HANDLE_SNAPSHOT_INFORMATION = _PROCESS_HANDLE_SNAPSHOT_INFORMAT
 pub type PPROCESS_HANDLE_SNAPSHOT_INFORMATION = *mut _PROCESS_HANDLE_SNAPSHOT_INFORMATION;
 #[repr(C)]
 #[derive(Copy, Clone)]
+pub struct _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY {
+   pub __bindgen_anon_1: _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1 {
+   pub Flags: ULONG,
+   pub __bindgen_anon_1: _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1__bindgen_ty_1 {
+   pub _bitfield_align_1: [u32; 0],
+   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize]>,
+}
+impl _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1__bindgen_ty_1 {
+   #[inline]
+   pub fn EnablePointerAuthUserIp(&self) -> ULONG {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_EnablePointerAuthUserIp(&mut self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(0usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub fn ReservedFlags(&self) -> ULONG {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
+   }
+   #[inline]
+   pub fn set_ReservedFlags(&mut self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub fn new_bitfield_1(
+      EnablePointerAuthUserIp: ULONG,
+      ReservedFlags: ULONG,
+   ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
+      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
+      __bindgen_bitfield_unit.set(0usize, 1u8, {
+         let EnablePointerAuthUserIp: u32 =
+            unsafe { ::core::mem::transmute(EnablePointerAuthUserIp) };
+         EnablePointerAuthUserIp as u64
+      });
+      __bindgen_bitfield_unit.set(1usize, 31u8, {
+         let ReservedFlags: u32 = unsafe { ::core::mem::transmute(ReservedFlags) };
+         ReservedFlags as u64
+      });
+      __bindgen_bitfield_unit
+   }
+}
+impl Default for _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY = _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY;
+pub type PPROCESS_MITIGATION_USER_POINTER_AUTH_POLICY =
+   *mut _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY;
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct _PROCESS_MITIGATION_SEHOP_POLICY {
+   pub __bindgen_anon_1: _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1 {
+   pub Flags: ULONG,
+   pub __bindgen_anon_1: _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1__bindgen_ty_1 {
+   pub _bitfield_align_1: [u32; 0],
+   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize]>,
+}
+impl _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1__bindgen_ty_1 {
+   #[inline]
+   pub fn EnableSehop(&self) -> ULONG {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_EnableSehop(&mut self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(0usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub fn ReservedFlags(&self) -> ULONG {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
+   }
+   #[inline]
+   pub fn set_ReservedFlags(&mut self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub fn new_bitfield_1(
+      EnableSehop: ULONG,
+      ReservedFlags: ULONG,
+   ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
+      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
+      __bindgen_bitfield_unit.set(0usize, 1u8, {
+         let EnableSehop: u32 = unsafe { ::core::mem::transmute(EnableSehop) };
+         EnableSehop as u64
+      });
+      __bindgen_bitfield_unit.set(1usize, 31u8, {
+         let ReservedFlags: u32 = unsafe { ::core::mem::transmute(ReservedFlags) };
+         ReservedFlags as u64
+      });
+      __bindgen_bitfield_unit
+   }
+}
+impl Default for _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for _PROCESS_MITIGATION_SEHOP_POLICY {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type PROCESS_MITIGATION_SEHOP_POLICY = _PROCESS_MITIGATION_SEHOP_POLICY;
+pub type PPROCESS_MITIGATION_SEHOP_POLICY = *mut _PROCESS_MITIGATION_SEHOP_POLICY;
+#[repr(C)]
+#[derive(Copy, Clone)]
 pub struct _PROCESS_MITIGATION_ACTIVATION_CONTEXT_TRUST_POLICY2 {
    pub __bindgen_anon_1: _PROCESS_MITIGATION_ACTIVATION_CONTEXT_TRUST_POLICY2__bindgen_ty_1,
 }
@@ -27848,7 +27838,7 @@ pub type PPROCESS_MITIGATION_ACTIVATION_CONTEXT_TRUST_POLICY2 =
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _PROCESS_MITIGATION_POLICY_INFORMATION {
-   pub Policy: ULONG,
+   pub Policy: PROCESS_MITIGATION_POLICY,
    pub __bindgen_anon_1: _PROCESS_MITIGATION_POLICY_INFORMATION__bindgen_ty_1,
 }
 #[repr(C)]
@@ -29514,9 +29504,32 @@ pub enum _THREAD_STATE_CHANGE_TYPE {
 }
 pub use self::_THREAD_STATE_CHANGE_TYPE as THREAD_STATE_CHANGE_TYPE;
 pub type PTHREAD_STATE_CHANGE_TYPE = *mut _THREAD_STATE_CHANGE_TYPE;
+#[doc = " A pointer to a function that serves as an APC routine.\n\n @param ApcArgument1 Optional. A pointer to the first argument to be passed to the APC routine.\n @param ApcArgument2 Optional. A pointer to the second argument to be passed to the APC routine.\n @param ApcArgument3 Optional. A pointer to the third argument to be passed to the APC routine.\n @return VOID This function does not return a value."]
 pub type PPS_APC_ROUTINE = ::core::option::Option<
    unsafe extern "C" fn(ApcArgument1: PVOID, ApcArgument2: PVOID, ApcArgument3: PVOID),
 >;
+#[doc = " The APC_CALLBACK_DATA_CONTEXT structure is used to pass information to the APC callback routine."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _APC_CALLBACK_DATA_CONTEXT {
+   pub Parameter: ULONG_PTR,
+   pub ContextRecord: PCONTEXT,
+   pub Reserved0: ULONG_PTR,
+   pub Reserved1: ULONG_PTR,
+}
+impl Default for _APC_CALLBACK_DATA_CONTEXT {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+#[doc = " The APC_CALLBACK_DATA_CONTEXT structure is used to pass information to the APC callback routine."]
+pub type APC_CALLBACK_DATA_CONTEXT = _APC_CALLBACK_DATA_CONTEXT;
+#[doc = " The APC_CALLBACK_DATA_CONTEXT structure is used to pass information to the APC callback routine."]
+pub type PAPC_CALLBACK_DATA_CONTEXT = *mut _APC_CALLBACK_DATA_CONTEXT;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _PROC_THREAD_ATTRIBUTE {
@@ -30597,6 +30610,7 @@ impl Default for _PS_CREATE_INFO {
 }
 pub type PS_CREATE_INFO = _PS_CREATE_INFO;
 pub type PPS_CREATE_INFO = *mut _PS_CREATE_INFO;
+#[doc = " A pointer to a user-defined function that serves as the starting routine for a new thread.\n\n @param ThreadParameter A pointer to a variable to be passed to the thread.\n @return NTSTATUS Successful or errant status."]
 pub type PUSER_THREAD_START_ROUTINE =
    ::core::option::Option<unsafe extern "C" fn(ThreadParameter: PVOID) -> NTSTATUS>;
 #[repr(C)]
@@ -31051,6 +31065,7 @@ pub enum _PSSNT_QUERY_INFORMATION_CLASS {
    PSSNT_QUERY_PERFORMANCE_COUNTERS = 7,
 }
 pub use self::_PSSNT_QUERY_INFORMATION_CLASS as PSSNT_QUERY_INFORMATION_CLASS;
+#[doc = " The NTPSS_MEMORY_BULK_INFORMATION structure is used to query basic memory information in bulk for a process."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _NTPSS_MEMORY_BULK_INFORMATION {
@@ -31067,7 +31082,9 @@ impl Default for _NTPSS_MEMORY_BULK_INFORMATION {
       }
    }
 }
+#[doc = " The NTPSS_MEMORY_BULK_INFORMATION structure is used to query basic memory information in bulk for a process."]
 pub type NTPSS_MEMORY_BULK_INFORMATION = _NTPSS_MEMORY_BULK_INFORMATION;
+#[doc = " The NTPSS_MEMORY_BULK_INFORMATION structure is used to query basic memory information in bulk for a process."]
 pub type PNTPSS_MEMORY_BULK_INFORMATION = *mut _NTPSS_MEMORY_BULK_INFORMATION;
 #[repr(i32)]
 #[non_exhaustive]
@@ -33382,6 +33399,52 @@ pub enum _DIRECTORY_NOTIFY_INFORMATION_CLASS {
 }
 pub use self::_DIRECTORY_NOTIFY_INFORMATION_CLASS as DIRECTORY_NOTIFY_INFORMATION_CLASS;
 pub type PDIRECTORY_NOTIFY_INFORMATION_CLASS = *mut _DIRECTORY_NOTIFY_INFORMATION_CLASS;
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct _FILE_NOTIFY_FULL_INFORMATION {
+   pub NextEntryOffset: ULONG,
+   pub Action: ULONG,
+   pub CreationTime: LARGE_INTEGER,
+   pub LastModificationTime: LARGE_INTEGER,
+   pub LastChangeTime: LARGE_INTEGER,
+   pub LastAccessTime: LARGE_INTEGER,
+   pub AllocatedLength: LARGE_INTEGER,
+   pub FileSize: LARGE_INTEGER,
+   pub FileAttributes: ULONG,
+   pub __bindgen_anon_1: _FILE_NOTIFY_FULL_INFORMATION__bindgen_ty_1,
+   pub FileId: LARGE_INTEGER,
+   pub ParentFileId: LARGE_INTEGER,
+   pub FileNameLength: USHORT,
+   pub FileNameFlags: BYTE,
+   pub Reserved: BYTE,
+   pub FileName: [WCHAR; 1usize],
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union _FILE_NOTIFY_FULL_INFORMATION__bindgen_ty_1 {
+   pub ReparsePointTag: ULONG,
+   pub EaSize: ULONG,
+}
+impl Default for _FILE_NOTIFY_FULL_INFORMATION__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for _FILE_NOTIFY_FULL_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type FILE_NOTIFY_FULL_INFORMATION = _FILE_NOTIFY_FULL_INFORMATION;
+pub type PFILE_NOTIFY_FULL_INFORMATION = *mut _FILE_NOTIFY_FULL_INFORMATION;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -37538,6 +37601,7 @@ pub struct _KEY_FLAGS_INFORMATION {
 }
 pub type KEY_FLAGS_INFORMATION = _KEY_FLAGS_INFORMATION;
 pub type PKEY_FLAGS_INFORMATION = *mut _KEY_FLAGS_INFORMATION;
+#[doc = " The KEY_VIRTUALIZATION_INFORMATION structure contains information about the virtualization state of a key.\n\n The flags include:\n - VirtualizationCandidate: The key is part of the virtualization namespace scope (only HKLM\\Software for now).\n - VirtualizationEnabled: Virtualization is enabled on this key. Can be 1 only if VirtualizationCandidate is 1.\n - VirtualTarget: The key is a virtual key. Can be 1 only if VirtualizationCandidate and VirtualizationEnabled are 0. Valid only on the virtual store key handles.\n - VirtualStore: The key is a part of the virtual store path. Valid only on the virtual store key handles.\n - VirtualSource: The key has ever been virtualized, can be 1 only if VirtualizationCandidate is 1.\n - Reserved: Reserved bits."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _KEY_VIRTUALIZATION_INFORMATION {
@@ -37649,8 +37713,11 @@ impl _KEY_VIRTUALIZATION_INFORMATION {
       __bindgen_bitfield_unit
    }
 }
+#[doc = " The KEY_VIRTUALIZATION_INFORMATION structure contains information about the virtualization state of a key.\n\n The flags include:\n - VirtualizationCandidate: The key is part of the virtualization namespace scope (only HKLM\\Software for now).\n - VirtualizationEnabled: Virtualization is enabled on this key. Can be 1 only if VirtualizationCandidate is 1.\n - VirtualTarget: The key is a virtual key. Can be 1 only if VirtualizationCandidate and VirtualizationEnabled are 0. Valid only on the virtual store key handles.\n - VirtualStore: The key is a part of the virtual store path. Valid only on the virtual store key handles.\n - VirtualSource: The key has ever been virtualized, can be 1 only if VirtualizationCandidate is 1.\n - Reserved: Reserved bits."]
 pub type KEY_VIRTUALIZATION_INFORMATION = _KEY_VIRTUALIZATION_INFORMATION;
+#[doc = " The KEY_VIRTUALIZATION_INFORMATION structure contains information about the virtualization state of a key.\n\n The flags include:\n - VirtualizationCandidate: The key is part of the virtualization namespace scope (only HKLM\\Software for now).\n - VirtualizationEnabled: Virtualization is enabled on this key. Can be 1 only if VirtualizationCandidate is 1.\n - VirtualTarget: The key is a virtual key. Can be 1 only if VirtualizationCandidate and VirtualizationEnabled are 0. Valid only on the virtual store key handles.\n - VirtualStore: The key is a part of the virtual store path. Valid only on the virtual store key handles.\n - VirtualSource: The key has ever been virtualized, can be 1 only if VirtualizationCandidate is 1.\n - Reserved: Reserved bits."]
 pub type PKEY_VIRTUALIZATION_INFORMATION = *mut _KEY_VIRTUALIZATION_INFORMATION;
+#[doc = " The KEY_TRUST_INFORMATION structure contains information about the trust status of a key.\n\n The flags include:\n - TrustedKey: Indicates whether the key is trusted. When set, this flag signifies that the key is considered\n   to be secure and reliable.\n - Reserved: Reserved bits."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _KEY_TRUST_INFORMATION {
@@ -37697,8 +37764,11 @@ impl _KEY_TRUST_INFORMATION {
       __bindgen_bitfield_unit
    }
 }
+#[doc = " The KEY_TRUST_INFORMATION structure contains information about the trust status of a key.\n\n The flags include:\n - TrustedKey: Indicates whether the key is trusted. When set, this flag signifies that the key is considered\n   to be secure and reliable.\n - Reserved: Reserved bits."]
 pub type KEY_TRUST_INFORMATION = _KEY_TRUST_INFORMATION;
+#[doc = " The KEY_TRUST_INFORMATION structure contains information about the trust status of a key.\n\n The flags include:\n - TrustedKey: Indicates whether the key is trusted. When set, this flag signifies that the key is considered\n   to be secure and reliable.\n - Reserved: Reserved bits."]
 pub type PKEY_TRUST_INFORMATION = *mut _KEY_TRUST_INFORMATION;
+#[doc = " The KEY_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n   that the key has been deleted but not yet purged from the registry. It is used to maintain the\n   integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n   indicates that the key layer should replace the local key's information, effectively overriding\n   any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n   indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n   settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n   that the class information of the key layer is inherited from its parent key, rather than being\n   explicitly defined.\n - Reserved: Reserved bits."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _KEY_LAYER_INFORMATION {
@@ -37793,7 +37863,9 @@ impl _KEY_LAYER_INFORMATION {
       __bindgen_bitfield_unit
    }
 }
+#[doc = " The KEY_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n   that the key has been deleted but not yet purged from the registry. It is used to maintain the\n   integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n   indicates that the key layer should replace the local key's information, effectively overriding\n   any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n   indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n   settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n   that the class information of the key layer is inherited from its parent key, rather than being\n   explicitly defined.\n - Reserved: Reserved bits."]
 pub type KEY_LAYER_INFORMATION = _KEY_LAYER_INFORMATION;
+#[doc = " The KEY_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n   that the key has been deleted but not yet purged from the registry. It is used to maintain the\n   integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n   indicates that the key layer should replace the local key's information, effectively overriding\n   any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n   indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n   settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n   that the class information of the key layer is inherited from its parent key, rather than being\n   explicitly defined.\n - Reserved: Reserved bits."]
 pub type PKEY_LAYER_INFORMATION = *mut _KEY_LAYER_INFORMATION;
 #[repr(i32)]
 #[non_exhaustive]
@@ -37809,6 +37881,7 @@ pub enum _KEY_SET_INFORMATION_CLASS {
    MaxKeySetInfoClass = 7,
 }
 pub use self::_KEY_SET_INFORMATION_CLASS as KEY_SET_INFORMATION_CLASS;
+#[doc = " Structure representing the last write time of a registry key.\n\n The values include:\n - LastWriteTime: Contains the timestamp of the last write operation performed on a registry key."]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _KEY_WRITE_TIME_INFORMATION {
@@ -37823,22 +37896,31 @@ impl Default for _KEY_WRITE_TIME_INFORMATION {
       }
    }
 }
+#[doc = " Structure representing the last write time of a registry key.\n\n The values include:\n - LastWriteTime: Contains the timestamp of the last write operation performed on a registry key."]
 pub type KEY_WRITE_TIME_INFORMATION = _KEY_WRITE_TIME_INFORMATION;
+#[doc = " Structure representing the last write time of a registry key.\n\n The values include:\n - LastWriteTime: Contains the timestamp of the last write operation performed on a registry key."]
 pub type PKEY_WRITE_TIME_INFORMATION = *mut _KEY_WRITE_TIME_INFORMATION;
+#[doc = " The KEY_WOW64_FLAGS_INFORMATION structure contains information about the WOW64 flags for a key.\n\n The fields include:\n - UserFlags: A set of user-defined flags associated with the key. These flags are used to store\n   additional information about the key in the context of WOW64 (Windows 32-bit on Windows 64-bit)."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _KEY_WOW64_FLAGS_INFORMATION {
    pub UserFlags: ULONG,
 }
+#[doc = " The KEY_WOW64_FLAGS_INFORMATION structure contains information about the WOW64 flags for a key.\n\n The fields include:\n - UserFlags: A set of user-defined flags associated with the key. These flags are used to store\n   additional information about the key in the context of WOW64 (Windows 32-bit on Windows 64-bit)."]
 pub type KEY_WOW64_FLAGS_INFORMATION = _KEY_WOW64_FLAGS_INFORMATION;
+#[doc = " The KEY_WOW64_FLAGS_INFORMATION structure contains information about the WOW64 flags for a key.\n\n The fields include:\n - UserFlags: A set of user-defined flags associated with the key. These flags are used to store\n   additional information about the key in the context of WOW64 (Windows 32-bit on Windows 64-bit)."]
 pub type PKEY_WOW64_FLAGS_INFORMATION = *mut _KEY_WOW64_FLAGS_INFORMATION;
+#[doc = " The KEY_HANDLE_TAGS_INFORMATION structure contains information about the handle tags for a key.\n\n The fields include:\n - HandleTags: A set of tags associated with the key handle. These tags are used to store additional\n   metadata or state information about the key handle."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _KEY_HANDLE_TAGS_INFORMATION {
    pub HandleTags: ULONG,
 }
+#[doc = " The KEY_HANDLE_TAGS_INFORMATION structure contains information about the handle tags for a key.\n\n The fields include:\n - HandleTags: A set of tags associated with the key handle. These tags are used to store additional\n   metadata or state information about the key handle."]
 pub type KEY_HANDLE_TAGS_INFORMATION = _KEY_HANDLE_TAGS_INFORMATION;
+#[doc = " The KEY_HANDLE_TAGS_INFORMATION structure contains information about the handle tags for a key.\n\n The fields include:\n - HandleTags: A set of tags associated with the key handle. These tags are used to store additional\n   metadata or state information about the key handle."]
 pub type PKEY_HANDLE_TAGS_INFORMATION = *mut _KEY_HANDLE_TAGS_INFORMATION;
+#[doc = " The KEY_SET_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n   that the key has been deleted but not yet purged from the registry. It is used to maintain the\n   integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n   indicates that the key layer should replace the local key's information, effectively overriding\n   any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n   indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n   settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n   that the class information of the key layer is inherited from its parent key, rather than being\n   explicitly defined.\n - Reserved: Reserved bits."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _KEY_SET_LAYER_INFORMATION {
@@ -37933,14 +38015,19 @@ impl _KEY_SET_LAYER_INFORMATION {
       __bindgen_bitfield_unit
    }
 }
+#[doc = " The KEY_SET_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n   that the key has been deleted but not yet purged from the registry. It is used to maintain the\n   integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n   indicates that the key layer should replace the local key's information, effectively overriding\n   any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n   indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n   settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n   that the class information of the key layer is inherited from its parent key, rather than being\n   explicitly defined.\n - Reserved: Reserved bits."]
 pub type KEY_SET_LAYER_INFORMATION = _KEY_SET_LAYER_INFORMATION;
+#[doc = " The KEY_SET_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n   that the key has been deleted but not yet purged from the registry. It is used to maintain the\n   integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n   indicates that the key layer should replace the local key's information, effectively overriding\n   any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n   indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n   settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n   that the class information of the key layer is inherited from its parent key, rather than being\n   explicitly defined.\n - Reserved: Reserved bits."]
 pub type PKEY_SET_LAYER_INFORMATION = *mut _KEY_SET_LAYER_INFORMATION;
+#[doc = " The KEY_CONTROL_FLAGS_INFORMATION structure contains control flags for a key.\n\n The fields include:\n - ControlFlags: A set of control flags associated with the key. These flags are used to store\n   additional control information about the key, which can affect its behavior or state."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _KEY_CONTROL_FLAGS_INFORMATION {
    pub ControlFlags: ULONG,
 }
+#[doc = " The KEY_CONTROL_FLAGS_INFORMATION structure contains control flags for a key.\n\n The fields include:\n - ControlFlags: A set of control flags associated with the key. These flags are used to store\n   additional control information about the key, which can affect its behavior or state."]
 pub type KEY_CONTROL_FLAGS_INFORMATION = _KEY_CONTROL_FLAGS_INFORMATION;
+#[doc = " The KEY_CONTROL_FLAGS_INFORMATION structure contains control flags for a key.\n\n The fields include:\n - ControlFlags: A set of control flags associated with the key. These flags are used to store\n   additional control information about the key, which can affect its behavior or state."]
 pub type PKEY_CONTROL_FLAGS_INFORMATION = *mut _KEY_CONTROL_FLAGS_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -38316,9 +38403,9 @@ pub struct _VR_LOAD_DIFFERENCING_HIVE {
    pub NextLayerIsHost: ULONG,
    pub Flags: ULONG,
    pub LoadFlags: ULONG,
-   pub KeyPathLength: WORD,
-   pub HivePathLength: WORD,
-   pub NextLayerKeyPathLength: WORD,
+   pub KeyPathLength: USHORT,
+   pub HivePathLength: USHORT,
+   pub NextLayerKeyPathLength: USHORT,
    pub FileAccessToken: HANDLE,
    pub Strings: [WCHAR; 1usize],
 }
@@ -38337,8 +38424,8 @@ pub type PVR_LOAD_DIFFERENCING_HIVE = *mut _VR_LOAD_DIFFERENCING_HIVE;
 #[derive(Debug, Copy, Clone)]
 pub struct _VR_CREATE_NAMESPACE_NODE {
    pub Job: HANDLE,
-   pub ContainerPathLength: WORD,
-   pub HostPathLength: WORD,
+   pub ContainerPathLength: USHORT,
+   pub HostPathLength: USHORT,
    pub Flags: ULONG,
    pub AccessMask: ACCESS_MASK,
    pub Strings: [WCHAR; 1usize],
@@ -38376,8 +38463,8 @@ pub type PVR_MODIFY_FLAGS = *mut _VR_MODIFY_FLAGS;
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _NAMESPACE_NODE_DATA {
    pub AccessMask: ACCESS_MASK,
-   pub ContainerPathLength: WORD,
-   pub HostPathLength: WORD,
+   pub ContainerPathLength: USHORT,
+   pub HostPathLength: USHORT,
    pub Flags: ULONG,
    pub Strings: [WCHAR; 1usize],
 }
@@ -38455,9 +38542,9 @@ pub type PVR_GET_VIRTUAL_ROOT_RESULT = *mut _VR_GET_VIRTUAL_ROOT_RESULT;
 pub struct _VR_LOAD_DIFFERENCING_HIVE_FOR_HOST {
    pub LoadFlags: ULONG,
    pub Flags: ULONG,
-   pub KeyPathLength: WORD,
-   pub HivePathLength: WORD,
-   pub NextLayerKeyPathLength: WORD,
+   pub KeyPathLength: USHORT,
+   pub HivePathLength: USHORT,
+   pub NextLayerKeyPathLength: USHORT,
    pub FileAccessToken: HANDLE,
    pub Strings: [WCHAR; 1usize],
 }
@@ -38476,7 +38563,7 @@ pub type PVR_LOAD_DIFFERENCING_HIVE_FOR_HOST = *mut _VR_LOAD_DIFFERENCING_HIVE_F
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _VR_UNLOAD_DIFFERENCING_HIVE_FOR_HOST {
    pub Reserved: ULONG,
-   pub TargetKeyPathLength: WORD,
+   pub TargetKeyPathLength: USHORT,
    pub TargetKeyPath: [WCHAR; 1usize],
 }
 pub type VR_UNLOAD_DIFFERENCING_HIVE_FOR_HOST = _VR_UNLOAD_DIFFERENCING_HIVE_FOR_HOST;
@@ -38895,7 +38982,7 @@ pub struct _RTL_USER_PROCESS_PARAMETERS {
    pub LoaderThreads: ULONG,
    pub RedirectionDllName: UNICODE_STRING,
    pub HeapPartitionName: UNICODE_STRING,
-   pub DefaultThreadpoolCpuSetMasks: ULONG_PTR,
+   pub DefaultThreadpoolCpuSetMasks: PULONGLONG,
    pub DefaultThreadpoolCpuSetMaskCount: ULONG,
    pub DefaultThreadpoolThreadMaximum: ULONG,
    pub HeapMemoryTypeMask: ULONG,
@@ -40979,7 +41066,8 @@ pub enum _RTL_BSD_ITEM_TYPE {
    RtlBsdItemChecksum = 15,
    RtlBsdPowerTransitionExtension = 16,
    RtlBsdItemFeatureConfigurationState = 17,
-   RtlBsdItemMax = 18,
+   RtlBsdItemRevocationListInfo = 18,
+   RtlBsdItemMax = 19,
 }
 pub use self::_RTL_BSD_ITEM_TYPE as RTL_BSD_ITEM_TYPE;
 #[repr(C)]
@@ -42177,6 +42265,41 @@ pub type IMAGE_DVRT_ARM64X_DELTA_FIXUP_RECORD = _IMAGE_DVRT_ARM64X_DELTA_FIXUP_R
 pub type PIMAGE_DVRT_ARM64X_DELTA_FIXUP_RECORD = *mut _IMAGE_DVRT_ARM64X_DELTA_FIXUP_RECORD;
 pub type UNALIGNED_PIMAGE_THUNK_DATA32 = *mut IMAGE_THUNK_DATA32;
 pub type UNALIGNED_PIMAGE_THUNK_DATA64 = *mut IMAGE_THUNK_DATA64;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _IMAGE_FUNCTION_OVERRIDE_HEADER {
+   pub FuncOverrideSize: ULONG,
+}
+pub type IMAGE_FUNCTION_OVERRIDE_HEADER = _IMAGE_FUNCTION_OVERRIDE_HEADER;
+pub type PIMAGE_FUNCTION_OVERRIDE_HEADER = *mut IMAGE_FUNCTION_OVERRIDE_HEADER;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _IMAGE_BDD_INFO {
+   pub Version: ULONG,
+   pub BDDSize: ULONG,
+}
+pub type IMAGE_BDD_INFO = _IMAGE_BDD_INFO;
+pub type PIMAGE_BDD_INFO = *mut _IMAGE_BDD_INFO;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _IMAGE_FUNCTION_OVERRIDE_DYNAMIC_RELOCATION {
+   pub OriginalRva: ULONG,
+   pub BDDOffset: ULONG,
+   pub RvaSize: ULONG,
+   pub BaseRelocSize: ULONG,
+}
+pub type IMAGE_FUNCTION_OVERRIDE_DYNAMIC_RELOCATION = _IMAGE_FUNCTION_OVERRIDE_DYNAMIC_RELOCATION;
+pub type PIMAGE_FUNCTION_OVERRIDE_DYNAMIC_RELOCATION =
+   *mut _IMAGE_FUNCTION_OVERRIDE_DYNAMIC_RELOCATION;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _IMAGE_BDD_DYNAMIC_RELOCATION {
+   pub Left: USHORT,
+   pub Right: USHORT,
+   pub Value: ULONG,
+}
+pub type IMAGE_BDD_DYNAMIC_RELOCATION = _IMAGE_BDD_DYNAMIC_RELOCATION;
+pub type PIMAGE_BDD_DYNAMIC_RELOCATION = *mut _IMAGE_BDD_DYNAMIC_RELOCATION;
 #[repr(C)]
 pub struct _TOKEN_SECURITY_ATTRIBUTE_FQBN_VALUE {
    pub Version: ULONG64,
@@ -52971,6 +53094,49 @@ extern "C" {
       Level: ULONG,
       ResourceDirectory: *mut PIMAGE_RESOURCE_DIRECTORY,
    ) -> NTSTATUS;
+   #[doc = " The LdrResFindResource function finds a resource in a DLL.\n\n @param DllHandle A handle to the DLL.\n @param Type The type of the resource.\n @param Name The name of the resource.\n @param Language The language of the resource.\n @param ResourceBuffer An optional pointer to receive the resource buffer.\n @param ResourceLength An optional pointer to receive the resource length.\n @param CultureName An optional buffer to receive the culture name.\n @param CultureNameLength An optional pointer to receive the length of the culture name.\n @param Flags Flags for the resource search.\n @return NTSTATUS Successful or errant status."]
+   pub fn LdrResFindResource(
+      DllHandle: PVOID,
+      Type: ULONG_PTR,
+      Name: ULONG_PTR,
+      Language: ULONG_PTR,
+      ResourceBuffer: *mut PVOID,
+      ResourceLength: PULONG,
+      CultureName: PVOID,
+      CultureNameLength: PULONG,
+      Flags: ULONG,
+   ) -> NTSTATUS;
+   #[doc = " The LdrResFindResourceDirectory function finds a resource directory in a DLL.\n\n @param DllHandle A handle to the DLL.\n @param Type The type of the resource.\n @param Name The name of the resource.\n @param ResourceDirectory An optional pointer to receive the resource directory.\n @param CultureName An optional buffer to receive the culture name.\n @param CultureNameLength An optional pointer to receive the length of the culture name.\n @param Flags Flags for the resource search.\n @return NTSTATUS Successful or errant status."]
+   pub fn LdrResFindResourceDirectory(
+      DllHandle: PVOID,
+      Type: ULONG_PTR,
+      Name: ULONG_PTR,
+      ResourceDirectory: *mut PIMAGE_RESOURCE_DIRECTORY,
+      CultureName: PVOID,
+      CultureNameLength: PULONG,
+      Flags: ULONG,
+   ) -> NTSTATUS;
+   #[doc = " The LdrResSearchResource function searches for a resource in a DLL.\n\n @param DllHandle A handle to the DLL.\n @param ResourceInfo A pointer to the resource information.\n @param Level The level of the resource.\n @param Flags Flags for the resource search.\n @param ResourceBuffer An optional pointer to receive the resource buffer.\n @param ResourceLength An optional pointer to receive the resource length.\n @param CultureName An optional buffer to receive the culture name.\n @param CultureNameLength An optional pointer to receive the length of the culture name.\n @return NTSTATUS Successful or errant status."]
+   pub fn LdrResSearchResource(
+      DllHandle: PVOID,
+      ResourceInfo: PLDR_RESOURCE_INFO,
+      Level: ULONG,
+      Flags: ULONG,
+      ResourceBuffer: *mut PVOID,
+      ResourceLength: PSIZE_T,
+      CultureName: PVOID,
+      CultureNameLength: PULONG,
+   ) -> NTSTATUS;
+   #[doc = " The LdrResGetRCConfig function retrieves the RC configuration for a DLL.\n\n @param DllHandle A handle to the DLL.\n @param Length The length of the configuration buffer.\n @param Config A buffer to receive the configuration.\n @param Flags Flags for the operation.\n @param AlternateResource Indicates if an alternate resource should be loaded.\n @return NTSTATUS Successful or errant status."]
+   pub fn LdrResGetRCConfig(
+      DllHandle: PVOID,
+      Length: SIZE_T,
+      Config: PVOID,
+      Flags: ULONG,
+      AlternateResource: BOOLEAN,
+   ) -> NTSTATUS;
+   #[doc = " The LdrResRelease function releases a resource in a DLL.\n\n @param DllHandle A handle to the DLL.\n @param CultureNameOrId An optional culture name or ID.\n @param Flags Flags for the operation.\n @return NTSTATUS Successful or errant status."]
+   pub fn LdrResRelease(DllHandle: PVOID, CultureNameOrId: ULONG_PTR, Flags: ULONG) -> NTSTATUS;
    pub fn LdrEnumResources(
       DllHandle: PVOID,
       ResourceInfo: PLDR_RESOURCE_INFO,
@@ -53062,6 +53228,7 @@ extern "C" {
    pub fn LdrShutdownProcess() -> !;
    pub fn LdrShutdownThread() -> !;
    pub fn LdrSetImplicitPathOptions(ImplicitPathOptions: ULONG) -> NTSTATUS;
+   #[doc = " The LdrControlFlowGuardEnforced function checks if Control Flow Guard is enforced.\n\n @return BOOLEAN TRUE if Control Flow Guard is enforced, FALSE otherwise."]
    pub fn LdrControlFlowGuardEnforced() -> BOOLEAN;
    pub fn LdrIsModuleSxsRedirected(DllHandle: PVOID) -> BOOLEAN;
    pub fn LdrUpdatePackageSearchPath(SearchPathA: PWSTR) -> NTSTATUS;
@@ -53591,6 +53758,12 @@ extern "C" {
    pub fn BcdCreateStore(BcdFilePath: UNICODE_STRING, BcdStoreHandle: PHANDLE) -> NTSTATUS;
    #[doc = " Exports the BCD store to a file.\n\n @param BcdFilePath The file path to export the BCD store.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdExportStore(BcdFilePath: UNICODE_STRING) -> NTSTATUS;
+   #[doc = " Exports the BCD store to a file with additional flags.\n\n @param BcdStoreHandle The handle to the BCD store.\n @param Flags The flags for exporting the store.\n @param BcdFilePath The file path to export the BCD store.\n @return NTSTATUS Successful or errant status."]
+   pub fn BcdExportStoreEx(
+      BcdStoreHandle: HANDLE,
+      Flags: ULONG,
+      BcdFilePath: UNICODE_STRING,
+   ) -> NTSTATUS;
    #[doc = " Imports a BCD store from a file.\n\n @param BcdFilePath The file path to import the BCD store.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdImportStore(BcdFilePath: UNICODE_STRING) -> NTSTATUS;
    #[doc = " Imports a BCD store from a file with additional flags.\n\n @param BcdFilePath The file path to import the BCD store.\n @param BcdImportFlags The flags for importing the store.\n @return NTSTATUS Successful or errant status."]
@@ -54137,6 +54310,7 @@ extern "C" {
    pub fn NtSuspendProcess(ProcessHandle: HANDLE) -> NTSTATUS;
    pub fn NtResumeProcess(ProcessHandle: HANDLE) -> NTSTATUS;
    pub static mut __ImageBase: IMAGE_DOS_HEADER;
+   #[doc = " Retrieves information about the specified process.\n\n @param ProcessHandle A handle to the process.\n @param ProcessInformationClass The type of process information to be retrieved.\n @param ProcessInformation A pointer to a buffer that receives the process information.\n @param ProcessInformationLength The size of the buffer pointed to by the ProcessInformation parameter.\n @param ReturnLength An optional pointer to a variable that receives the size of the data returned.\n @return NTSTATUS Successful or errant status."]
    pub fn NtQueryInformationProcess(
       ProcessHandle: HANDLE,
       ProcessInformationClass: PROCESSINFOCLASS,
@@ -54144,6 +54318,7 @@ extern "C" {
       ProcessInformationLength: ULONG,
       ReturnLength: PULONG,
    ) -> NTSTATUS;
+   #[doc = " Retrieves a handle to the next process in the system.\n\n @param ProcessHandle An optional handle to the current process.\n @param DesiredAccess The access rights desired for the new process handle.\n @param HandleAttributes The attributes for the new process handle.\n @param Flags Flags that modify the behavior of the function.\n @param NewProcessHandle A pointer to a variable that receives the handle to the next process.\n @return NTSTATUS Successful or errant status."]
    pub fn NtGetNextProcess(
       ProcessHandle: HANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -54159,6 +54334,7 @@ extern "C" {
       Flags: ULONG,
       NewThreadHandle: PHANDLE,
    ) -> NTSTATUS;
+   #[doc = " Sets information for the specified process.\n\n @param ProcessHandle A handle to the process.\n @param ProcessInformationClass The type of process information to be set.\n @param ProcessInformation A pointer to a buffer that contains the process information.\n @param ProcessInformationLength The size of the buffer pointed to by the ProcessInformation parameter.\n @return NTSTATUS Successful or errant status."]
    pub fn NtSetInformationProcess(
       ProcessHandle: HANDLE,
       ProcessInformationClass: PROCESSINFOCLASS,
@@ -54172,6 +54348,7 @@ extern "C" {
       ProcessHandle: HANDLE,
       Reserved: ULONG64,
    ) -> NTSTATUS;
+   #[doc = " Changes the suspension state of a process.\n\n @param ProcessStateChangeHandle A handle to the process state change object.\n @param ProcessHandle A handle to the process.\n @param StateChangeType The type of state change.\n @param ExtendedInformation Optional extended information.\n @param ExtendedInformationLength The length of the extended information.\n @param Reserved Reserved for future use.\n @return NTSTATUS Successful or errant status."]
    pub fn NtChangeProcessState(
       ProcessStateChangeHandle: HANDLE,
       ProcessHandle: HANDLE,
@@ -54180,6 +54357,7 @@ extern "C" {
       ExtendedInformationLength: SIZE_T,
       Reserved: ULONG64,
    ) -> NTSTATUS;
+   #[doc = " Creates a state change handle for changing the suspension state of a process.\n\n @param ProcessStateChangeHandle A pointer to a variable that receives the handle.\n @param DesiredAccess The access rights desired for the handle.\n @param ObjectAttributes Optional attributes for the handle.\n @param ProcessHandle A handle to the process.\n @param Reserved Reserved for future use.\n @return NTSTATUS Successful or errant status."]
    pub fn NtCreateThreadStateChange(
       ThreadStateChangeHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -54214,9 +54392,13 @@ extern "C" {
    pub fn NtTerminateThread(ThreadHandle: HANDLE, ExitStatus: NTSTATUS) -> NTSTATUS;
    pub fn NtSuspendThread(ThreadHandle: HANDLE, PreviousSuspendCount: PULONG) -> NTSTATUS;
    pub fn NtResumeThread(ThreadHandle: HANDLE, PreviousSuspendCount: PULONG) -> NTSTATUS;
+   #[doc = " Retrieves the number of the current processor.\n\n @return ULONG The number of the current processor."]
    pub fn NtGetCurrentProcessorNumber() -> ULONG;
+   #[doc = " Retrieves the number of the current processor.\n\n @param ProcessorNumber An optional pointer to a PROCESSOR_NUMBER structure that receives the processor number.\n @return ULONG The number of the current processor."]
    pub fn NtGetCurrentProcessorNumberEx(ProcessorNumber: PPROCESSOR_NUMBER) -> ULONG;
+   #[doc = " Retrieves the context of the specified thread.\n\n @param ThreadHandle A handle to the thread.\n @param ThreadContext A pointer to a CONTEXT structure that receives the thread context.\n @return NTSTATUS Successful or errant status."]
    pub fn NtGetContextThread(ThreadHandle: HANDLE, ThreadContext: PCONTEXT) -> NTSTATUS;
+   #[doc = " Sets the context of the specified thread.\n\n @param ThreadHandle A handle to the thread.\n @param ThreadContext A pointer to a CONTEXT structure that specifies the thread context.\n @return NTSTATUS Successful or errant status."]
    pub fn NtSetContextThread(ThreadHandle: HANDLE, ThreadContext: PCONTEXT) -> NTSTATUS;
    pub fn NtQueryInformationThread(
       ThreadHandle: HANDLE,
@@ -54248,6 +54430,9 @@ extern "C" {
       Entry1Low: ULONG,
       Entry1Hi: ULONG,
    ) -> NTSTATUS;
+   #[doc = " Dispatches the Asynchronous Procedure Call (APC) from the NtQueueApc* functions to the specified routine.\n\n @param ApcRoutine A pointer to the APC routine to be executed.\n @param Parameter Optional. A pointer to a parameter to be passed to the APC routine.\n @param ActxContext Optional. A handle to an activation context.\n @return VOID This function does not return a value."]
+   pub fn RtlDispatchAPC(ApcRoutine: PAPCFUNC, Parameter: PVOID, ActxContext: HANDLE);
+   #[doc = " Queues an APC (Asynchronous Procedure Call) to a thread.\n\n @param ThreadHandle Handle to the thread to which the APC is to be queued.\n @param ApcRoutine A pointer to the RtlDispatchAPC function or custom APC routine to be executed.\n @param ApcArgument1 Optional first argument to be passed to the APC routine.\n @param ApcArgument2 Optional second argument to be passed to the APC routine.\n @param ApcArgument3 Optional third argument to be passed to the APC routine.\n @return NTSTATUS Successful or errant status.\n @remarks The APC will be executed in the context of the specified thread when the thread enters an alertable wait state or when any\n process calls the NtTestAlert, NtAlertThread, NtAlertResumeThread or NtAlertThreadByThreadId functions."]
    pub fn NtQueueApcThread(
       ThreadHandle: HANDLE,
       ApcRoutine: PPS_APC_ROUTINE,
@@ -54255,6 +54440,7 @@ extern "C" {
       ApcArgument2: PVOID,
       ApcArgument3: PVOID,
    ) -> NTSTATUS;
+   #[doc = " Queues an APC (Asynchronous Procedure Call) to a thread.\n\n @param ThreadHandle Handle to the thread to which the APC is to be queued.\n @param ReserveHandle Optional handle to a reserve object. This can be QUEUE_USER_APC_SPECIAL_USER_APC or a handle returned by NtAllocateReserveObject.\n @param ApcRoutine A pointer to the RtlDispatchAPC function or custom APC routine to be executed.\n @param ApcArgument1 Optional first argument to be passed to the APC routine.\n @param ApcArgument2 Optional second argument to be passed to the APC routine.\n @param ApcArgument3 Optional third argument to be passed to the APC routine.\n @return NTSTATUS Successful or errant status.\n @remarks The APC will be executed in the context of the specified thread after the thread enters an alertable wait state or immediately\n when QUEUE_USER_APC_SPECIAL_USER_APC is used or NtTestAlert, NtAlertThread, NtAlertResumeThread or NtAlertThreadByThreadId are called."]
    pub fn NtQueueApcThreadEx(
       ThreadHandle: HANDLE,
       ReserveHandle: HANDLE,
@@ -54263,6 +54449,7 @@ extern "C" {
       ApcArgument2: PVOID,
       ApcArgument3: PVOID,
    ) -> NTSTATUS;
+   #[doc = " Queues an Asynchronous Procedure Call (APC) to a specified thread.\n\n @param ThreadHandle A handle to the thread to which the APC is to be queued.\n @param ReserveHandle An optional handle to a reserve object. This can be obtained using NtAllocateReserveObject.\n @param ApcFlags Flags that control the behavior of the APC. These flags are defined in QUEUE_USER_APC_FLAGS.\n @param ApcRoutine A pointer to the RtlDispatchAPC function or custom APC routine to be executed.\n @param ApcArgument1 An optional argument to be passed to the APC routine.\n @param ApcArgument2 An optional argument to be passed to the APC routine.\n @param ApcArgument3 An optional argument to be passed to the APC routine.\n @return NTSTATUS Successful or errant status.\n @remarks The APC will be executed in the context of the specified thread when the thread enters an alertable wait state or immediately\n when QUEUE_USER_APC_SPECIAL_USER_APC is used or any process calls the NtTestAlert, NtAlertThread,\n NtAlertResumeThread or NtAlertThreadByThreadId functions."]
    pub fn NtQueueApcThreadEx2(
       ThreadHandle: HANDLE,
       ReserveHandle: HANDLE,
@@ -54272,8 +54459,11 @@ extern "C" {
       ApcArgument2: PVOID,
       ApcArgument3: PVOID,
    ) -> NTSTATUS;
+   #[doc = " Sends an alert to the specified thread.\n\n @param ThreadId The thread ID of the thread to be alerted.\n @return NTSTATUS Successful or errant status."]
    pub fn NtAlertThreadByThreadId(ThreadId: HANDLE) -> NTSTATUS;
+   #[doc = " Waits for an alert to be delivered to the specified thread.\n\n @param Address The address to wait for an alert on.\n @param Timeout The timeout value for waiting, or NULL for no timeout.\n @return NTSTATUS Successful or errant status."]
    pub fn NtWaitForAlertByThreadId(Address: PVOID, Timeout: PLARGE_INTEGER) -> NTSTATUS;
+   #[doc = " Creates a new process and primary thread.\n\n @param ProcessHandle A pointer to a handle that receives the process object handle.\n @param ThreadHandle A pointer to a handle that receives the thread object handle.\n @param ProcessDesiredAccess The access rights desired for the process object.\n @param ThreadDesiredAccess The access rights desired for the thread object.\n @param ProcessObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new process.\n @param ThreadObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n @param ProcessFlags Flags that control the creation of the process. These flags are defined as PROCESS_CREATE_FLAGS_*.\n @param ThreadFlags Flags that control the creation of the thread. These flags are defined as THREAD_CREATE_FLAGS_*.\n @param ProcessParameters Optional. A pointer to a RTL_USER_PROCESS_PARAMETERS structure that specifies the parameters for the new process.\n @param CreateInfo A pointer to a PS_CREATE_INFO structure that specifies additional information for the process creation.\n @param AttributeList Optional. A pointer to a list of attributes for the process and thread.\n @return NTSTATUS Successful or errant status."]
    pub fn NtCreateUserProcess(
       ProcessHandle: PHANDLE,
       ThreadHandle: PHANDLE,
@@ -54283,10 +54473,11 @@ extern "C" {
       ThreadObjectAttributes: POBJECT_ATTRIBUTES,
       ProcessFlags: ULONG,
       ThreadFlags: ULONG,
-      ProcessParameters: PVOID,
+      ProcessParameters: PRTL_USER_PROCESS_PARAMETERS,
       CreateInfo: PPS_CREATE_INFO,
       AttributeList: PPS_ATTRIBUTE_LIST,
    ) -> NTSTATUS;
+   #[doc = " Creates a new thread in the specified process.\n\n @param ThreadHandle A pointer to a handle that receives the thread object handle.\n @param DesiredAccess The access rights desired for the thread object.\n @param ObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n @param ProcessHandle A handle to the process in which the thread is to be created.\n @param StartRoutine A pointer to the application-defined function to be executed by the thread.\n @param Argument Optional. A pointer to a variable to be passed to the thread.\n @param CreateFlags Flags that control the creation of the thread. These flags are defined as THREAD_CREATE_FLAGS_*.\n @param ZeroBits The number of zero bits in the starting address of the thread's stack.\n @param StackSize The initial size of the thread's stack, in bytes.\n @param MaximumStackSize The maximum size of the thread's stack, in bytes.\n @param AttributeList Optional. A pointer to a list of attributes for the thread.\n @return NTSTATUS Successful or errant status."]
    pub fn NtCreateThreadEx(
       ThreadHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -54328,17 +54519,20 @@ extern "C" {
    ) -> NTSTATUS;
    pub fn NtCreateJobSet(NumJob: ULONG, UserJobSet: PJOB_SET_ARRAY, Flags: ULONG) -> NTSTATUS;
    pub fn NtRevertContainerImpersonation() -> NTSTATUS;
+   #[doc = " Allocates a memory reserve object.\n\n @param MemoryReserveHandle Pointer to a variable that receives the memory reserve object handle.\n @param ObjectAttributes Pointer to an object attributes structure.\n @param Type The type of memory reserve.\n @return NTSTATUS Successful or errant status."]
    pub fn NtAllocateReserveObject(
       MemoryReserveHandle: PHANDLE,
       ObjectAttributes: POBJECT_ATTRIBUTES,
       Type: MEMORY_RESERVE_TYPE,
    ) -> NTSTATUS;
+   #[doc = " Captures a snapshot of the specified process.\n\n @param SnapshotHandle Pointer to a variable that receives the snapshot handle.\n @param ProcessHandle Handle to the process.\n @param CaptureFlags Flags indicating what to capture.\n @param ThreadContextFlags Optional flags for capturing thread context.\n @return NTSTATUS Successful or errant status."]
    pub fn PssNtCaptureSnapshot(
       SnapshotHandle: PHANDLE,
       ProcessHandle: HANDLE,
       CaptureFlags: PSSNT_CAPTURE_FLAGS,
       ThreadContextFlags: ULONG,
    ) -> NTSTATUS;
+   #[doc = " Duplicates a process snapshot from one process to another.\n\n @param SourceProcessHandle Handle to the source process.\n @param SnapshotHandle Handle to the snapshot to duplicate.\n @param TargetProcessHandle Handle to the target process.\n @param TargetSnapshotHandle Pointer to a variable that receives the duplicated snapshot handle.\n @param Flags Optional flags for duplication.\n @return NTSTATUS Successful or errant status."]
    pub fn PssNtDuplicateSnapshot(
       SourceProcessHandle: HANDLE,
       SnapshotHandle: HANDLE,
@@ -54346,14 +54540,18 @@ extern "C" {
       TargetSnapshotHandle: PHANDLE,
       Flags: PSSNT_DUPLICATE_FLAGS,
    ) -> NTSTATUS;
+   #[doc = " Frees a remote process snapshot.\n\n @param ProcessHandle A handle to the process that contains the snapshot. The handle must have PROCESS_VM_READ, PROCESS_VM_OPERATION, and PROCESS_DUP_HANDLE rights.\n @param SnapshotHandle Handle to the snapshot to free.\n @return NTSTATUS Successful or errant status."]
    pub fn PssNtFreeSnapshot(SnapshotHandle: HANDLE) -> NTSTATUS;
+   #[doc = " Frees a snapshot.\n\n @param SnapshotHandle Handle to the snapshot to free.\n @return NTSTATUS Successful or errant status."]
    pub fn PssNtFreeRemoteSnapshot(ProcessHandle: HANDLE, SnapshotHandle: HANDLE) -> NTSTATUS;
+   #[doc = " Queries information from a the specified snapshot.\n\n @param SnapshotHandle Handle to the snapshot.\n @param InformationClass The information class to query.\n @param Buffer Pointer to a buffer that receives the queried information.\n @param BufferLength Length of the buffer.\n @return NTSTATUS Successful or errant status."]
    pub fn PssNtQuerySnapshot(
       SnapshotHandle: HANDLE,
       InformationClass: PSSNT_QUERY_INFORMATION_CLASS,
       Buffer: PVOID,
       BufferLength: ULONG,
    ) -> NTSTATUS;
+   #[doc = " Captures virtual address space bulk information for a process.\n\n @param ProcessHandle Handle to the process.\n @param BaseAddress Optional base address to start the capture.\n @param BulkInformation Pointer to the memory bulk information structure.\n @param BulkInformationLength Length of the memory bulk information structure.\n @param ReturnLength Optional pointer to a variable that receives the length of the captured information.\n @return NTSTATUS Successful or errant status."]
    pub fn NtPssCaptureVaSpaceBulk(
       ProcessHandle: HANDLE,
       BaseAddress: PVOID,
@@ -55107,6 +55305,7 @@ extern "C" {
       SpareInstancePath: PUNICODE_STRING,
       Flags: ULONG,
    ) -> NTSTATUS;
+   #[doc = " The NtPowerInformation routine sets or retrieves system power information.\n\n @param InformationLevel Specifies the requested information level, which indicates the specific power information to be set or retrieved.\n @param InputBuffer Optional pointer to a caller-allocated input buffer.\n @param InputBufferLength Size, in bytes, of the buffer at InputBuffer.\n @param OutputBuffer Optional pointer to an output buffer. The type depends on the InformationLevel requested.\n @param OutputBufferLength Size, in bytes, of the output buffer.\n @return Successful or errant status."]
    pub fn NtPowerInformation(
       InformationLevel: POWER_INFORMATION_LEVEL,
       InputBuffer: PVOID,
@@ -55114,23 +55313,29 @@ extern "C" {
       OutputBuffer: PVOID,
       OutputBufferLength: ULONG,
    ) -> NTSTATUS;
+   #[doc = " Enables an application to inform the system that it is in use,\n thereby preventing the system from entering sleep or turning off the display while the application is running.\n\n @param NewFlags New execution state flags.\n @param PreviousFlags Pointer to receive the previous execution state flags.\n @return Successful or errant status."]
    pub fn NtSetThreadExecutionState(
       NewFlags: EXECUTION_STATE,
       PreviousFlags: *mut EXECUTION_STATE,
    ) -> NTSTATUS;
+   #[doc = " Initiates a power action of the current system.\n\n @param SystemAction The system power action.\n @param LightestSystemState The lightest system power state.\n @param Flags Flags for the power action.\n @param Asynchronous Whether the action is asynchronous.\n @return Successful or errant status."]
    pub fn NtInitiatePowerAction(
       SystemAction: POWER_ACTION,
       LightestSystemState: SYSTEM_POWER_STATE,
       Flags: ULONG,
       Asynchronous: BOOLEAN,
    ) -> NTSTATUS;
+   #[doc = " Initiates a power action of the current system. Depending on the Flags parameter, the function either\n suspends operation immediately or requests permission from all applications and device drivers before doing so.\n\n @param SystemAction The system power action.\n @param LightestSystemState The lightest system power state.\n @param Flags Flags for the power action.\n @return Successful or errant status."]
    pub fn NtSetSystemPowerState(
       SystemAction: POWER_ACTION,
       LightestSystemState: SYSTEM_POWER_STATE,
       Flags: ULONG,
    ) -> NTSTATUS;
+   #[doc = " Retrieves the current power state of the specified device. This function cannot be used to query the power state of a display device.\n\n @param Device A handle to an object on the device, such as a file or socket, or a handle to the device itself.\n @param State A pointer to the variable that receives the power state.\n @return Successful or errant status.\n @remarks An application can use NtGetDevicePowerState to determine whether a device is in the working state or a low-power state.\n If the device is in a low-power state, accessing the device may cause it to either queue or fail any I/O requests, or transition the device into the working state.\n The exact behavior depends on the implementation of the device."]
    pub fn NtGetDevicePowerState(Device: HANDLE, State: PDEVICE_POWER_STATE) -> NTSTATUS;
+   #[doc = " Checks if the system resume is automatic.\n\n @return BOOLEAN TRUE if the system resume is automatic, FALSE otherwise."]
    pub fn NtIsSystemResumeAutomatic() -> BOOLEAN;
+   #[doc = " Creates a new registry key routine or opens an existing one.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] TitleIndex Reserved.\n @param[in, optional] Class A pointer to a UNICODE_STRING structure that specifies the class of the key.\n @param[in] CreateOptions The options to use when creating the key.\n @param[out, optional] Disposition A pointer to a variable that receives the disposition value.\n @return NTSTATUS The status of the operation."]
    pub fn NtCreateKey(
       KeyHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -55140,6 +55345,7 @@ extern "C" {
       CreateOptions: ULONG,
       Disposition: PULONG,
    ) -> NTSTATUS;
+   #[doc = " Creates a new registry key or opens an existing one, and it associates the key with a transaction.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] TitleIndex Reserved.\n @param[in, optional] Class A pointer to a UNICODE_STRING structure that specifies the class of the key.\n @param[in] CreateOptions The options to use when creating the key.\n @param[in] TransactionHandle A handle to the transaction.\n @param[out, optional] Disposition A pointer to a variable that receives the disposition value.\n @return NTSTATUS The status of the operation."]
    pub fn NtCreateKeyTransacted(
       KeyHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -55150,23 +55356,27 @@ extern "C" {
       TransactionHandle: HANDLE,
       Disposition: PULONG,
    ) -> NTSTATUS;
+   #[doc = " Opens an existing registry key.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @return NTSTATUS The status of the operation.\n @remarks NtOpenKey ignores the security information in the ObjectAttributes structure."]
    pub fn NtOpenKey(
       KeyHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: POBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
+   #[doc = " Opens an existing registry key and associates the key with a transaction.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] TransactionHandle A handle to the transaction.\n @return NTSTATUS The status of the operation."]
    pub fn NtOpenKeyTransacted(
       KeyHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: POBJECT_ATTRIBUTES,
       TransactionHandle: HANDLE,
    ) -> NTSTATUS;
+   #[doc = " Opens an existing registry key with extended options.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] OpenOptions The options to use when opening the key.\n @return NTSTATUS The status of the operation."]
    pub fn NtOpenKeyEx(
       KeyHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: POBJECT_ATTRIBUTES,
       OpenOptions: ULONG,
    ) -> NTSTATUS;
+   #[doc = " Opens an existing registry key in a transaction with extended options.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] OpenOptions The options to use when opening the key.\n @param[in] TransactionHandle A handle to the transaction.\n @return NTSTATUS The status of the operation."]
    pub fn NtOpenKeyTransactedEx(
       KeyHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -55174,9 +55384,13 @@ extern "C" {
       OpenOptions: ULONG,
       TransactionHandle: HANDLE,
    ) -> NTSTATUS;
+   #[doc = " Deletes a registry key.\n\n @param[in] KeyHandle A handle to the key to be deleted.\n @return NTSTATUS The status of the operation."]
    pub fn NtDeleteKey(KeyHandle: HANDLE) -> NTSTATUS;
+   #[doc = " Renames a registry key.\n\n @param[in] KeyHandle A handle to the key to be renamed.\n @param[in] NewName A pointer to a UNICODE_STRING structure that specifies the new name of the key.\n @return NTSTATUS The status of the operation."]
    pub fn NtRenameKey(KeyHandle: HANDLE, NewName: PUNICODE_STRING) -> NTSTATUS;
+   #[doc = " Deletes a value from a registry key.\n\n @param[in] KeyHandle A handle to the key that contains the value to be deleted.\n @param[in] ValueName A pointer to a UNICODE_STRING structure that specifies the name of the value to be deleted.\n @return NTSTATUS The status of the operation."]
    pub fn NtDeleteValueKey(KeyHandle: HANDLE, ValueName: PUNICODE_STRING) -> NTSTATUS;
+   #[doc = " Queries information about a registry key.\n\n @param[in] KeyHandle A handle to the key to be queried.\n @param[in] KeyInformationClass The type of information to be queried.\n @param[out] KeyInformation A pointer to a buffer that receives the key information.\n @param[in] Length The size of the buffer.\n @param[out] ResultLength A pointer to a variable that receives the size of the data returned.\n @return NTSTATUS The status of the operation."]
    pub fn NtQueryKey(
       KeyHandle: HANDLE,
       KeyInformationClass: KEY_INFORMATION_CLASS,
@@ -55184,12 +55398,14 @@ extern "C" {
       Length: ULONG,
       ResultLength: PULONG,
    ) -> NTSTATUS;
+   #[doc = " Sets information for a registry key.\n\n @param[in] KeyHandle A handle to the key to be modified.\n @param[in] KeySetInformationClass The type of information to be set.\n @param[in] KeySetInformation A pointer to a buffer that contains the key information.\n @param[in] KeySetInformationLength The size of the buffer.\n @return NTSTATUS The status of the operation."]
    pub fn NtSetInformationKey(
       KeyHandle: HANDLE,
       KeySetInformationClass: KEY_SET_INFORMATION_CLASS,
       KeySetInformation: PVOID,
       KeySetInformationLength: ULONG,
    ) -> NTSTATUS;
+   #[doc = " Queries the value of a registry key.\n\n @param[in] KeyHandle A handle to the key to be queried.\n @param[in] ValueName A pointer to a UNICODE_STRING structure that specifies the name of the value to be queried.\n @param[in] KeyValueInformationClass The type of information to be queried.\n @param[out] KeyValueInformation A pointer to a buffer that receives the value information.\n @param[in] Length The size of the buffer.\n @param[out] ResultLength A pointer to a variable that receives the size of the data returned.\n @return NTSTATUS The status of the operation."]
    pub fn NtQueryValueKey(
       KeyHandle: HANDLE,
       ValueName: PUNICODE_STRING,
@@ -55198,6 +55414,7 @@ extern "C" {
       Length: ULONG,
       ResultLength: PULONG,
    ) -> NTSTATUS;
+   #[doc = " Sets the value of a registry key.\n\n @param[in] KeyHandle A handle to the key to be modified.\n @param[in] ValueName A pointer to a UNICODE_STRING structure that specifies the name of the value to be set.\n @param[in, optional] TitleIndex Reserved.\n @param[in] Type The type of the value.\n @param[in] Data A pointer to a buffer that contains the value data.\n @param[in] DataSize The size of the buffer.\n @return NTSTATUS The status of the operation."]
    pub fn NtSetValueKey(
       KeyHandle: HANDLE,
       ValueName: PUNICODE_STRING,
@@ -55206,6 +55423,7 @@ extern "C" {
       Data: PVOID,
       DataSize: ULONG,
    ) -> NTSTATUS;
+   #[doc = " Queries multiple values of a registry key.\n\n @param[in] KeyHandle A handle to the key to be queried.\n @param[in, out] ValueEntries A pointer to an array of KEY_VALUE_ENTRY structures that specify the values to be queried.\n @param[in] EntryCount The number of entries in the array.\n @param[out] ValueBuffer A pointer to a buffer that receives the value data.\n @param[in, out] BufferLength A pointer to a variable that specifies the size of the buffer and receives the size of the data returned.\n @param[out, optional] RequiredBufferLength A pointer to a variable that receives the size of the buffer required to hold the data.\n @return NTSTATUS The status of the operation."]
    pub fn NtQueryMultipleValueKey(
       KeyHandle: HANDLE,
       ValueEntries: PKEY_VALUE_ENTRY,
@@ -55214,6 +55432,7 @@ extern "C" {
       BufferLength: PULONG,
       RequiredBufferLength: PULONG,
    ) -> NTSTATUS;
+   #[doc = " Enumerates the subkeys of a registry key.\n\n @param[in] KeyHandle A handle to the key to be enumerated.\n @param[in] Index The index of the subkey to be enumerated.\n @param[in] KeyInformationClass The type of information to be queried.\n @param[out] KeyInformation A pointer to a buffer that receives the key information.\n @param[in] Length The size of the buffer.\n @param[out] ResultLength A pointer to a variable that receives the size of the data returned.\n @return NTSTATUS The status of the operation."]
    pub fn NtEnumerateKey(
       KeyHandle: HANDLE,
       Index: ULONG,
@@ -55222,6 +55441,7 @@ extern "C" {
       Length: ULONG,
       ResultLength: PULONG,
    ) -> NTSTATUS;
+   #[doc = " Enumerates the values of a registry key.\n\n @param[in] KeyHandle A handle to the key to be enumerated.\n @param[in] Index The index of the value to be enumerated.\n @param[in] KeyValueInformationClass The type of information to be queried.\n @param[out] KeyValueInformation A pointer to a buffer that receives the value information.\n @param[in] Length The size of the buffer.\n @param[out] ResultLength A pointer to a variable that receives the size of the data returned.\n @return NTSTATUS The status of the operation."]
    pub fn NtEnumerateValueKey(
       KeyHandle: HANDLE,
       Index: ULONG,
@@ -55230,15 +55450,21 @@ extern "C" {
       Length: ULONG,
       ResultLength: PULONG,
    ) -> NTSTATUS;
+   #[doc = " Flushes the changes to a registry key.\n\n @param[in] KeyHandle A handle to the key to be flushed.\n @return NTSTATUS The status of the operation."]
    pub fn NtFlushKey(KeyHandle: HANDLE) -> NTSTATUS;
+   #[doc = " Compacts the specified registry keys.\n\n @param[in] Count The number of keys to be compacted.\n @param[in] KeyArray An array of handles to the keys to be compacted.\n @return NTSTATUS The status of the operation."]
    pub fn NtCompactKeys(Count: ULONG, KeyArray: *mut HANDLE) -> NTSTATUS;
+   #[doc = " Compresses a registry key.\n\n @param[in] KeyHandle A handle to the key to be compressed.\n @return NTSTATUS The status of the operation."]
    pub fn NtCompressKey(KeyHandle: HANDLE) -> NTSTATUS;
+   #[doc = " Loads a registry key from a file.\n\n @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.\n @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.\n @return NTSTATUS The status of the operation."]
    pub fn NtLoadKey(TargetKey: POBJECT_ATTRIBUTES, SourceFile: POBJECT_ATTRIBUTES) -> NTSTATUS;
+   #[doc = " Loads a registry key from a file with additional options.\n\n @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.\n @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.\n @param[in] Flags The options to use when loading the key.\n @return NTSTATUS The status of the operation."]
    pub fn NtLoadKey2(
       TargetKey: POBJECT_ATTRIBUTES,
       SourceFile: POBJECT_ATTRIBUTES,
       Flags: ULONG,
    ) -> NTSTATUS;
+   #[doc = " Loads a registry key from a file with extended options.\n\n @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.\n @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.\n @param[in] Flags The options to use when loading the key.\n @param[in, optional] TrustClassKey A handle to the trust class key.\n @param[in, optional] Event A handle to an event.\n @param[in, optional] DesiredAccess The access mask that specifies the desired access rights.\n @param[out, optional] RootHandle A pointer to a handle that receives the root handle.\n @param[in, reserved] Reserved Reserved.\n @return NTSTATUS The status of the operation."]
    pub fn NtLoadKeyEx(
       TargetKey: POBJECT_ATTRIBUTES,
       SourceFile: POBJECT_ATTRIBUTES,
@@ -55249,6 +55475,7 @@ extern "C" {
       RootHandle: PHANDLE,
       Reserved: PVOID,
    ) -> NTSTATUS;
+   #[doc = " Loads a registry key from a file with extended parameters.\n\n @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.\n @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.\n @param[in] Flags The options to use when loading the key.\n @param[in] ExtendedParameters A pointer to an array of extended parameters.\n @param[in] ExtendedParameterCount The number of extended parameters.\n @param[in, optional] DesiredAccess The access mask that specifies the desired access rights.\n @param[out, optional] RootHandle A pointer to a handle that receives the root handle.\n @param[in, reserved] Reserved Reserved.\n @return NTSTATUS The status of the operation."]
    pub fn NtLoadKey3(
       TargetKey: POBJECT_ATTRIBUTES,
       SourceFile: POBJECT_ATTRIBUTES,
@@ -55259,22 +55486,31 @@ extern "C" {
       RootHandle: PHANDLE,
       Reserved: PVOID,
    ) -> NTSTATUS;
+   #[doc = " Replaces a registry key.\n\n @param[in] NewFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the new file.\n @param[in] TargetHandle A handle to the target key.\n @param[in] OldFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the old file.\n @return NTSTATUS The status of the operation."]
    pub fn NtReplaceKey(
       NewFile: POBJECT_ATTRIBUTES,
       TargetHandle: HANDLE,
       OldFile: POBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
+   #[doc = " Saves the specified registry key to a file.\n\n @param KeyHandle Handle to the registry key.\n @param FileHandle Handle to the file where the key will be saved.\n @return NTSTATUS Successful or errant status."]
    pub fn NtSaveKey(KeyHandle: HANDLE, FileHandle: HANDLE) -> NTSTATUS;
+   #[doc = " Saves the specified registry key to a file with a specified format.\n\n @param KeyHandle Handle to the registry key.\n @param FileHandle Handle to the file where the key will be saved.\n @param Format Format in which the key will be saved.\n @return NTSTATUS Successful or errant status."]
    pub fn NtSaveKeyEx(KeyHandle: HANDLE, FileHandle: HANDLE, Format: ULONG) -> NTSTATUS;
+   #[doc = " Merges two registry keys and saves the result to a file.\n\n @param HighPrecedenceKeyHandle Handle to the high precedence registry key.\n @param LowPrecedenceKeyHandle Handle to the low precedence registry key.\n @param FileHandle Handle to the file where the merged key will be saved.\n @return NTSTATUS Successful or errant status."]
    pub fn NtSaveMergedKeys(
       HighPrecedenceKeyHandle: HANDLE,
       LowPrecedenceKeyHandle: HANDLE,
       FileHandle: HANDLE,
    ) -> NTSTATUS;
+   #[doc = " Restores a registry key from a file.\n\n @param KeyHandle Handle to the registry key.\n @param FileHandle Handle to the file from which the key will be restored.\n @param Flags Flags for the restore operation.\n @return NTSTATUS Successful or errant status."]
    pub fn NtRestoreKey(KeyHandle: HANDLE, FileHandle: HANDLE, Flags: ULONG) -> NTSTATUS;
+   #[doc = " Unloads a registry key.\n\n @param TargetKey Pointer to the object attributes of the target key.\n @return NTSTATUS Successful or errant status."]
    pub fn NtUnloadKey(TargetKey: POBJECT_ATTRIBUTES) -> NTSTATUS;
+   #[doc = " Unloads a registry key with additional flags.\n\n @param TargetKey Pointer to the object attributes of the target key.\n @param Flags Flags for the unload operation.\n @return NTSTATUS Successful or errant status.\n @remarks Valid flags are REG_FORCE_UNLOAD and REG_UNLOAD_LEGAL_FLAGS."]
    pub fn NtUnloadKey2(TargetKey: POBJECT_ATTRIBUTES, Flags: ULONG) -> NTSTATUS;
+   #[doc = " Unloads a registry key and optionally signals an event.\n\n @param TargetKey Pointer to the object attributes of the target key.\n @param Event Optional handle to an event to be signaled.\n @return NTSTATUS Successful or errant status."]
    pub fn NtUnloadKeyEx(TargetKey: POBJECT_ATTRIBUTES, Event: HANDLE) -> NTSTATUS;
+   #[doc = " Notifies of changes to a registry key.\n\n @param KeyHandle Handle to the registry key.\n @param Event Optional handle to an event to be signaled.\n @param ApcRoutine Optional APC routine to be called.\n @param ApcContext Optional context for the APC routine.\n @param IoStatusBlock Pointer to an IO status block.\n @param CompletionFilter Filter for the types of changes to notify.\n @param WatchTree Whether to watch the entire tree.\n @param Buffer Optional buffer for change data.\n @param BufferSize Size of the buffer.\n @param Asynchronous Whether the operation is asynchronous.\n @return NTSTATUS Successful or errant status."]
    pub fn NtNotifyChangeKey(
       KeyHandle: HANDLE,
       Event: HANDLE,
@@ -55287,6 +55523,7 @@ extern "C" {
       BufferSize: ULONG,
       Asynchronous: BOOLEAN,
    ) -> NTSTATUS;
+   #[doc = " Requests notification when a registry key or any of its subkeys changes.\n\n @param MasterKeyHandle A handle to an open key. The handle must be opened with the KEY_NOTIFY access right.\n @param Count The number of subkeys under the key specified by the MasterKeyHandle parameter.\n @param SubordinateObjects Pointer to an array of OBJECT_ATTRIBUTES structures, one for each subkey. This array can contain one OBJECT_ATTRIBUTES structure.\n @param Event A handle to an event created by the caller. If Event is not NULL, the caller waits until the operation succeeds, at which time the event is signaled.\n @param ApcRoutine A pointer to an asynchronous procedure call (APC) function supplied by the caller. If ApcRoutine is not NULL, the specified APC function executes after the operation completes.\n @param ApcContext A pointer to a context supplied by the caller for its APC function. This value is passed to the APC function when it is executed. The Asynchronous parameter must be TRUE. If ApcContext is specified, the Event parameter must be NULL.\n @param IoStatusBlock A pointer to an IO_STATUS_BLOCK structure that contains the final status and information about the operation. For successful calls that return data, the number of bytes written to the Buffer parameter is supplied in the Information member of the IO_STATUS_BLOCK structure.\n @param CompletionFilter A bitmap of operations that trigger notification. This parameter can be one or more of the following flags. REG_NOTIFY_CHANGE_NAME, REG_NOTIFY_CHANGE_ATTRIBUTES, REG_NOTIFY_CHANGE_LAST_SET, REG_NOTIFY_CHANGE_SECURITY.\n @param WatchTree If this parameter is TRUE, the caller is notified about changes to all subkeys of the specified key. If this parameter is FALSE, the caller is notified only about changes to the specified key.\n @param Buffer Reserved for system use. This parameter must be NULL.\n @param BufferSize Reserved for system use. This parameter must be zero.\n @param Asynchronous Whether the operation is asynchronous.\n @return NTSTATUS Successful or errant status."]
    pub fn NtNotifyChangeMultipleKeys(
       MasterKeyHandle: HANDLE,
       Count: ULONG,
@@ -55301,35 +55538,47 @@ extern "C" {
       BufferSize: ULONG,
       Asynchronous: BOOLEAN,
    ) -> NTSTATUS;
+   #[doc = " Queries the number of open subkeys of a registry key.\n\n @param TargetKey Pointer to the object attributes of the target key.\n @param HandleCount Pointer to a variable to receive the handle count.\n @return NTSTATUS Successful or errant status."]
    pub fn NtQueryOpenSubKeys(TargetKey: POBJECT_ATTRIBUTES, HandleCount: PULONG) -> NTSTATUS;
+   #[doc = " Queries the open subkeys of a registry key with additional information.\n\n @param TargetKey Pointer to the object attributes of the target key.\n @param BufferLength Length of the buffer.\n @param Buffer Optional buffer to receive the subkey information.\n @param RequiredSize Pointer to a variable to receive the required size.\n @return NTSTATUS Successful or errant status.\n @remarks Returns an array of KEY_OPEN_SUBKEYS_INFORMATION structures."]
    pub fn NtQueryOpenSubKeysEx(
       TargetKey: POBJECT_ATTRIBUTES,
       BufferLength: ULONG,
       Buffer: PVOID,
       RequiredSize: PULONG,
    ) -> NTSTATUS;
+   #[doc = " Initializes the registry.\n\n @param BootCondition Condition for the boot.\n @return NTSTATUS Successful or errant status."]
    pub fn NtInitializeRegistry(BootCondition: USHORT) -> NTSTATUS;
+   #[doc = " Locks the registry key and prevents changes from being written to disk.\n\n @param KeyHandle Handle to the registry key.\n @return NTSTATUS Successful or errant status."]
    pub fn NtLockRegistryKey(KeyHandle: HANDLE) -> NTSTATUS;
+   #[doc = " Locks the product activation keys.\n\n @param pPrivateVer Optional pointer to a private version variable.\n @param pSafeMode Optional pointer to a safe mode variable.\n @return NTSTATUS Successful or errant status."]
    pub fn NtLockProductActivationKeys(pPrivateVer: *mut ULONG, pSafeMode: *mut ULONG) -> NTSTATUS;
+   #[doc = " Freezes the registry and prevents changes from being flushed to disk.\n\n @param TimeOutInSeconds Timeout in seconds.\n @return NTSTATUS Successful or errant status."]
    pub fn NtFreezeRegistry(TimeOutInSeconds: ULONG) -> NTSTATUS;
+   #[doc = " Thaws the registry and enables flushing changes to disk.\n\n @return NTSTATUS Successful or errant status."]
    pub fn NtThawRegistry() -> NTSTATUS;
+   #[doc = " Creates a registry transaction.\n\n @param RegistryTransactionHandle Pointer to a variable to receive the handle.\n @param DesiredAccess Desired access mask.\n @param ObjAttributes Optional pointer to object attributes.\n @param CreateOptions Reserved for future use.\n @return NTSTATUS Successful or errant status."]
    pub fn NtCreateRegistryTransaction(
       RegistryTransactionHandle: *mut HANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjAttributes: POBJECT_ATTRIBUTES,
       CreateOptions: ULONG,
    ) -> NTSTATUS;
+   #[doc = " Opens a registry transaction.\n\n @param RegistryTransactionHandle Pointer to a variable to receive the handle.\n @param DesiredAccess Desired access mask.\n @param ObjAttributes Pointer to object attributes.\n @return NTSTATUS Successful or errant status."]
    pub fn NtOpenRegistryTransaction(
       RegistryTransactionHandle: *mut HANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjAttributes: POBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
+   #[doc = " Commits a registry transaction.\n\n @param RegistryTransactionHandle Handle to the registry transaction.\n @param Flags Reserved for future use.\n @return NTSTATUS Successful or errant status."]
    pub fn NtCommitRegistryTransaction(RegistryTransactionHandle: HANDLE, Flags: ULONG) -> NTSTATUS;
+   #[doc = " Rolls back a registry transaction.\n\n @param RegistryTransactionHandle Handle to the registry transaction.\n @param Flags Reserved for future use.\n @return NTSTATUS Successful or errant status."]
    pub fn NtRollbackRegistryTransaction(
       RegistryTransactionHandle: HANDLE,
       Flags: ULONG,
    ) -> NTSTATUS;
    pub fn InitializeListHead(ListHead: PLIST_ENTRY);
+   pub fn InitializeListHead32(ListHead: PLIST_ENTRY32);
    pub fn IsListEmpty(ListHead: PLIST_ENTRY) -> BOOLEAN;
    pub fn RemoveEntryList(Entry: PLIST_ENTRY) -> BOOLEAN;
    pub fn RemoveHeadList(ListHead: PLIST_ENTRY) -> PLIST_ENTRY;
@@ -56379,6 +56628,7 @@ extern "C" {
       IsFastFail: BOOL,
       IsLongJumpTarget: PBOOL,
    ) -> NTSTATUS;
+   pub fn RtlValidateUserCallTarget(Address: PVOID, Flags: PULONG);
    pub fn RtlCompareMemoryUlong(Source: PVOID, Length: SIZE_T, Pattern: ULONG) -> SIZE_T;
    pub fn RtlFillMemoryUlong(Destination: PVOID, Length: SIZE_T, Pattern: ULONG);
    pub fn RtlIsZeroMemory(Buffer: PVOID, Length: SIZE_T) -> BOOLEAN;
@@ -56585,6 +56835,7 @@ extern "C" {
    pub fn RtlGetNtSystemRoot() -> PWSTR;
    pub fn RtlAreLongPathsEnabled() -> BOOLEAN;
    pub fn RtlIsThreadWithinLoaderCallout() -> BOOLEAN;
+   #[doc = " Gets a value indicating whether the process is currently in the shutdown phase.\n\n @return TRUE if a shutdown of the current dll process is in progress; otherwise, FALSE."]
    pub fn RtlDllShutdownInProgress() -> BOOLEAN;
    pub fn RtlCreateHeap(
       Flags: ULONG,
@@ -57298,6 +57549,7 @@ extern "C" {
    ) -> NTSTATUS;
    pub fn RtlDeleteAce(Acl: PACL, AceIndex: ULONG) -> NTSTATUS;
    pub fn RtlGetAce(Acl: PACL, AceIndex: ULONG, Ace: *mut PVOID) -> NTSTATUS;
+   pub fn RtlGetAcesBufferSize(Acl: PACL, AcesBufferSize: PULONG) -> NTSTATUS;
    pub fn RtlFirstFreeAce(Acl: PACL, FirstFree: *mut PVOID) -> BOOLEAN;
    pub fn RtlFindAceByType(Acl: PACL, AceType: UCHAR, Index: PULONG) -> PVOID;
    pub fn RtlOwnerAcesPresent(pAcl: PACL) -> BOOLEAN;
@@ -57747,7 +57999,7 @@ extern "C" {
    ) -> NTSTATUS;
    pub fn RtlGetCurrentServiceSessionId() -> ULONG;
    pub fn RtlGetActiveConsoleId() -> ULONG;
-   pub fn RtlGetConsoleSessionForegroundProcessId() -> ULONGLONG;
+   pub fn RtlGetConsoleSessionForegroundProcessId() -> LONGLONG;
    pub fn RtlGetTokenNamedObjectPath(
       TokenHandle: HANDLE,
       Sid: PSID,

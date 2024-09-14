@@ -83,11 +83,10 @@ mod regen {
 
       pub fn generate_bindings(&self) -> Result<bindgen::Bindings, bindgen::BindgenError> {
          let allowlist_regexpr = Regex::new(
-            format!(
+            &format!(
                r"({}\\deps\\phnt-nightly\\.*\.h)|winnt\.h|ntstatus\.h",
                regex::escape(env!("CARGO_MANIFEST_DIR"))
-            )
-            .as_str(),
+            ),
          )
          .unwrap();
 
@@ -102,6 +101,7 @@ mod regen {
             "use cty;".into(),
          ];
          raw_lines.append(&mut self.raw_lines.clone());
+         raw_lines.push(String::default());
 
          let mut clang_args: Vec<String> = vec![
             "-Iwindows.h".to_owned(),
@@ -110,9 +110,17 @@ mod regen {
          ];
 
          for name in ["PHNT_VERSION", "PHNT_MODE"] {
-            println!("cargo:rerun-if-changed={}", name);
+            println!("cargo:rerun-if-env-changed={}", name);
             if let Ok(str) = env::var(name) {
                clang_args.push(format!("-D{}={}", name, str));
+
+               let value = if let Ok(_) = str.parse::<u32>() {
+                  str
+               } else {
+                  format!("self::{}", str)
+               };
+
+               raw_lines.push(format!("pub const {}: u32 = {};", name, value));
             }
          }
 
