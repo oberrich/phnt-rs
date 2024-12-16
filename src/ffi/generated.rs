@@ -1,13 +1,13 @@
-// Generated at 2024-09-14 10:44:40.498218300 +02:00
+// Generated at 2024-12-16 04:57:47.923929 +01:00
 #[cfg(not(target_arch = "x86_64"))]
 compile_error!("These bindings can only be used on `x86_64` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.");
 
 use cty;
-pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
-pub use windows_sys::Win32::Foundation::BOOLEAN as BOOLEAN;
-pub use windows_sys::Win32::Foundation::BOOL as BOOL;
 pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
 pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
+pub use windows_sys::Win32::Foundation::BOOL;
+pub use windows_sys::Win32::Foundation::BOOLEAN;
+pub use windows_sys::Win32::Foundation::NTSTATUS;
 
 pub const PHNT_VERSION: u32 = self::PHNT_WIN11_24H2;
 pub const PHNT_MODE: u32 = self::PHNT_MODE_USER;
@@ -227,28 +227,34 @@ pub const WORKER_FACTORY_QUERY_INFORMATION: u32 = 8;
 pub const WORKER_FACTORY_READY_WORKER: u32 = 16;
 pub const WORKER_FACTORY_SHUTDOWN: u32 = 32;
 pub const WORKER_FACTORY_ALL_ACCESS: u32 = 983103;
+pub const KF_V86_VIS: u32 = 1;
 pub const KF_RDTSC: u32 = 2;
 pub const KF_CR4: u32 = 4;
+pub const KF_CMOV: u32 = 8;
 pub const KF_GLOBAL_PAGE: u32 = 16;
 pub const KF_LARGE_PAGE: u32 = 32;
+pub const KF_MTRR: u32 = 64;
 pub const KF_CMPXCHG8B: u32 = 128;
+pub const KF_MMX: u32 = 256;
+pub const KF_WORKING_PTE: u32 = 512;
+pub const KF_PAT: u32 = 1024;
+pub const KF_FXSR: u32 = 2048;
 pub const KF_FAST_SYSCALL: u32 = 4096;
-pub const KF_BRANCH: u32 = 131072;
-pub const KF_XSTATE: u32 = 8388608;
-pub const KF_RDTSCP: u64 = 17179869184;
-pub const KF_CET_SS: u64 = 70368744177664;
-pub const KF_XFD: u64 = 36028797018963968;
-pub const KF_XSAVEOPT_BIT: u32 = 15;
-pub const KF_XSTATE_BIT: u32 = 23;
-pub const KF_RDWRFSGSBASE_BIT: u32 = 28;
-pub const KF_XSAVES_BIT: u32 = 38;
-pub const KF_FPU_LEAKAGE_BIT: u32 = 41;
-pub const KF_CAT_BIT: u32 = 44;
-pub const KF_XFD_BIT: u32 = 55;
+pub const KF_XMMI: u32 = 8192;
+pub const KF_3DNOW: u32 = 16384;
+pub const KF_AMDK6MTRR: u32 = 32768;
+pub const KF_XMMI64: u32 = 65536;
+pub const KF_DTS: u32 = 131072;
+pub const KF_NOEXECUTE: u32 = 536870912;
+pub const KF_GLOBAL_32BIT_EXECUTE: u32 = 1073741824;
+pub const KF_GLOBAL_32BIT_NOEXECUTE: u32 = 2147483648;
 pub const MM_WORKING_SET_MAX_HARD_ENABLE: u32 = 1;
 pub const MM_WORKING_SET_MAX_HARD_DISABLE: u32 = 2;
 pub const MM_WORKING_SET_MIN_HARD_ENABLE: u32 = 4;
 pub const MM_WORKING_SET_MIN_HARD_DISABLE: u32 = 8;
+pub const ETW_MAX_PROFILING_SOURCES: u32 = 4;
+pub const ETW_MAX_PMC_EVENTS: u32 = 4;
+pub const ETW_MAX_PMC_COUNTERS: u32 = 4;
 pub const MAXIMUM_NODE_COUNT: u32 = 64;
 pub const CODEINTEGRITY_OPTION_ENABLED: u32 = 1;
 pub const CODEINTEGRITY_OPTION_TESTSIGN: u32 = 2;
@@ -285,6 +291,11 @@ pub const SYSTEM_STORE_HIGH_MEM_PRIORITY_INFORMATION_VERSION: u32 = 1;
 pub const SYSTEM_STORE_TRIM_INFORMATION_VERSION: u32 = 1;
 pub const SYSTEM_STORE_COMPRESSION_INFORMATION_VERSION: u32 = 3;
 pub const MEMORY_COMBINE_FLAGS_COMMON_PAGES_ONLY: u32 = 4;
+pub const KF_BRANCH: u32 = 131072;
+pub const KF_XSTATE: u32 = 8388608;
+pub const KF_RDTSCP: u64 = 17179869184;
+pub const KF_CET_SS: u64 = 70368744177664;
+pub const KF_XFD: u64 = 36028797018963968;
 pub const CODEINTEGRITYPOLICY_OPTION_ENABLED: u32 = 1;
 pub const CODEINTEGRITYPOLICY_OPTION_AUDIT: u32 = 2;
 pub const CODEINTEGRITYPOLICY_OPTION_REQUIRE_WHQL: u32 = 4;
@@ -553,6 +564,7 @@ pub const RTL_ACTIVATION_CONTEXT_STACK_FRAME_FLAG_NOT_REALLY_ACTIVATED: u32 = 16
 pub const ACTIVATION_CONTEXT_STACK_FLAG_QUERIES_DISABLED: u32 = 1;
 pub const KACF_OLDGETSHORTPATHNAME: u32 = 1;
 pub const KACF_VERSIONLIE_NOT_USED: u32 = 2;
+pub const KACF_GETTEMPPATH_NOT_USED: u32 = 4;
 pub const KACF_GETDISKFREESPACE: u32 = 8;
 pub const KACF_FTMFROMCURRENTAPT: u32 = 32;
 pub const KACF_DISALLOWORBINDINGCHANGES: u32 = 64;
@@ -579,6 +591,8 @@ pub const GDI_HANDLE_BUFFER_SIZE64: u32 = 60;
 pub const GDI_HANDLE_BUFFER_SIZE: u32 = 60;
 pub const TLS_EXPANSION_SLOTS: u32 = 1024;
 pub const GDI_BATCH_BUFFER_SIZE: u32 = 310;
+pub const TEB_ACTIVE_FRAME_CONTEXT_FLAG_EXTENDED: u32 = 1;
+pub const TEB_ACTIVE_FRAME_FLAG_EXTENDED: u32 = 1;
 pub const STATIC_UNICODE_BUFFER_LENGTH: u32 = 261;
 pub const WIN32_CLIENT_INFO_LENGTH: u32 = 62;
 pub const PROCESS_EXCEPTION_PORT_ALL_STATE_BITS: u32 = 3;
@@ -616,6 +630,9 @@ pub const PROCESS_READWRITEVM_LOGGING_ENABLE_READVM: u32 = 1;
 pub const PROCESS_READWRITEVM_LOGGING_ENABLE_WRITEVM: u32 = 2;
 pub const PROCESS_READWRITEVM_LOGGING_ENABLE_READVM_V: u32 = 1;
 pub const PROCESS_READWRITEVM_LOGGING_ENABLE_WRITEVM_V: u32 = 2;
+pub const THREAD_PERFORMANCE_DATA_VERSION: u32 = 1;
+pub const THREAD_PROFILING_FLAG_HARDWARE_COUNTERS: u32 = 2;
+pub const PROCESS_CREATE_FLAGS_NONE: u32 = 0;
 pub const PROCESS_CREATE_FLAGS_BREAKAWAY: u32 = 1;
 pub const PROCESS_CREATE_FLAGS_NO_DEBUG_INHERIT: u32 = 2;
 pub const PROCESS_CREATE_FLAGS_INHERIT_HANDLES: u32 = 4;
@@ -757,6 +774,7 @@ pub const DEBUG_SET_INFORMATION: u32 = 4;
 pub const DEBUG_QUERY_INFORMATION: u32 = 8;
 pub const DEBUG_ALL_ACCESS: u32 = 2031631;
 pub const DEBUG_KILL_ON_CLOSE: u32 = 1;
+pub const FILE_SHARE_NONE: u32 = 0;
 pub const FILE_SUPERSEDE: u32 = 0;
 pub const FILE_OPEN: u32 = 1;
 pub const FILE_CREATE: u32 = 2;
@@ -772,8 +790,6 @@ pub const FILE_SYNCHRONOUS_IO_ALERT: u32 = 16;
 pub const FILE_SYNCHRONOUS_IO_NONALERT: u32 = 32;
 pub const FILE_NON_DIRECTORY_FILE: u32 = 64;
 pub const FILE_CREATE_TREE_CONNECTION: u32 = 128;
-pub const TREE_CONNECT_NO_CLIENT_BUFFERING: u32 = 8;
-pub const TREE_CONNECT_WRITE_THROUGH: u32 = 2;
 pub const FILE_COMPLETE_IF_OPLOCKED: u32 = 256;
 pub const FILE_NO_EA_KNOWLEDGE: u32 = 512;
 pub const FILE_OPEN_REMOTE_INSTANCE: u32 = 1024;
@@ -789,6 +805,8 @@ pub const FILE_RESERVE_OPFILTER: u32 = 1048576;
 pub const FILE_OPEN_REPARSE_POINT: u32 = 2097152;
 pub const FILE_OPEN_NO_RECALL: u32 = 4194304;
 pub const FILE_OPEN_FOR_FREE_SPACE_QUERY: u32 = 8388608;
+pub const TREE_CONNECT_WRITE_THROUGH: u32 = 2;
+pub const TREE_CONNECT_NO_CLIENT_BUFFERING: u32 = 8;
 pub const FILE_CONTAINS_EXTENDED_CREATE_INFORMATION: u32 = 268435456;
 pub const FILE_VALID_EXTENDED_OPTION_FLAGS: u32 = 268435456;
 pub const EX_CREATE_FLAG_FILE_SOURCE_OPEN_FOR_COPY: u32 = 1;
@@ -940,11 +958,6 @@ pub const FILE_ACTION_MODIFIED_STREAM: u32 = 8;
 pub const FILE_ACTION_REMOVED_BY_DELETE: u32 = 9;
 pub const FILE_ACTION_ID_NOT_TUNNELLED: u32 = 10;
 pub const FILE_ACTION_TUNNELLED_ID_COLLISION: u32 = 11;
-pub const FILE_NAME_FLAG_HARDLINK: u32 = 0;
-pub const FILE_NAME_FLAG_NTFS: u32 = 1;
-pub const FILE_NAME_FLAG_DOS: u32 = 2;
-pub const FILE_NAME_FLAG_BOTH: u32 = 3;
-pub const FILE_NAME_FLAGS_UNSPECIFIED: u32 = 128;
 pub const IO_COMPLETION_QUERY_STATE: u32 = 1;
 pub const SYMLINK_FLAG_RELATIVE: u32 = 1;
 pub const SYMLINK_DIRECTORY: u32 = 2147483648;
@@ -1155,6 +1168,9 @@ pub const SUPPORTED_FS_FEATURES_OFFLOAD_READ: u32 = 1;
 pub const SUPPORTED_FS_FEATURES_OFFLOAD_WRITE: u32 = 2;
 pub const SUPPORTED_FS_FEATURES_QUERY_OPEN: u32 = 4;
 pub const SUPPORTED_FS_FEATURES_BYPASS_IO: u32 = 8;
+pub const SUPPORTED_FS_FEATURES_VALID_MASK_V3: u32 = 15;
+pub const SUPPORTED_FS_FEATURES_VALID_MASK_V2: u32 = 7;
+pub const SUPPORTED_FS_FEATURES_VALID_MASK_V1: u32 = 3;
 pub const SUPPORTED_FS_FEATURES_VALID_MASK: u32 = 15;
 pub const PORT_CONNECT: u32 = 1;
 pub const PORT_ALL_ACCESS: u32 = 2031617;
@@ -1359,7 +1375,7 @@ pub const POWER_REQUEST_SUPPORTED_TYPES_V1: u32 = 3;
 pub const POWER_REQUEST_SUPPORTED_TYPES_V2: u32 = 9;
 pub const POWER_REQUEST_SUPPORTED_TYPES_V3: u32 = 5;
 pub const POWER_REQUEST_SUPPORTED_TYPES_V4: u32 = 6;
-pub const POWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_VERSION: u32 = 1;
+pub const POWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_VERSION: u32 = 1;
 pub const REG_INIT_BOOT_SM: u32 = 0;
 pub const REG_INIT_BOOT_SETUP: u32 = 1;
 pub const REG_INIT_BOOT_ACCEPTED_BASE: u32 = 2;
@@ -1416,7 +1432,12 @@ pub const RTL_USER_PROC_DISABLE_HEAP_DECOMMIT: u32 = 256;
 pub const RTL_USER_PROC_DLL_REDIRECTION_LOCAL: u32 = 4096;
 pub const RTL_USER_PROC_APP_MANIFEST_PRESENT: u32 = 8192;
 pub const RTL_USER_PROC_IMAGE_KEY_MISSING: u32 = 16384;
+pub const RTL_USER_PROC_DEV_OVERRIDE_ENABLED: u32 = 32768;
 pub const RTL_USER_PROC_OPTIN_PROCESS: u32 = 131072;
+pub const RTL_USER_PROC_SESSION_OWNER: u32 = 262144;
+pub const RTL_USER_PROC_HANDLE_USER_CALLBACK_EXCEPTIONS: u32 = 524288;
+pub const RTL_USER_PROC_PROTECTED_PROCESS: u32 = 4194304;
+pub const RTL_USER_PROC_SECURE_PROCESS: u32 = 2147483648;
 pub const RTL_USER_PROCESS_EXTENDED_PARAMETERS_VERSION: u32 = 1;
 pub const RTL_CLONE_PROCESS_FLAGS_CREATE_SUSPENDED: u32 = 1;
 pub const RTL_CLONE_PROCESS_FLAGS_INHERIT_HANDLES: u32 = 2;
@@ -1438,6 +1459,25 @@ pub const RTL_QUERY_INFORMATION_ACTIVATION_CONTEXT_FLAG_ACTIVATION_CONTEXT_IS_MO
 pub const RTL_QUERY_INFORMATION_ACTIVATION_CONTEXT_FLAG_ACTIVATION_CONTEXT_IS_ADDRESS: u32 = 4;
 pub const RTL_QUERY_INFORMATION_ACTIVATION_CONTEXT_FLAG_NO_ADDREF: u32 = 2147483648;
 pub const RTL_IMAGE_NT_HEADER_EX_FLAG_NO_RANGE_CHECK: u32 = 1;
+pub const GlobalDataIdUnknown: u32 = 0;
+pub const GlobalDataIdRngSeedVersion: u32 = 1;
+pub const GlobalDataIdInterruptTime: u32 = 2;
+pub const GlobalDataIdTimeZoneBias: u32 = 3;
+pub const GlobalDataIdImageNumberLow: u32 = 4;
+pub const GlobalDataIdImageNumberHigh: u32 = 5;
+pub const GlobalDataIdTimeZoneId: u32 = 6;
+pub const GlobalDataIdNtMajorVersion: u32 = 7;
+pub const GlobalDataIdNtMinorVersion: u32 = 8;
+pub const GlobalDataIdSystemExpirationDate: u32 = 9;
+pub const GlobalDataIdKdDebuggerEnabled: u32 = 10;
+pub const GlobalDataIdCyclesPerYield: u32 = 11;
+pub const GlobalDataIdSafeBootMode: u32 = 12;
+pub const GlobalDataIdLastSystemRITEventTickCount: u32 = 13;
+pub const GlobalDataIdConsoleSharedDataFlags: u32 = 14;
+pub const GlobalDataIdNtSystemRootDrive: u32 = 15;
+pub const GlobalDataIdQpcBypassEnabled: u32 = 16;
+pub const GlobalDataIdQpcData: u32 = 17;
+pub const GlobalDataIdQpcBias: u32 = 18;
 pub const RTL_CREATE_ENVIRONMENT_TRANSLATE: u32 = 1;
 pub const RTL_CREATE_ENVIRONMENT_TRANSLATE_FROM_OEM: u32 = 2;
 pub const RTL_CREATE_ENVIRONMENT_EMPTY: u32 = 4;
@@ -1542,6 +1582,10 @@ pub const RTL_QUERY_REGISTRY_DELETE: u32 = 64;
 pub const RTL_WALK_USER_MODE_STACK: u32 = 1;
 pub const RTL_WALK_VALID_FLAGS: u32 = 1;
 pub const RTL_STACK_WALKING_MODE_FRAMES_TO_SKIP_SHIFT: u32 = 8;
+pub const ELEVATION_FLAG_TOKEN_CHECKS: u32 = 1;
+pub const ELEVATION_FLAG_VIRTUALIZATION: u32 = 2;
+pub const ELEVATION_FLAG_SHORTCUT_REDIR: u32 = 4;
+pub const ELEVATION_FLAG_NO_SIGNATURE_CHECK: u32 = 8;
 pub const RTL_UNLOAD_EVENT_TRACE_NUMBER: u32 = 64;
 pub const RTL_IMAGE_MITIGATION_OPTION_STATEMASK: u32 = 3;
 pub const RTL_IMAGE_MITIGATION_OPTION_FORCEMASK: u32 = 4;
@@ -1554,7 +1598,7 @@ pub const PSM_ACTIVATION_TOKEN_PACKAGED_APPLICATION: u32 = 1;
 pub const PSM_ACTIVATION_TOKEN_SHARED_ENTITY: u32 = 2;
 pub const PSM_ACTIVATION_TOKEN_FULL_TRUST: u32 = 4;
 pub const PSM_ACTIVATION_TOKEN_NATIVE_SERVICE: u32 = 8;
-pub const PSM_ACTIVATION_TOKEN_DEVELOPMENT_APP: u32 = 16;
+pub const PSM_ACTIVATION_TOKEN_MULTIPLE_INSTANCES_ALLOWED: u32 = 16;
 pub const PSM_ACTIVATION_TOKEN_BREAKAWAY_INHIBITED: u32 = 32;
 pub const PSM_ACTIVATION_TOKEN_RUNTIME_BROKER: u32 = 64;
 pub const PSM_ACTIVATION_TOKEN_UNIVERSAL_CONSOLE: u32 = 512;
@@ -1578,11 +1622,6 @@ pub const IMAGE_DVRT_ARM64X_FIXUP_SIZE_4BYTES: u32 = 2;
 pub const IMAGE_DVRT_ARM64X_FIXUP_SIZE_8BYTES: u32 = 3;
 pub const IMAGE_DYNAMIC_RELOCATION_ARM64X: u32 = 6;
 pub const IMAGE_DYNAMIC_RELOCATION_MM_SHARED_USER_DATA_VA: u32 = 2147352576;
-pub const IMAGE_DYNAMIC_RELOCATION_FUNCTION_OVERRIDE: u32 = 7;
-pub const IMAGE_FUNCTION_OVERRIDE_INVALID: u32 = 0;
-pub const IMAGE_FUNCTION_OVERRIDE_X64_REL32: u32 = 1;
-pub const IMAGE_FUNCTION_OVERRIDE_ARM64_BRANCH26: u32 = 2;
-pub const IMAGE_FUNCTION_OVERRIDE_ARM64_THUNK: u32 = 3;
 pub const IMAGE_DLLCHARACTERISTICS_EX_FORWARD_CFI_COMPAT: u32 = 64;
 pub const IMAGE_DLLCHARACTERISTICS_EX_HOTPATCH_COMPATIBLE: u32 = 128;
 pub const SE_MIN_WELL_KNOWN_PRIVILEGE: u32 = 2;
@@ -2910,6 +2949,14 @@ pub const EVENT_TRACE_USE_SEQUENCE: u32 = 4;
 pub const ETW_KERNEL_EVENT_VERSION: u32 = 60;
 pub const ETW_SET_MARK_WITH_FLUSH: u32 = 1;
 pub const ETW_MAX_DATA_BLOCK_BUFFER_SIZE: u32 = 65536;
+pub const NOTIFICATION_TRACE_FLAG: u32 = 65536;
+pub const NOTIFICATION_CALLBACK_DIRECT: u32 = 4;
+pub const NOTIFICATION_CHECK_ACCESS: u32 = 8;
+pub const NOTIFICATION_LIGHTWEIGHT_FLAG: u32 = 32;
+pub const MOFCI_RESERVED0: u32 = 1;
+pub const MOFCI_RESERVED1: u32 = 2;
+pub const MOFCI_RESERVED2: u32 = 4;
+pub const CPI_NEWPROCESSWINDOW: u32 = 1;
 pub type va_list = *mut cty::c_char;
 pub type wchar_t = cty::c_ushort;
 #[repr(i32)]
@@ -2934,7 +2981,9 @@ pub type WORD = cty::c_ushort;
 pub type PBOOL = *mut BOOL;
 pub type PDWORD = *mut DWORD;
 pub type LPVOID = *mut cty::c_void;
+pub type UINT = cty::c_uint;
 pub type ULONG32 = cty::c_uint;
+pub type UINT_PTR = cty::c_ulonglong;
 pub type LONG_PTR = cty::c_longlong;
 pub type ULONG_PTR = cty::c_ulonglong;
 pub type PULONG_PTR = *mut cty::c_ulonglong;
@@ -2955,12 +3004,12 @@ pub type WCHAR = wchar_t;
 pub type PWCHAR = *mut WCHAR;
 pub type PWCH = *mut WCHAR;
 pub type PCWCH = *const WCHAR;
+pub type LPWSTR = *mut WCHAR;
 pub type PWSTR = *mut WCHAR;
 pub type LPCWSTR = *const WCHAR;
 pub type PCWSTR = *const WCHAR;
 pub type PZZWSTR = *mut WCHAR;
 pub type PCZZWSTR = *const WCHAR;
-pub type PCWCHAR = *const WCHAR;
 pub type PCHAR = *mut CHAR;
 pub type PCH = *mut CHAR;
 pub type PCCH = *const CHAR;
@@ -4129,7 +4178,9 @@ pub enum _PROCESS_MITIGATION_POLICY {
    ProcessSideChannelIsolationPolicy = 14,
    ProcessUserShadowStackPolicy = 15,
    ProcessRedirectionTrustPolicy = 16,
-   MaxProcessMitigationPolicy = 17,
+   ProcessUserPointerAuthPolicy = 17,
+   ProcessSEHOPPolicy = 18,
+   MaxProcessMitigationPolicy = 19,
 }
 pub use self::_PROCESS_MITIGATION_POLICY as PROCESS_MITIGATION_POLICY;
 #[repr(C)]
@@ -4259,6 +4310,82 @@ impl Default for _PROCESS_MITIGATION_ASLR_POLICY {
    }
 }
 pub type PROCESS_MITIGATION_ASLR_POLICY = _PROCESS_MITIGATION_ASLR_POLICY;
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct _PROCESS_MITIGATION_SEHOP_POLICY {
+   pub __bindgen_anon_1: _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1 {
+   pub Flags: DWORD,
+   pub __bindgen_anon_1: _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1__bindgen_ty_1 {
+   pub _bitfield_align_1: [u32; 0],
+   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize]>,
+}
+impl _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1__bindgen_ty_1 {
+   #[inline]
+   pub fn EnableSehop(&self) -> DWORD {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_EnableSehop(&mut self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(0usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub fn ReservedFlags(&self) -> DWORD {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
+   }
+   #[inline]
+   pub fn set_ReservedFlags(&mut self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub fn new_bitfield_1(
+      EnableSehop: DWORD,
+      ReservedFlags: DWORD,
+   ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
+      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
+      __bindgen_bitfield_unit.set(0usize, 1u8, {
+         let EnableSehop: u32 = unsafe { ::core::mem::transmute(EnableSehop) };
+         EnableSehop as u64
+      });
+      __bindgen_bitfield_unit.set(1usize, 31u8, {
+         let ReservedFlags: u32 = unsafe { ::core::mem::transmute(ReservedFlags) };
+         ReservedFlags as u64
+      });
+      __bindgen_bitfield_unit
+   }
+}
+impl Default for _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for _PROCESS_MITIGATION_SEHOP_POLICY {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type PROCESS_MITIGATION_SEHOP_POLICY = _PROCESS_MITIGATION_SEHOP_POLICY;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY {
@@ -5683,14 +5810,25 @@ impl _PROCESS_MITIGATION_SIDE_CHANNEL_ISOLATION_POLICY__bindgen_ty_1__bindgen_ty
       }
    }
    #[inline]
+   pub fn RestrictCoreSharing(&self) -> DWORD {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_RestrictCoreSharing(&mut self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(4usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 28u8) as u32) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 27u8) as u32) }
    }
    #[inline]
    pub fn set_ReservedFlags(&mut self, val: DWORD) {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(4usize, 28u8, val as u64)
+         self._bitfield_1.set(5usize, 27u8, val as u64)
       }
    }
    #[inline]
@@ -5699,6 +5837,7 @@ impl _PROCESS_MITIGATION_SIDE_CHANNEL_ISOLATION_POLICY__bindgen_ty_1__bindgen_ty
       IsolateSecurityDomain: DWORD,
       DisablePageCombine: DWORD,
       SpeculativeStoreBypassDisable: DWORD,
+      RestrictCoreSharing: DWORD,
       ReservedFlags: DWORD,
    ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
       let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
@@ -5720,7 +5859,11 @@ impl _PROCESS_MITIGATION_SIDE_CHANNEL_ISOLATION_POLICY__bindgen_ty_1__bindgen_ty
             unsafe { ::core::mem::transmute(SpeculativeStoreBypassDisable) };
          SpeculativeStoreBypassDisable as u64
       });
-      __bindgen_bitfield_unit.set(4usize, 28u8, {
+      __bindgen_bitfield_unit.set(4usize, 1u8, {
+         let RestrictCoreSharing: u32 = unsafe { ::core::mem::transmute(RestrictCoreSharing) };
+         RestrictCoreSharing as u64
+      });
+      __bindgen_bitfield_unit.set(5usize, 27u8, {
          let ReservedFlags: u32 = unsafe { ::core::mem::transmute(ReservedFlags) };
          ReservedFlags as u64
       });
@@ -5976,6 +6119,83 @@ impl Default for _PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY {
 pub type PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY = _PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY;
 #[repr(C)]
 #[derive(Copy, Clone)]
+pub struct _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY {
+   pub __bindgen_anon_1: _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1 {
+   pub Flags: DWORD,
+   pub __bindgen_anon_1: _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1__bindgen_ty_1 {
+   pub _bitfield_align_1: [u32; 0],
+   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize]>,
+}
+impl _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1__bindgen_ty_1 {
+   #[inline]
+   pub fn EnablePointerAuthUserIp(&self) -> DWORD {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_EnablePointerAuthUserIp(&mut self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(0usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub fn ReservedFlags(&self) -> DWORD {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
+   }
+   #[inline]
+   pub fn set_ReservedFlags(&mut self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub fn new_bitfield_1(
+      EnablePointerAuthUserIp: DWORD,
+      ReservedFlags: DWORD,
+   ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
+      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
+      __bindgen_bitfield_unit.set(0usize, 1u8, {
+         let EnablePointerAuthUserIp: u32 =
+            unsafe { ::core::mem::transmute(EnablePointerAuthUserIp) };
+         EnablePointerAuthUserIp as u64
+      });
+      __bindgen_bitfield_unit.set(1usize, 31u8, {
+         let ReservedFlags: u32 = unsafe { ::core::mem::transmute(ReservedFlags) };
+         ReservedFlags as u64
+      });
+      __bindgen_bitfield_unit
+   }
+}
+impl Default for _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY = _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY;
+#[repr(C)]
+#[derive(Copy, Clone)]
 pub struct _PROCESS_MITIGATION_REDIRECTION_TRUST_POLICY {
    pub __bindgen_anon_1: _PROCESS_MITIGATION_REDIRECTION_TRUST_POLICY__bindgen_ty_1,
 }
@@ -6163,7 +6383,9 @@ pub enum _JOBOBJECTINFOCLASS {
    JobObjectReserved23Information = 45,
    JobObjectReserved24Information = 46,
    JobObjectReserved25Information = 47,
-   MaxJobObjectInfoClass = 48,
+   JobObjectReserved26Information = 48,
+   JobObjectReserved27Information = 49,
+   MaxJobObjectInfoClass = 50,
 }
 pub use self::_JOBOBJECTINFOCLASS as JOBOBJECTINFOCLASS;
 #[repr(i32)]
@@ -6561,7 +6783,8 @@ pub enum POWER_INFORMATION_LEVEL {
    UpdateBlackBoxRecorder = 94,
    SessionAllowExternalDmaDevices = 95,
    SendSuspendResumeNotification = 96,
-   PowerInformationLevelMaximum = 97,
+   BlackBoxRecorderDirectAccessBuffer = 97,
+   PowerInformationLevelMaximum = 98,
 }
 #[repr(i32)]
 #[non_exhaustive]
@@ -6984,6 +7207,22 @@ impl Default for _IMAGE_RUNTIME_FUNCTION_ENTRY {
 }
 #[repr(C)]
 #[repr(align(16))]
+#[derive(Debug, Copy, Clone)]
+pub struct _SLIST_ENTRY {
+   pub Next: *mut _SLIST_ENTRY,
+}
+impl Default for _SLIST_ENTRY {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type PSLIST_ENTRY = *mut _SLIST_ENTRY;
+#[repr(C)]
+#[repr(align(16))]
 #[derive(Copy, Clone)]
 pub union _SLIST_HEADER {
    pub __bindgen_anon_1: _SLIST_HEADER__bindgen_ty_1,
@@ -7082,6 +7321,7 @@ impl Default for _SLIST_HEADER {
       }
    }
 }
+pub type SLIST_HEADER = _SLIST_HEADER;
 pub type PSLIST_HEADER = *mut _SLIST_HEADER;
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -7141,6 +7381,32 @@ impl Default for _OSVERSIONINFOEXW {
    }
 }
 pub type PRTL_OSVERSIONINFOEXW = *mut _OSVERSIONINFOEXW;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _RTL_SYSTEM_GLOBAL_DATA_ID {
+   GlobalDataIdUnknown = 0,
+   GlobalDataIdRngSeedVersion = 1,
+   GlobalDataIdInterruptTime = 2,
+   GlobalDataIdTimeZoneBias = 3,
+   GlobalDataIdImageNumberLow = 4,
+   GlobalDataIdImageNumberHigh = 5,
+   GlobalDataIdTimeZoneId = 6,
+   GlobalDataIdNtMajorVersion = 7,
+   GlobalDataIdNtMinorVersion = 8,
+   GlobalDataIdSystemExpirationDate = 9,
+   GlobalDataIdKdDebuggerEnabled = 10,
+   GlobalDataIdCyclesPerYield = 11,
+   GlobalDataIdSafeBootMode = 12,
+   GlobalDataIdLastSystemRITEventTickCount = 13,
+   GlobalDataIdConsoleSharedDataFlags = 14,
+   GlobalDataIdNtSystemRootDrive = 15,
+   GlobalDataIdQpcShift = 16,
+   GlobalDataIdQpcBypassEnabled = 17,
+   GlobalDataIdQpcData = 18,
+   GlobalDataIdQpcBias = 19,
+}
+pub use self::_RTL_SYSTEM_GLOBAL_DATA_ID as RTL_SYSTEM_GLOBAL_DATA_ID;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _RTL_CRITICAL_SECTION_DEBUG {
@@ -7152,7 +7418,7 @@ pub struct _RTL_CRITICAL_SECTION_DEBUG {
    pub ContentionCount: DWORD,
    pub Flags: DWORD,
    pub CreatorBackTraceIndexHigh: WORD,
-   pub SpareWORD: WORD,
+   pub Identifier: WORD,
 }
 impl Default for _RTL_CRITICAL_SECTION_DEBUG {
    fn default() -> Self {
@@ -7589,12 +7855,77 @@ pub struct _TP_IO {
    _unused: [u8; 0],
 }
 pub type PTP_IO = *mut _TP_IO;
+pub type WPARAM = UINT_PTR;
+pub type LPARAM = LONG_PTR;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct HRGN__ {
+   pub unused: cty::c_int,
+}
+pub type HRGN = *mut HRGN__;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct HWINSTA__ {
+   pub unused: cty::c_int,
+}
+pub type HWINSTA = *mut HWINSTA__;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct HWND__ {
    pub unused: cty::c_int,
 }
 pub type HWND = *mut HWND__;
+pub type HGDIOBJ = *mut cty::c_void;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct HACCEL__ {
+   pub unused: cty::c_int,
+}
+pub type HACCEL = *mut HACCEL__;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct HBITMAP__ {
+   pub unused: cty::c_int,
+}
+pub type HBITMAP = *mut HBITMAP__;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct HDC__ {
+   pub unused: cty::c_int,
+}
+pub type HDC = *mut HDC__;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct HDESK__ {
+   pub unused: cty::c_int,
+}
+pub type HDESK = *mut HDESK__;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct HICON__ {
+   pub unused: cty::c_int,
+}
+pub type HICON = *mut HICON__;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct HMENU__ {
+   pub unused: cty::c_int,
+}
+pub type HMENU = *mut HMENU__;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct HWINEVENTHOOK__ {
+   pub unused: cty::c_int,
+}
+pub type HWINEVENTHOOK = *mut HWINEVENTHOOK__;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct HMONITOR__ {
+   pub unused: cty::c_int,
+}
+pub type HMONITOR = *mut HMONITOR__;
+pub type HCURSOR = HICON;
+pub type COLORREF = DWORD;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct tagRECT {
@@ -7604,6 +7935,24 @@ pub struct tagRECT {
    pub bottom: LONG,
 }
 pub type RECT = tagRECT;
+pub type PRECT = *mut tagRECT;
+pub type LPRECT = *mut tagRECT;
+pub type LPCRECT = *const RECT;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct tagPOINT {
+   pub x: LONG,
+   pub y: LONG,
+}
+pub type POINT = tagPOINT;
+pub type LPPOINT = *mut tagPOINT;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct tagSIZE {
+   pub cx: LONG,
+   pub cy: LONG,
+}
+pub type SIZE = tagSIZE;
 pub type PTHREAD_START_ROUTINE =
    ::core::option::Option<unsafe extern "C" fn(lpThreadParameter: LPVOID) -> DWORD>;
 pub type LPTHREAD_START_ROUTINE = PTHREAD_START_ROUTINE;
@@ -7777,6 +8126,7 @@ impl Default for _DEBUG_EVENT {
    }
 }
 pub type LPDEBUG_EVENT = *mut _DEBUG_EVENT;
+#[doc = " The PROC_THREAD_ATTRIBUTE_LIST structure contains the list of attributes for process and thread creation."]
 pub type PPROC_THREAD_ATTRIBUTE_LIST = *mut _PROC_THREAD_ATTRIBUTE_LIST;
 pub type DLL_DIRECTORY_COOKIE = PVOID;
 pub type PDLL_DIRECTORY_COOKIE = *mut PVOID;
@@ -7826,6 +8176,446 @@ impl Default for tagACTCTX_SECTION_KEYED_DATA {
    }
 }
 pub type PACTCTX_SECTION_KEYED_DATA = *mut tagACTCTX_SECTION_KEYED_DATA;
+pub type TIMERPROC = ::core::option::Option<
+   unsafe extern "C" fn(arg1: HWND, arg2: UINT, arg3: UINT_PTR, arg4: DWORD),
+>;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct tagMOUSEMOVEPOINT {
+   pub x: cty::c_int,
+   pub y: cty::c_int,
+   pub time: DWORD,
+   pub dwExtraInfo: ULONG_PTR,
+}
+pub type LPMOUSEMOVEPOINT = *mut tagMOUSEMOVEPOINT;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct tagMSG {
+   pub hwnd: HWND,
+   pub message: UINT,
+   pub wParam: WPARAM,
+   pub lParam: LPARAM,
+   pub time: DWORD,
+   pub pt: POINT,
+}
+impl Default for tagMSG {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type MSG = tagMSG;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct tagTRACKMOUSEEVENT {
+   pub cbSize: DWORD,
+   pub dwFlags: DWORD,
+   pub hwndTrack: HWND,
+   pub dwHoverTime: DWORD,
+}
+impl Default for tagTRACKMOUSEEVENT {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type LPTRACKMOUSEEVENT = *mut tagTRACKMOUSEEVENT;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct tagACCEL {
+   pub fVirt: BYTE,
+   pub key: WORD,
+   pub cmd: WORD,
+}
+pub type LPACCEL = *mut tagACCEL;
+#[repr(C)]
+pub struct tagPAINTSTRUCT {
+   pub hdc: HDC,
+   pub fErase: BOOL,
+   pub rcPaint: RECT,
+   pub fRestore: BOOL,
+   pub fIncUpdate: BOOL,
+   pub rgbReserved: [BYTE; 32usize],
+}
+impl Default for tagPAINTSTRUCT {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type PAINTSTRUCT = tagPAINTSTRUCT;
+pub type LPPAINTSTRUCT = *mut tagPAINTSTRUCT;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct tagWINDOWPLACEMENT {
+   pub length: UINT,
+   pub flags: UINT,
+   pub showCmd: UINT,
+   pub ptMinPosition: POINT,
+   pub ptMaxPosition: POINT,
+   pub rcNormalPosition: RECT,
+}
+pub type WINDOWPLACEMENT = tagWINDOWPLACEMENT;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct FLASHWINFO {
+   pub cbSize: UINT,
+   pub hwnd: HWND,
+   pub dwFlags: DWORD,
+   pub uCount: UINT,
+   pub dwTimeout: DWORD,
+}
+impl Default for FLASHWINFO {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type PFLASHWINFO = *mut FLASHWINFO;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct tagMOUSEINPUT {
+   pub dx: LONG,
+   pub dy: LONG,
+   pub mouseData: DWORD,
+   pub dwFlags: DWORD,
+   pub time: DWORD,
+   pub dwExtraInfo: ULONG_PTR,
+}
+pub type MOUSEINPUT = tagMOUSEINPUT;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct tagKEYBDINPUT {
+   pub wVk: WORD,
+   pub wScan: WORD,
+   pub dwFlags: DWORD,
+   pub time: DWORD,
+   pub dwExtraInfo: ULONG_PTR,
+}
+pub type KEYBDINPUT = tagKEYBDINPUT;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct tagHARDWAREINPUT {
+   pub uMsg: DWORD,
+   pub wParamL: WORD,
+   pub wParamH: WORD,
+}
+pub type HARDWAREINPUT = tagHARDWAREINPUT;
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct tagINPUT {
+   pub type_: DWORD,
+   pub __bindgen_anon_1: tagINPUT__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union tagINPUT__bindgen_ty_1 {
+   pub mi: MOUSEINPUT,
+   pub ki: KEYBDINPUT,
+   pub hi: HARDWAREINPUT,
+}
+impl Default for tagINPUT__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for tagINPUT {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type LPINPUT = *mut tagINPUT;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct tagTPMPARAMS {
+   pub cbSize: UINT,
+   pub rcExclude: RECT,
+}
+pub type TPMPARAMS = tagTPMPARAMS;
+pub type LPTPMPARAMS = *mut TPMPARAMS;
+#[repr(C)]
+pub struct _ICONINFO {
+   pub fIcon: BOOL,
+   pub xHotspot: DWORD,
+   pub yHotspot: DWORD,
+   pub hbmMask: HBITMAP,
+   pub hbmColor: HBITMAP,
+}
+impl Default for _ICONINFO {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type ICONINFO = _ICONINFO;
+pub type PICONINFO = *mut ICONINFO;
+pub type MONITORENUMPROC = ::core::option::Option<
+   unsafe extern "C" fn(arg1: HMONITOR, arg2: HDC, arg3: LPRECT, arg4: LPARAM) -> BOOL,
+>;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct tagGUITHREADINFO {
+   pub cbSize: DWORD,
+   pub flags: DWORD,
+   pub hwndActive: HWND,
+   pub hwndFocus: HWND,
+   pub hwndCapture: HWND,
+   pub hwndMenuOwner: HWND,
+   pub hwndMoveSize: HWND,
+   pub hwndCaret: HWND,
+   pub rcCaret: RECT,
+}
+impl Default for tagGUITHREADINFO {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type PGUITHREADINFO = *mut tagGUITHREADINFO;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct tagCURSORINFO {
+   pub cbSize: DWORD,
+   pub flags: DWORD,
+   pub hCursor: HCURSOR,
+   pub ptScreenPos: POINT,
+}
+impl Default for tagCURSORINFO {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type PCURSORINFO = *mut tagCURSORINFO;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct tagTITLEBARINFO {
+   pub cbSize: DWORD,
+   pub rcTitleBar: RECT,
+   pub rgstate: [DWORD; 6usize],
+}
+pub type PTITLEBARINFO = *mut tagTITLEBARINFO;
+#[repr(C)]
+pub struct tagMENUBARINFO {
+   pub cbSize: DWORD,
+   pub rcBar: RECT,
+   pub hMenu: HMENU,
+   pub hwndMenu: HWND,
+   pub _bitfield_align_1: [u32; 0],
+   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize]>,
+   pub __bindgen_padding_0: u32,
+}
+impl Default for tagMENUBARINFO {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl tagMENUBARINFO {
+   #[inline]
+   pub fn fBarFocused(&self) -> BOOL {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_fBarFocused(&mut self, val: BOOL) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(0usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub fn fFocused(&self) -> BOOL {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_fFocused(&mut self, val: BOOL) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub fn fUnused(&self) -> BOOL {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
+   }
+   #[inline]
+   pub fn set_fUnused(&mut self, val: BOOL) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(2usize, 30u8, val as u64)
+      }
+   }
+   #[inline]
+   pub fn new_bitfield_1(
+      fBarFocused: BOOL,
+      fFocused: BOOL,
+      fUnused: BOOL,
+   ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
+      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
+      __bindgen_bitfield_unit.set(0usize, 1u8, {
+         let fBarFocused: u32 = unsafe { ::core::mem::transmute(fBarFocused) };
+         fBarFocused as u64
+      });
+      __bindgen_bitfield_unit.set(1usize, 1u8, {
+         let fFocused: u32 = unsafe { ::core::mem::transmute(fFocused) };
+         fFocused as u64
+      });
+      __bindgen_bitfield_unit.set(2usize, 30u8, {
+         let fUnused: u32 = unsafe { ::core::mem::transmute(fUnused) };
+         fUnused as u64
+      });
+      __bindgen_bitfield_unit
+   }
+}
+pub type PMENUBARINFO = *mut tagMENUBARINFO;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct tagCOMBOBOXINFO {
+   pub cbSize: DWORD,
+   pub rcItem: RECT,
+   pub rcButton: RECT,
+   pub stateButton: DWORD,
+   pub hwndCombo: HWND,
+   pub hwndItem: HWND,
+   pub hwndList: HWND,
+}
+impl Default for tagCOMBOBOXINFO {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type PCOMBOBOXINFO = *mut tagCOMBOBOXINFO;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct HRAWINPUT__ {
+   pub unused: cty::c_int,
+}
+pub type HRAWINPUT = *mut HRAWINPUT__;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct tagRAWINPUTDEVICE {
+   pub usUsagePage: USHORT,
+   pub usUsage: USHORT,
+   pub dwFlags: DWORD,
+   pub hwndTarget: HWND,
+}
+impl Default for tagRAWINPUTDEVICE {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type PRAWINPUTDEVICE = *mut tagRAWINPUTDEVICE;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct tagRAWINPUTDEVICELIST {
+   pub hDevice: HANDLE,
+   pub dwType: DWORD,
+}
+impl Default for tagRAWINPUTDEVICELIST {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type PRAWINPUTDEVICELIST = *mut tagRAWINPUTDEVICELIST;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct tagCHANGEFILTERSTRUCT {
+   pub cbSize: DWORD,
+   pub ExtStatus: DWORD,
+}
+pub type PCHANGEFILTERSTRUCT = *mut tagCHANGEFILTERSTRUCT;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum tagINPUT_MESSAGE_DEVICE_TYPE {
+   IMDT_UNAVAILABLE = 0,
+   IMDT_KEYBOARD = 1,
+   IMDT_MOUSE = 2,
+   IMDT_TOUCH = 4,
+   IMDT_PEN = 8,
+   IMDT_TOUCHPAD = 16,
+}
+pub use self::tagINPUT_MESSAGE_DEVICE_TYPE as INPUT_MESSAGE_DEVICE_TYPE;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum tagINPUT_MESSAGE_ORIGIN_ID {
+   IMO_UNAVAILABLE = 0,
+   IMO_HARDWARE = 1,
+   IMO_INJECTED = 2,
+   IMO_SYSTEM = 4,
+}
+pub use self::tagINPUT_MESSAGE_ORIGIN_ID as INPUT_MESSAGE_ORIGIN_ID;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct tagINPUT_MESSAGE_SOURCE {
+   pub deviceType: INPUT_MESSAGE_DEVICE_TYPE,
+   pub originId: INPUT_MESSAGE_ORIGIN_ID,
+}
+impl Default for tagINPUT_MESSAGE_SOURCE {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type INPUT_MESSAGE_SOURCE = tagINPUT_MESSAGE_SOURCE;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum ORIENTATION_PREFERENCE {
+   ORIENTATION_PREFERENCE_NONE = 0,
+   ORIENTATION_PREFERENCE_LANDSCAPE = 1,
+   ORIENTATION_PREFERENCE_PORTRAIT = 2,
+   ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED = 4,
+   ORIENTATION_PREFERENCE_PORTRAIT_FLIPPED = 8,
+}
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -7895,6 +8685,7 @@ impl Default for _WNODE_HEADER {
    }
 }
 pub type WNODE_HEADER = _WNODE_HEADER;
+pub type PWNODE_HEADER = *mut _WNODE_HEADER;
 pub type TRACEHANDLE = ULONG64;
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -8047,7 +8838,19 @@ impl Default for _ETW_BUFFER_CONTEXT {
    }
 }
 pub type ETW_BUFFER_CONTEXT = _ETW_BUFFER_CONTEXT;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _PROFILE_SOURCE_INFO {
+   pub NextEntryOffset: ULONG,
+   pub Source: ULONG,
+   pub MinInterval: ULONG,
+   pub MaxInterval: ULONG,
+   pub Reserved: ULONG64,
+   pub Description: [WCHAR; 1usize],
+}
+pub type PPROFILE_SOURCE_INFO = *mut _PROFILE_SOURCE_INFO;
 pub type DOUBLE = f64;
+pub type PDOUBLE = *mut DOUBLE;
 pub type PGUID = *mut GUID;
 pub type PCGUID = *const GUID;
 #[repr(C)]
@@ -8115,6 +8918,13 @@ pub struct _LARGE_INTEGER_128 {
 }
 pub type LARGE_INTEGER_128 = _LARGE_INTEGER_128;
 pub type PLARGE_INTEGER_128 = *mut _LARGE_INTEGER_128;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _ULARGE_INTEGER_128 {
+   pub QuadPart: [ULONGLONG; 2usize],
+}
+pub type ULARGE_INTEGER_128 = _ULARGE_INTEGER_128;
+pub type PULARGE_INTEGER_128 = *mut _ULARGE_INTEGER_128;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -8309,7 +9119,7 @@ pub type PANSI_STRING64 = *mut STRING64;
 pub struct _OBJECT_ATTRIBUTES {
    pub Length: ULONG,
    pub RootDirectory: HANDLE,
-   pub ObjectName: PUNICODE_STRING,
+   pub ObjectName: PCUNICODE_STRING,
    pub Attributes: ULONG,
    pub SecurityDescriptor: PVOID,
    pub SecurityQualityOfService: PVOID,
@@ -9543,6 +10353,53 @@ impl Default for _PS_SYSTEM_DLL_INIT_BLOCK {
 pub type PS_SYSTEM_DLL_INIT_BLOCK = _PS_SYSTEM_DLL_INIT_BLOCK;
 pub type PPS_SYSTEM_DLL_INIT_BLOCK = *mut _PS_SYSTEM_DLL_INIT_BLOCK;
 #[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _RTL_SCPCFG_NTDLL_EXPORTS {
+   pub ScpCfgHeader_Nop: PVOID,
+   pub ScpCfgEnd_Nop: PVOID,
+   pub ScpCfgHeader: PVOID,
+   pub ScpCfgEnd: PVOID,
+   pub ScpCfgHeader_ES: PVOID,
+   pub ScpCfgEnd_ES: PVOID,
+   pub ScpCfgHeader_Fptr: PVOID,
+   pub ScpCfgEnd_Fptr: PVOID,
+   pub LdrpGuardDispatchIcallNoESFptr: PVOID,
+   pub __guard_dispatch_icall_fptr: PVOID,
+   pub LdrpGuardCheckIcallNoESFptr: PVOID,
+   pub __guard_check_icall_fptr: PVOID,
+   pub LdrpHandleInvalidUserCallTarget: PVOID,
+   pub LdrpCriticalLoaderFunctions: _RTL_SCPCFG_NTDLL_EXPORTS__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _RTL_SCPCFG_NTDLL_EXPORTS__bindgen_ty_1 {
+   pub NtOpenFile: PVOID,
+   pub NtCreateSection: PVOID,
+   pub NtQueryAttributesFile: PVOID,
+   pub NtOpenSection: PVOID,
+   pub NtMapViewOfSection: PVOID,
+}
+impl Default for _RTL_SCPCFG_NTDLL_EXPORTS__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for _RTL_SCPCFG_NTDLL_EXPORTS {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type RTL_SCPCFG_NTDLL_EXPORTS = _RTL_SCPCFG_NTDLL_EXPORTS;
+pub type PRTL_SCPCFG_NTDLL_EXPORTS = *mut _RTL_SCPCFG_NTDLL_EXPORTS;
+#[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _LDR_RESOURCE_INFO {
    pub Type: ULONG_PTR,
@@ -9786,6 +10643,30 @@ impl Default for _LDR_SOFTWARE_ENCLAVE {
 }
 pub type LDR_SOFTWARE_ENCLAVE = _LDR_SOFTWARE_ENCLAVE;
 pub type PLDR_SOFTWARE_ENCLAVE = *mut _LDR_SOFTWARE_ENCLAVE;
+#[doc = " Thread Environment Block (TEB) structure.\n\n This structure contains information about the currently executing thread."]
+pub type PTEB = *mut _TEB;
+pub type PCOUNTED_REASON_CONTEXT = *mut _COUNTED_REASON_CONTEXT;
+pub type PFILE_IO_COMPLETION_INFORMATION = *mut _FILE_IO_COMPLETION_INFORMATION;
+pub type PPORT_MESSAGE = *mut _PORT_MESSAGE;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _FILE_OBJECT {
+   _unused: [u8; 0],
+}
+pub type PFILE_OBJECT = *mut _FILE_OBJECT;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _DEVICE_OBJECT {
+   _unused: [u8; 0],
+}
+pub type PDEVICE_OBJECT = *mut _DEVICE_OBJECT;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _IRP {
+   _unused: [u8; 0],
+}
+pub type PIRP = *mut _IRP;
+pub type PRTL_BITMAP = *mut _RTL_BITMAP;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -10003,7 +10884,6 @@ pub enum _TIMER_SET_INFORMATION_CLASS {
    MaxTimerInfoClass = 1,
 }
 pub use self::_TIMER_SET_INFORMATION_CLASS as TIMER_SET_INFORMATION_CLASS;
-pub type PCOUNTED_REASON_CONTEXT = *mut _COUNTED_REASON_CONTEXT;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _TIMER_SET_COALESCABLE_TIMER_INFO {
@@ -10160,8 +11040,6 @@ impl Default for _WORKER_FACTORY_BASIC_INFORMATION {
 }
 pub type WORKER_FACTORY_BASIC_INFORMATION = _WORKER_FACTORY_BASIC_INFORMATION;
 pub type PWORKER_FACTORY_BASIC_INFORMATION = *mut _WORKER_FACTORY_BASIC_INFORMATION;
-pub type PFILE_IO_COMPLETION_INFORMATION = *mut _FILE_IO_COMPLETION_INFORMATION;
-pub type PPORT_MESSAGE = *mut _PORT_MESSAGE;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _WORKER_FACTORY_DEFERRED_WORK {
@@ -10224,7 +11102,7 @@ pub enum _SYSTEM_INFORMATION_CLASS {
    SystemContextSwitchInformation = 36,
    SystemRegistryQuotaInformation = 37,
    SystemExtendServiceTableInformation = 38,
-   SystemPrioritySeperation = 39,
+   SystemPrioritySeparation = 39,
    SystemVerifierAddDriverInformation = 40,
    SystemVerifierRemoveDriverInformation = 41,
    SystemProcessorIdleInformation = 42,
@@ -10427,7 +11305,7 @@ pub enum _SYSTEM_INFORMATION_CLASS {
    SystemMemoryNumaInformation = 239,
    SystemMemoryNumaPerformanceInformation = 240,
    SystemCodeIntegritySignedPoliciesFullInformation = 241,
-   SystemSecureSecretsInformation = 242,
+   SystemSecureCoreInformation = 242,
    SystemTrustedAppsRuntimeInformation = 243,
    SystemBadPageInformationEx = 244,
    SystemResourceDeadlockTimeout = 245,
@@ -10545,6 +11423,10 @@ pub struct _SYSTEM_PERFORMANCE_INFORMATION {
    pub CcDirtyPageThreshold: ULONGLONG,
    pub ResidentAvailablePages: LONGLONG,
    pub SharedCommittedPages: ULONGLONG,
+   pub MdlPagesAllocated: ULONGLONG,
+   pub PfnDatabaseCommittedPages: ULONGLONG,
+   pub SystemPageTableCommittedPages: ULONGLONG,
+   pub ContiguousPagesAllocated: ULONGLONG,
 }
 impl Default for _SYSTEM_PERFORMANCE_INFORMATION {
    fn default() -> Self {
@@ -10586,7 +11468,7 @@ pub struct _SYSTEM_THREAD_INFORMATION {
    pub UserTime: LARGE_INTEGER,
    pub CreateTime: LARGE_INTEGER,
    pub WaitTime: ULONG,
-   pub StartAddress: ULONG_PTR,
+   pub StartAddress: PVOID,
    pub ClientId: CLIENT_ID,
    pub Priority: KPRIORITY,
    pub BasePriority: KPRIORITY,
@@ -10605,15 +11487,14 @@ impl Default for _SYSTEM_THREAD_INFORMATION {
 }
 pub type SYSTEM_THREAD_INFORMATION = _SYSTEM_THREAD_INFORMATION;
 pub type PSYSTEM_THREAD_INFORMATION = *mut _SYSTEM_THREAD_INFORMATION;
-pub type PTEB = *mut _TEB;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _SYSTEM_EXTENDED_THREAD_INFORMATION {
    pub ThreadInfo: SYSTEM_THREAD_INFORMATION,
-   pub StackBase: PVOID,
-   pub StackLimit: PVOID,
-   pub Win32StartAddress: ULONG_PTR,
-   pub TebBase: PTEB,
+   pub StackBase: ULONG_PTR,
+   pub StackLimit: ULONG_PTR,
+   pub Win32StartAddress: PVOID,
+   pub TebBase: PVOID,
    pub Reserved2: ULONG_PTR,
    pub Reserved3: ULONG_PTR,
    pub Reserved4: ULONG_PTR,
@@ -10835,7 +11716,7 @@ pub struct _SYSTEM_HANDLE_TABLE_ENTRY_INFO {
    pub HandleAttributes: UCHAR,
    pub HandleValue: USHORT,
    pub Object: PVOID,
-   pub GrantedAccess: ULONG,
+   pub GrantedAccess: ACCESS_MASK,
 }
 impl Default for _SYSTEM_HANDLE_TABLE_ENTRY_INFO {
    fn default() -> Self {
@@ -10873,7 +11754,7 @@ pub struct _SYSTEM_OBJECTTYPE_INFORMATION {
    pub TypeIndex: ULONG,
    pub InvalidAttributes: ULONG,
    pub GenericMapping: GENERIC_MAPPING,
-   pub ValidAccessMask: ULONG,
+   pub ValidAccessMask: ACCESS_MASK,
    pub PoolType: ULONG,
    pub SecurityRequired: BOOLEAN,
    pub WaitableObject: BOOLEAN,
@@ -11145,6 +12026,483 @@ impl Default for _SYSTEM_SET_TIME_ADJUST_INFORMATION_PRECISE {
 pub type SYSTEM_SET_TIME_ADJUST_INFORMATION_PRECISE = _SYSTEM_SET_TIME_ADJUST_INFORMATION_PRECISE;
 pub type PSYSTEM_SET_TIME_ADJUST_INFORMATION_PRECISE =
    *mut _SYSTEM_SET_TIME_ADJUST_INFORMATION_PRECISE;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _EVENT_TRACE_INFORMATION_CLASS {
+   EventTraceKernelVersionInformation = 0,
+   EventTraceGroupMaskInformation = 1,
+   EventTracePerformanceInformation = 2,
+   EventTraceTimeProfileInformation = 3,
+   EventTraceSessionSecurityInformation = 4,
+   EventTraceSpinlockInformation = 5,
+   EventTraceStackTracingInformation = 6,
+   EventTraceExecutiveResourceInformation = 7,
+   EventTraceHeapTracingInformation = 8,
+   EventTraceHeapSummaryTracingInformation = 9,
+   EventTracePoolTagFilterInformation = 10,
+   EventTracePebsTracingInformation = 11,
+   EventTraceProfileConfigInformation = 12,
+   EventTraceProfileSourceListInformation = 13,
+   EventTraceProfileEventListInformation = 14,
+   EventTraceProfileCounterListInformation = 15,
+   EventTraceStackCachingInformation = 16,
+   EventTraceObjectTypeFilterInformation = 17,
+   EventTraceSoftRestartInformation = 18,
+   EventTraceLastBranchConfigurationInformation = 19,
+   EventTraceLastBranchEventListInformation = 20,
+   EventTraceProfileSourceAddInformation = 21,
+   EventTraceProfileSourceRemoveInformation = 22,
+   EventTraceProcessorTraceConfigurationInformation = 23,
+   EventTraceProcessorTraceEventListInformation = 24,
+   EventTraceCoverageSamplerInformation = 25,
+   EventTraceUnifiedStackCachingInformation = 26,
+   EventTraceContextRegisterTraceInformation = 27,
+   MaxEventTraceInfoClass = 28,
+}
+pub use self::_EVENT_TRACE_INFORMATION_CLASS as EVENT_TRACE_INFORMATION_CLASS;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _EVENT_TRACE_VERSION_INFORMATION {
+   pub EventTraceInformationClass: EVENT_TRACE_INFORMATION_CLASS,
+   pub EventTraceKernelVersion: ULONG,
+}
+impl Default for _EVENT_TRACE_VERSION_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_VERSION_INFORMATION = _EVENT_TRACE_VERSION_INFORMATION;
+pub type PEVENT_TRACE_VERSION_INFORMATION = *mut _EVENT_TRACE_VERSION_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _EVENT_TRACE_GROUPMASK_INFORMATION {
+   pub EventTraceInformationClass: EVENT_TRACE_INFORMATION_CLASS,
+   pub TraceHandle: TRACEHANDLE,
+   pub EventTraceGroupMasks: [ULONG; 8usize],
+}
+impl Default for _EVENT_TRACE_GROUPMASK_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_GROUPMASK_INFORMATION = _EVENT_TRACE_GROUPMASK_INFORMATION;
+pub type PEVENT_TRACE_GROUPMASK_INFORMATION = *mut _EVENT_TRACE_GROUPMASK_INFORMATION;
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct _EVENT_TRACE_PERFORMANCE_INFORMATION {
+   pub EventTraceInformationClass: EVENT_TRACE_INFORMATION_CLASS,
+   pub LogfileBytesWritten: LARGE_INTEGER,
+}
+impl Default for _EVENT_TRACE_PERFORMANCE_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_PERFORMANCE_INFORMATION = _EVENT_TRACE_PERFORMANCE_INFORMATION;
+pub type PEVENT_TRACE_PERFORMANCE_INFORMATION = *mut _EVENT_TRACE_PERFORMANCE_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _EVENT_TRACE_TIME_PROFILE_INFORMATION {
+   pub EventTraceInformationClass: EVENT_TRACE_INFORMATION_CLASS,
+   pub ProfileInterval: ULONG,
+}
+impl Default for _EVENT_TRACE_TIME_PROFILE_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_TIME_PROFILE_INFORMATION = _EVENT_TRACE_TIME_PROFILE_INFORMATION;
+pub type PEVENT_TRACE_TIME_PROFILE_INFORMATION = *mut _EVENT_TRACE_TIME_PROFILE_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _EVENT_TRACE_SESSION_SECURITY_INFORMATION {
+   pub EventTraceInformationClass: EVENT_TRACE_INFORMATION_CLASS,
+   pub SecurityInformation: ULONG,
+   pub TraceHandle: TRACEHANDLE,
+   pub SecurityDescriptor: [UCHAR; 1usize],
+}
+impl Default for _EVENT_TRACE_SESSION_SECURITY_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_SESSION_SECURITY_INFORMATION = _EVENT_TRACE_SESSION_SECURITY_INFORMATION;
+pub type PEVENT_TRACE_SESSION_SECURITY_INFORMATION = *mut _EVENT_TRACE_SESSION_SECURITY_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _EVENT_TRACE_SPINLOCK_INFORMATION {
+   pub EventTraceInformationClass: EVENT_TRACE_INFORMATION_CLASS,
+   pub SpinLockSpinThreshold: ULONG,
+   pub SpinLockAcquireSampleRate: ULONG,
+   pub SpinLockContentionSampleRate: ULONG,
+   pub SpinLockHoldThreshold: ULONG,
+}
+impl Default for _EVENT_TRACE_SPINLOCK_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_SPINLOCK_INFORMATION = _EVENT_TRACE_SPINLOCK_INFORMATION;
+pub type PEVENT_TRACE_SPINLOCK_INFORMATION = *mut _EVENT_TRACE_SPINLOCK_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _EVENT_TRACE_SYSTEM_EVENT_INFORMATION {
+   pub EventTraceInformationClass: EVENT_TRACE_INFORMATION_CLASS,
+   pub TraceHandle: TRACEHANDLE,
+   pub HookId: [ULONG; 1usize],
+}
+impl Default for _EVENT_TRACE_SYSTEM_EVENT_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_SYSTEM_EVENT_INFORMATION = _EVENT_TRACE_SYSTEM_EVENT_INFORMATION;
+pub type PEVENT_TRACE_SYSTEM_EVENT_INFORMATION = *mut _EVENT_TRACE_SYSTEM_EVENT_INFORMATION;
+pub type EVENT_TRACE_STACK_TRACING_INFORMATION = EVENT_TRACE_SYSTEM_EVENT_INFORMATION;
+pub type PEVENT_TRACE_STACK_TRACING_INFORMATION = *mut EVENT_TRACE_SYSTEM_EVENT_INFORMATION;
+pub type EVENT_TRACE_PEBS_TRACING_INFORMATION = EVENT_TRACE_SYSTEM_EVENT_INFORMATION;
+pub type PEVENT_TRACE_PEBS_TRACING_INFORMATION = *mut EVENT_TRACE_SYSTEM_EVENT_INFORMATION;
+pub type EVENT_TRACE_PROFILE_EVENT_INFORMATION = EVENT_TRACE_SYSTEM_EVENT_INFORMATION;
+pub type PEVENT_TRACE_PROFILE_EVENT_INFORMATION = *mut EVENT_TRACE_SYSTEM_EVENT_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _EVENT_TRACE_EXECUTIVE_RESOURCE_INFORMATION {
+   pub EventTraceInformationClass: EVENT_TRACE_INFORMATION_CLASS,
+   pub ReleaseSamplingRate: ULONG,
+   pub ContentionSamplingRate: ULONG,
+   pub NumberOfExcessiveTimeouts: ULONG,
+}
+impl Default for _EVENT_TRACE_EXECUTIVE_RESOURCE_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_EXECUTIVE_RESOURCE_INFORMATION = _EVENT_TRACE_EXECUTIVE_RESOURCE_INFORMATION;
+pub type PEVENT_TRACE_EXECUTIVE_RESOURCE_INFORMATION =
+   *mut _EVENT_TRACE_EXECUTIVE_RESOURCE_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _EVENT_TRACE_HEAP_TRACING_INFORMATION {
+   pub EventTraceInformationClass: EVENT_TRACE_INFORMATION_CLASS,
+   pub ProcessId: [ULONG; 1usize],
+}
+impl Default for _EVENT_TRACE_HEAP_TRACING_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_HEAP_TRACING_INFORMATION = _EVENT_TRACE_HEAP_TRACING_INFORMATION;
+pub type PEVENT_TRACE_HEAP_TRACING_INFORMATION = *mut _EVENT_TRACE_HEAP_TRACING_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _EVENT_TRACE_TAG_FILTER_INFORMATION {
+   pub EventTraceInformationClass: EVENT_TRACE_INFORMATION_CLASS,
+   pub TraceHandle: TRACEHANDLE,
+   pub Filter: [ULONG; 1usize],
+}
+impl Default for _EVENT_TRACE_TAG_FILTER_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_TAG_FILTER_INFORMATION = _EVENT_TRACE_TAG_FILTER_INFORMATION;
+pub type PEVENT_TRACE_TAG_FILTER_INFORMATION = *mut _EVENT_TRACE_TAG_FILTER_INFORMATION;
+pub type EVENT_TRACE_POOLTAG_FILTER_INFORMATION = EVENT_TRACE_TAG_FILTER_INFORMATION;
+pub type PEVENT_TRACE_POOLTAG_FILTER_INFORMATION = *mut EVENT_TRACE_TAG_FILTER_INFORMATION;
+pub type EVENT_TRACE_OBJECT_TYPE_FILTER_INFORMATION = EVENT_TRACE_TAG_FILTER_INFORMATION;
+pub type PEVENT_TRACE_OBJECT_TYPE_FILTER_INFORMATION = *mut EVENT_TRACE_TAG_FILTER_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _EVENT_TRACE_PROFILE_COUNTER_INFORMATION {
+   pub EventTraceInformationClass: EVENT_TRACE_INFORMATION_CLASS,
+   pub TraceHandle: TRACEHANDLE,
+   pub ProfileSource: [ULONG; 1usize],
+}
+impl Default for _EVENT_TRACE_PROFILE_COUNTER_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_PROFILE_COUNTER_INFORMATION = _EVENT_TRACE_PROFILE_COUNTER_INFORMATION;
+pub type PEVENT_TRACE_PROFILE_COUNTER_INFORMATION = *mut _EVENT_TRACE_PROFILE_COUNTER_INFORMATION;
+pub type EVENT_TRACE_PROFILE_CONFIG_INFORMATION = EVENT_TRACE_PROFILE_COUNTER_INFORMATION;
+pub type PEVENT_TRACE_PROFILE_CONFIG_INFORMATION = *mut EVENT_TRACE_PROFILE_COUNTER_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _EVENT_TRACE_PROFILE_LIST_INFORMATION {
+   pub EventTraceInformationClass: EVENT_TRACE_INFORMATION_CLASS,
+   pub Spare: ULONG,
+   pub Profile: [PPROFILE_SOURCE_INFO; 1usize],
+}
+impl Default for _EVENT_TRACE_PROFILE_LIST_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_PROFILE_LIST_INFORMATION = _EVENT_TRACE_PROFILE_LIST_INFORMATION;
+pub type PEVENT_TRACE_PROFILE_LIST_INFORMATION = *mut _EVENT_TRACE_PROFILE_LIST_INFORMATION;
+#[repr(C)]
+pub struct _EVENT_TRACE_STACK_CACHING_INFORMATION {
+   pub EventTraceInformationClass: EVENT_TRACE_INFORMATION_CLASS,
+   pub TraceHandle: TRACEHANDLE,
+   pub Enabled: BOOLEAN,
+   pub Reserved: [UCHAR; 3usize],
+   pub CacheSize: ULONG,
+   pub BucketCount: ULONG,
+}
+impl Default for _EVENT_TRACE_STACK_CACHING_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_STACK_CACHING_INFORMATION = _EVENT_TRACE_STACK_CACHING_INFORMATION;
+pub type PEVENT_TRACE_STACK_CACHING_INFORMATION = *mut _EVENT_TRACE_STACK_CACHING_INFORMATION;
+#[repr(C)]
+pub struct _EVENT_TRACE_SOFT_RESTART_INFORMATION {
+   pub EventTraceInformationClass: EVENT_TRACE_INFORMATION_CLASS,
+   pub TraceHandle: TRACEHANDLE,
+   pub PersistTraceBuffers: BOOLEAN,
+   pub FileName: [WCHAR; 1usize],
+}
+impl Default for _EVENT_TRACE_SOFT_RESTART_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_SOFT_RESTART_INFORMATION = _EVENT_TRACE_SOFT_RESTART_INFORMATION;
+pub type PEVENT_TRACE_SOFT_RESTART_INFORMATION = *mut _EVENT_TRACE_SOFT_RESTART_INFORMATION;
+impl _EVENT_TRACE_PROFILE_ADD_INFORMATION_VERSIONS {
+   pub const EventTraceProfileAddInformationV2: _EVENT_TRACE_PROFILE_ADD_INFORMATION_VERSIONS =
+      _EVENT_TRACE_PROFILE_ADD_INFORMATION_VERSIONS::EventTraceProfileAddInformationMinVersion;
+}
+impl _EVENT_TRACE_PROFILE_ADD_INFORMATION_VERSIONS {
+   pub const EventTraceProfileAddInformationMaxVersion:
+      _EVENT_TRACE_PROFILE_ADD_INFORMATION_VERSIONS =
+      _EVENT_TRACE_PROFILE_ADD_INFORMATION_VERSIONS::EventTraceProfileAddInformationV3;
+}
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _EVENT_TRACE_PROFILE_ADD_INFORMATION_VERSIONS {
+   EventTraceProfileAddInformationMinVersion = 2,
+   EventTraceProfileAddInformationV3 = 3,
+}
+pub use self::_EVENT_TRACE_PROFILE_ADD_INFORMATION_VERSIONS as EVENT_TRACE_PROFILE_ADD_INFORMATION_VERSIONS;
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union _EVENT_TRACE_PROFILE_ADD_INFORMATION_V2 {
+   pub Intel: _EVENT_TRACE_PROFILE_ADD_INFORMATION_V2__bindgen_ty_1,
+   pub Amd: _EVENT_TRACE_PROFILE_ADD_INFORMATION_V2__bindgen_ty_2,
+   pub Arm: _EVENT_TRACE_PROFILE_ADD_INFORMATION_V2__bindgen_ty_3,
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _EVENT_TRACE_PROFILE_ADD_INFORMATION_V2__bindgen_ty_1 {
+   pub PerfEvtEventSelect: UCHAR,
+   pub PerfEvtUnitSelect: UCHAR,
+   pub PerfEvtCMask: UCHAR,
+   pub PerfEvtCInv: UCHAR,
+   pub PerfEvtAnyThread: UCHAR,
+   pub PerfEvtEdgeDetect: UCHAR,
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _EVENT_TRACE_PROFILE_ADD_INFORMATION_V2__bindgen_ty_2 {
+   pub PerfEvtEventSelect: UCHAR,
+   pub PerfEvtUnitSelect: UCHAR,
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _EVENT_TRACE_PROFILE_ADD_INFORMATION_V2__bindgen_ty_3 {
+   pub PerfEvtType: ULONG,
+   pub AllowsHalt: UCHAR,
+}
+impl Default for _EVENT_TRACE_PROFILE_ADD_INFORMATION_V2 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_PROFILE_ADD_INFORMATION_V2 = _EVENT_TRACE_PROFILE_ADD_INFORMATION_V2;
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union _EVENT_TRACE_PROFILE_ADD_INFORMATION_V3 {
+   pub Intel: _EVENT_TRACE_PROFILE_ADD_INFORMATION_V3__bindgen_ty_1,
+   pub Amd: _EVENT_TRACE_PROFILE_ADD_INFORMATION_V3__bindgen_ty_2,
+   pub Arm: _EVENT_TRACE_PROFILE_ADD_INFORMATION_V3__bindgen_ty_3,
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _EVENT_TRACE_PROFILE_ADD_INFORMATION_V3__bindgen_ty_1 {
+   pub PerfEvtEventSelect: UCHAR,
+   pub PerfEvtUnitSelect: UCHAR,
+   pub PerfEvtCMask: UCHAR,
+   pub PerfEvtCInv: UCHAR,
+   pub PerfEvtAnyThread: UCHAR,
+   pub PerfEvtEdgeDetect: UCHAR,
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _EVENT_TRACE_PROFILE_ADD_INFORMATION_V3__bindgen_ty_2 {
+   pub PerfEvtEventSelect: USHORT,
+   pub PerfEvtUnitSelect: UCHAR,
+   pub PerfEvtCMask: UCHAR,
+   pub PerfEvtCInv: UCHAR,
+   pub PerfEvtEdgeDetect: UCHAR,
+   pub PerfEvtHostGuest: UCHAR,
+   pub PerfPmuType: UCHAR,
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _EVENT_TRACE_PROFILE_ADD_INFORMATION_V3__bindgen_ty_3 {
+   pub PerfEvtType: ULONG,
+   pub AllowsHalt: UCHAR,
+}
+impl Default for _EVENT_TRACE_PROFILE_ADD_INFORMATION_V3 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_PROFILE_ADD_INFORMATION_V3 = _EVENT_TRACE_PROFILE_ADD_INFORMATION_V3;
+#[repr(C)]
+pub struct _EVENT_TRACE_PROFILE_ADD_INFORMATION {
+   pub EventTraceInformationClass: EVENT_TRACE_INFORMATION_CLASS,
+   pub Version: UCHAR,
+   pub __bindgen_anon_1: _EVENT_TRACE_PROFILE_ADD_INFORMATION__bindgen_ty_1,
+   pub CpuInfoHierarchy: [ULONG; 3usize],
+   pub InitialInterval: ULONG,
+   pub Persist: BOOLEAN,
+   pub ProfileSourceDescription: [WCHAR; 1usize],
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union _EVENT_TRACE_PROFILE_ADD_INFORMATION__bindgen_ty_1 {
+   pub V2: EVENT_TRACE_PROFILE_ADD_INFORMATION_V2,
+   pub V3: EVENT_TRACE_PROFILE_ADD_INFORMATION_V3,
+}
+impl Default for _EVENT_TRACE_PROFILE_ADD_INFORMATION__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for _EVENT_TRACE_PROFILE_ADD_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_PROFILE_ADD_INFORMATION = _EVENT_TRACE_PROFILE_ADD_INFORMATION;
+pub type PEVENT_TRACE_PROFILE_ADD_INFORMATION = *mut _EVENT_TRACE_PROFILE_ADD_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _EVENT_TRACE_PROFILE_REMOVE_INFORMATION {
+   pub EventTraceInformationClass: EVENT_TRACE_INFORMATION_CLASS,
+   pub ProfileSource: KPROFILE_SOURCE,
+   pub CpuInfoHierarchy: [ULONG; 3usize],
+}
+impl Default for _EVENT_TRACE_PROFILE_REMOVE_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_PROFILE_REMOVE_INFORMATION = _EVENT_TRACE_PROFILE_REMOVE_INFORMATION;
+pub type PEVENT_TRACE_PROFILE_REMOVE_INFORMATION = *mut _EVENT_TRACE_PROFILE_REMOVE_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _EVENT_TRACE_COVERAGE_SAMPLER_INFORMATION {
+   pub EventTraceInformationClass: EVENT_TRACE_INFORMATION_CLASS,
+   pub CoverageSamplerInformationClass: UCHAR,
+   pub MajorVersion: UCHAR,
+   pub MinorVersion: UCHAR,
+   pub Reserved: UCHAR,
+   pub SamplerHandle: HANDLE,
+}
+impl Default for _EVENT_TRACE_COVERAGE_SAMPLER_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type EVENT_TRACE_COVERAGE_SAMPLER_INFORMATION = _EVENT_TRACE_COVERAGE_SAMPLER_INFORMATION;
+pub type PEVENT_TRACE_COVERAGE_SAMPLER_INFORMATION = *mut _EVENT_TRACE_COVERAGE_SAMPLER_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _SYSTEM_EXCEPTION_INFORMATION {
@@ -11459,9 +12817,9 @@ pub type PSYSTEM_PROCESSOR_POWER_INFORMATION = *mut _SYSTEM_PROCESSOR_POWER_INFO
 #[derive(Debug, Copy, Clone)]
 pub struct _SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX {
    pub Object: PVOID,
-   pub UniqueProcessId: ULONG_PTR,
-   pub HandleValue: ULONG_PTR,
-   pub GrantedAccess: ULONG,
+   pub UniqueProcessId: HANDLE,
+   pub HandleValue: HANDLE,
+   pub GrantedAccess: ACCESS_MASK,
    pub CreatorBackTraceIndex: USHORT,
    pub ObjectTypeIndex: USHORT,
    pub HandleAttributes: ULONG,
@@ -11795,14 +13153,14 @@ pub type PSYSTEM_FIRMWARE_TABLE_HANDLER = *mut _SYSTEM_FIRMWARE_TABLE_HANDLER;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _SYSTEM_MEMORY_LIST_INFORMATION {
-   pub ZeroPageCount: ULONG_PTR,
-   pub FreePageCount: ULONG_PTR,
-   pub ModifiedPageCount: ULONG_PTR,
-   pub ModifiedNoWritePageCount: ULONG_PTR,
-   pub BadPageCount: ULONG_PTR,
-   pub PageCountByPriority: [ULONG_PTR; 8usize],
-   pub RepurposedPagesByPriority: [ULONG_PTR; 8usize],
-   pub ModifiedPageCountPageFile: ULONG_PTR,
+   pub ZeroPageCount: SIZE_T,
+   pub FreePageCount: SIZE_T,
+   pub ModifiedPageCount: SIZE_T,
+   pub ModifiedNoWritePageCount: SIZE_T,
+   pub BadPageCount: SIZE_T,
+   pub PageCountByPriority: [SIZE_T; 8usize],
+   pub RepurposedPagesByPriority: [SIZE_T; 8usize],
+   pub ModifiedPageCountPageFile: SIZE_T,
 }
 pub type SYSTEM_MEMORY_LIST_INFORMATION = _SYSTEM_MEMORY_LIST_INFORMATION;
 pub type PSYSTEM_MEMORY_LIST_INFORMATION = *mut _SYSTEM_MEMORY_LIST_INFORMATION;
@@ -13098,25 +14456,6 @@ pub struct _SMKM_REGION_EXTENT {
 }
 pub type SMKM_REGION_EXTENT = _SMKM_REGION_EXTENT;
 pub type PSMKM_REGION_EXTENT = *mut _SMKM_REGION_EXTENT;
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct _FILE_OBJECT {
-   _unused: [u8; 0],
-}
-pub type PFILE_OBJECT = *mut _FILE_OBJECT;
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct _DEVICE_OBJECT {
-   _unused: [u8; 0],
-}
-pub type PDEVICE_OBJECT = *mut _DEVICE_OBJECT;
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct _IRP {
-   _unused: [u8; 0],
-}
-pub type PIRP = *mut _IRP;
-pub type PRTL_BITMAP = *mut _RTL_BITMAP;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _SMKM_FILE_INFO {
@@ -14500,18 +15839,40 @@ pub type PSYSTEM_LOW_PRIORITY_IO_INFORMATION = *mut _SYSTEM_LOW_PRIORITY_IO_INFO
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub enum _TPM_BOOT_ENTROPY_RESULT_CODE {
-   TpmBootEntropyStructureUninitialized = 0,
-   TpmBootEntropyDisabledByPolicy = 1,
-   TpmBootEntropyNoTpmFound = 2,
-   TpmBootEntropyTpmError = 3,
-   TpmBootEntropySuccess = 4,
+pub enum _BOOT_ENTROPY_SOURCE_RESULT_CODE {
+   BootEntropySourceStructureUninitialized = 0,
+   BootEntropySourceDisabledByPolicy = 1,
+   BootEntropySourceNotPresent = 2,
+   BootEntropySourceError = 3,
+   BootEntropySourceSuccess = 4,
 }
-pub use self::_TPM_BOOT_ENTROPY_RESULT_CODE as TPM_BOOT_ENTROPY_RESULT_CODE;
+pub use self::_BOOT_ENTROPY_SOURCE_RESULT_CODE as BOOT_ENTROPY_SOURCE_RESULT_CODE;
+impl _BOOT_ENTROPY_SOURCE_ID {
+   pub const BootMaxEntropySources: _BOOT_ENTROPY_SOURCE_ID =
+      _BOOT_ENTROPY_SOURCE_ID::BootEntropySourceTcbRdrand;
+}
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _BOOT_ENTROPY_SOURCE_ID {
+   BootEntropySourceNone = 0,
+   BootEntropySourceSeedfile = 1,
+   BootEntropySourceExternal = 2,
+   BootEntropySourceTpm = 3,
+   BootEntropySourceRdrand = 4,
+   BootEntropySourceTime = 5,
+   BootEntropySourceAcpiOem0 = 6,
+   BootEntropySourceUefi = 7,
+   BootEntropySourceCng = 8,
+   BootEntropySourceTcbTpm = 9,
+   BootEntropySourceTcbRdrand = 10,
+}
+pub use self::_BOOT_ENTROPY_SOURCE_ID as BOOT_ENTROPY_SOURCE_ID;
+pub type PBOOT_ENTROPY_SOURCE_ID = *mut _BOOT_ENTROPY_SOURCE_ID;
 #[repr(C)]
 pub struct _TPM_BOOT_ENTROPY_NT_RESULT {
    pub Policy: ULONGLONG,
-   pub ResultCode: TPM_BOOT_ENTROPY_RESULT_CODE,
+   pub ResultCode: BOOT_ENTROPY_SOURCE_RESULT_CODE,
    pub ResultStatus: NTSTATUS,
    pub Time: ULONGLONG,
    pub EntropyLength: ULONG,
@@ -14528,6 +15889,44 @@ impl Default for _TPM_BOOT_ENTROPY_NT_RESULT {
 }
 pub type TPM_BOOT_ENTROPY_NT_RESULT = _TPM_BOOT_ENTROPY_NT_RESULT;
 pub type PTPM_BOOT_ENTROPY_NT_RESULT = *mut _TPM_BOOT_ENTROPY_NT_RESULT;
+#[repr(C)]
+pub struct _BOOT_ENTROPY_SOURCE_NT_RESULT {
+   pub SourceId: BOOT_ENTROPY_SOURCE_ID,
+   pub Policy: ULONG64,
+   pub ResultCode: BOOT_ENTROPY_SOURCE_RESULT_CODE,
+   pub ResultStatus: NTSTATUS,
+   pub Time: ULONGLONG,
+   pub EntropyLength: ULONG,
+   pub EntropyData: [UCHAR; 64usize],
+}
+impl Default for _BOOT_ENTROPY_SOURCE_NT_RESULT {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type BOOT_ENTROPY_SOURCE_NT_RESULT = _BOOT_ENTROPY_SOURCE_NT_RESULT;
+pub type PBOOT_ENTROPY_SOURCE_NT_RESULT = *mut _BOOT_ENTROPY_SOURCE_NT_RESULT;
+#[repr(C)]
+pub struct _BOOT_ENTROPY_NT_RESULT {
+   pub maxEntropySources: ULONG,
+   pub EntropySourceResult: [BOOT_ENTROPY_SOURCE_NT_RESULT; 10usize],
+   pub SeedBytesForCng: [UCHAR; 48usize],
+}
+impl Default for _BOOT_ENTROPY_NT_RESULT {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type BOOT_ENTROPY_NT_RESULT = _BOOT_ENTROPY_NT_RESULT;
+pub type PBOOT_ENTROPY_NT_RESULT = *mut _BOOT_ENTROPY_NT_RESULT;
 #[repr(C)]
 pub struct _SYSTEM_VERIFIER_COUNTERS_INFORMATION {
    pub Legacy: SYSTEM_VERIFIER_INFORMATION,
@@ -14775,7 +16174,7 @@ pub type PSYSTEM_BOOT_GRAPHICS_INFORMATION = *mut _SYSTEM_BOOT_GRAPHICS_INFORMAT
 #[derive(Debug, Copy, Clone)]
 pub struct _MEMORY_SCRUB_INFORMATION {
    pub Handle: HANDLE,
-   pub PagesScrubbed: ULONG_PTR,
+   pub PagesScrubbed: SIZE_T,
 }
 impl Default for _MEMORY_SCRUB_INFORMATION {
    fn default() -> Self {
@@ -14962,7 +16361,7 @@ pub type PSYSTEM_PROCESSOR_PROFILE_CONTROL_AREA = *mut _SYSTEM_PROCESSOR_PROFILE
 #[derive(Debug, Copy, Clone)]
 pub struct _MEMORY_COMBINE_INFORMATION {
    pub Handle: HANDLE,
-   pub PagesCombined: ULONG_PTR,
+   pub PagesCombined: SIZE_T,
 }
 impl Default for _MEMORY_COMBINE_INFORMATION {
    fn default() -> Self {
@@ -14979,7 +16378,7 @@ pub type PMEMORY_COMBINE_INFORMATION = *mut _MEMORY_COMBINE_INFORMATION;
 #[derive(Debug, Copy, Clone)]
 pub struct _MEMORY_COMBINE_INFORMATION_EX {
    pub Handle: HANDLE,
-   pub PagesCombined: ULONG_PTR,
+   pub PagesCombined: SIZE_T,
    pub Flags: ULONG,
 }
 impl Default for _MEMORY_COMBINE_INFORMATION_EX {
@@ -14997,7 +16396,7 @@ pub type PMEMORY_COMBINE_INFORMATION_EX = *mut _MEMORY_COMBINE_INFORMATION_EX;
 #[derive(Debug, Copy, Clone)]
 pub struct _MEMORY_COMBINE_INFORMATION_EX2 {
    pub Handle: HANDLE,
-   pub PagesCombined: ULONG_PTR,
+   pub PagesCombined: SIZE_T,
    pub Flags: ULONG,
    pub ProcessHandle: HANDLE,
 }
@@ -15212,6 +16611,25 @@ impl Default for _SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_EX {
 pub type SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_EX = _SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_EX;
 pub type PSYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_EX =
    *mut _SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_EX;
+#[repr(C)]
+pub struct _CRITICAL_PROCESS_EXCEPTION_DATA {
+   pub ReportId: GUID,
+   pub ModuleName: UNICODE_STRING,
+   pub ModuleTimestamp: ULONG,
+   pub ModuleSize: ULONG,
+   pub Offset: ULONG_PTR,
+}
+impl Default for _CRITICAL_PROCESS_EXCEPTION_DATA {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type CRITICAL_PROCESS_EXCEPTION_DATA = _CRITICAL_PROCESS_EXCEPTION_DATA;
+pub type PCRITICAL_PROCESS_EXCEPTION_DATA = *mut _CRITICAL_PROCESS_EXCEPTION_DATA;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _SYSTEM_SECUREBOOT_POLICY_INFORMATION {
@@ -16198,6 +17616,40 @@ pub struct _SYSTEM_SECUREBOOT_POLICY_FULL_INFORMATION {
 pub type SYSTEM_SECUREBOOT_POLICY_FULL_INFORMATION = _SYSTEM_SECUREBOOT_POLICY_FULL_INFORMATION;
 pub type PSYSTEM_SECUREBOOT_POLICY_FULL_INFORMATION =
    *mut _SYSTEM_SECUREBOOT_POLICY_FULL_INFORMATION;
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct _KAFFINITY_EX {
+   pub Count: USHORT,
+   pub Size: USHORT,
+   pub Reserved: ULONG,
+   pub __bindgen_anon_1: _KAFFINITY_EX__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union _KAFFINITY_EX__bindgen_ty_1 {
+   pub Bitmap: [ULONG_PTR; 1usize],
+   pub StaticBitmap: [ULONG_PTR; 32usize],
+}
+impl Default for _KAFFINITY_EX__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for _KAFFINITY_EX {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type KAFFINITY_EX = _KAFFINITY_EX;
+pub type PKAFFINITY_EX = *mut _KAFFINITY_EX;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _SYSTEM_ROOT_SILO_INFORMATION {
@@ -18934,7 +20386,7 @@ pub struct _SYSTEM_MEMORY_NUMA_PERFORMANCE_ENTRY {
    pub TargetNodeNumber: ULONG,
    pub DataType: SYSTEM_MEMORY_NUMA_PERFORMANCE_QUERY_DATA_TYPES,
    pub __bindgen_anon_1: _SYSTEM_MEMORY_NUMA_PERFORMANCE_ENTRY__bindgen_ty_1,
-   pub MinTransferSizeInBytes: ULONG_PTR,
+   pub MinTransferSizeInBytes: SIZE_T,
    pub EntryValue: ULONG_PTR,
 }
 #[repr(C)]
@@ -19617,6 +21069,31 @@ pub type SYSDBG_LIVEDUMP_SELECTIVE_CONTROL = _SYSDBG_LIVEDUMP_SELECTIVE_CONTROL;
 pub type PSYSDBG_LIVEDUMP_SELECTIVE_CONTROL = *mut _SYSDBG_LIVEDUMP_SELECTIVE_CONTROL;
 #[repr(C)]
 #[derive(Copy, Clone)]
+pub struct _SYSDBG_LIVEDUMP_CONTROL_V1 {
+   pub Version: ULONG,
+   pub BugCheckCode: ULONG,
+   pub BugCheckParam1: ULONG_PTR,
+   pub BugCheckParam2: ULONG_PTR,
+   pub BugCheckParam3: ULONG_PTR,
+   pub BugCheckParam4: ULONG_PTR,
+   pub DumpFileHandle: HANDLE,
+   pub CancelEventHandle: HANDLE,
+   pub Flags: SYSDBG_LIVEDUMP_CONTROL_FLAGS,
+   pub AddPagesControl: SYSDBG_LIVEDUMP_CONTROL_ADDPAGES,
+}
+impl Default for _SYSDBG_LIVEDUMP_CONTROL_V1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type SYSDBG_LIVEDUMP_CONTROL_V1 = _SYSDBG_LIVEDUMP_CONTROL_V1;
+pub type PSYSDBG_LIVEDUMP_CONTROL_V1 = *mut _SYSDBG_LIVEDUMP_CONTROL_V1;
+#[repr(C)]
+#[derive(Copy, Clone)]
 pub struct _SYSDBG_LIVEDUMP_CONTROL {
    pub Version: ULONG,
    pub BugCheckCode: ULONG,
@@ -20251,7 +21728,7 @@ pub enum _BCD_MESSAGE_TYPE {
 }
 pub use self::_BCD_MESSAGE_TYPE as BCD_MESSAGE_TYPE;
 pub type BCD_MESSAGE_CALLBACK =
-   ::core::option::Option<unsafe extern "C" fn(type_: BCD_MESSAGE_TYPE, Message: PWSTR)>;
+   ::core::option::Option<unsafe extern "C" fn(type_: BCD_MESSAGE_TYPE, Message: PCWSTR)>;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -21072,64 +22549,66 @@ pub enum _BCD_FLAGS {
 pub use self::_BCD_FLAGS as BCD_FLAGS;
 #[repr(i32)]
 #[non_exhaustive]
+#[doc = " BCD configuration elements for the Boot Manager types."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdBootMgrElementTypes {
-   #[doc = " <summary>\n The order in which BCD objects should be displayed.\n Objects are displayed using the string specified by the BcdLibraryString_Description element.\n </summary>\n <remarks>0x24000001</remarks>"]
+   #[doc = " The order in which BCD objects should be displayed. [0x24000001]\n Objects are displayed using the string specified by the BcdLibraryString_Description element."]
    BcdBootMgrObjectList_DisplayOrder = 603979777,
-   #[doc = " <summary>\n List of boot environment applications the boot manager should execute.\n The applications are executed in the order they appear in this list.\n If the firmware boot manager does not support loading multiple applications, this list cannot contain more than one entry.\n </summary>\n <remarks>0x24000002</remarks>"]
+   #[doc = " List of boot environment applications the boot manager should execute. [0x24000002]\n The applications are executed in the order they appear in this list.\n If the firmware boot manager does not support loading multiple applications, this list cannot contain more than one entry."]
    BcdBootMgrObjectList_BootSequence = 603979778,
-   #[doc = " <summary>\n The default boot environment application to load if the user does not select one.\n </summary>\n <remarks>0x23000003</remarks>"]
+   #[doc = " The default boot environment application to load if the user does not select one. [0x23000003]"]
    BcdBootMgrObject_DefaultObject = 587202563,
-   #[doc = " <summary>\n The maximum number of seconds a boot selection menu is to be displayed to the user.\n The menu is displayed until the user selects an option or the time-out expires.\n If this value is not specified, the boot manager waits for the user to make a selection.\n </summary>\n <remarks>0x25000004</remarks>"]
+   #[doc = " The maximum number of seconds a boot selection menu is to be displayed to the user. [0x25000004]\n The menu is displayed until the user selects an option or the time-out expires.\n If this value is not specified, the boot manager waits for the user to make a selection."]
    BcdBootMgrInteger_Timeout = 620756996,
-   #[doc = " <summary>\n Indicates that a resume operation should be attempted during a system restart.\n </summary>\n <remarks>0x26000005</remarks>"]
+   #[doc = " Indicates that a resume operation should be attempted during a system restart. [0x26000005]"]
    BcdBootMgrBoolean_AttemptResume = 637534213,
-   #[doc = " <summary>\n The resume application object.\n </summary>\n <remarks>0x23000006</remarks>"]
+   #[doc = " The resume application object. [0x23000006]"]
    BcdBootMgrObject_ResumeObject = 587202566,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x24000007</remarks>"]
+   #[doc = " The startup sequence. [0x24000007]"]
    BcdBootMgrObjectList_StartupSequence = 603979783,
-   #[doc = " <summary>\n The boot manager tools display order list.\n </summary>\n <remarks>0x24000010</remarks>"]
+   #[doc = " The boot manager tools display order list. [0x24000010]"]
    BcdBootMgrObjectList_ToolsDisplayOrder = 603979792,
-   #[doc = " <summary>\n Forces the display of the legacy boot menu, regardless of the number of OS entries in the BCD store and their BcdOSLoaderInteger_BootMenuPolicy.\n </summary>\n <remarks>0x26000020</remarks>"]
+   #[doc = " Forces the display of the legacy boot menu, regardless of the number of OS entries in the BCD store and their BcdOSLoaderInteger_BootMenuPolicy. [0x26000020]"]
    BcdBootMgrBoolean_DisplayBootMenu = 637534240,
-   #[doc = " <summary>\n Indicates whether the display of errors should be suppressed.\n If this setting is enabled, the boot manager exits to the multi-OS menu on OS launch error.\n </summary>\n <remarks>0x26000021</remarks>"]
+   #[doc = " Indicates whether the display of errors should be suppressed. If this setting is enabled, the boot manager exits to the multi-OS menu on OS launch error. [0x26000021]"]
    BcdBootMgrBoolean_NoErrorDisplay = 637534241,
-   #[doc = " <summary>\n The device on which the boot application resides.\n </summary>\n <remarks>0x21000022</remarks>"]
+   #[doc = " The device on which the boot application resides. [0x21000022]"]
    BcdBootMgrDevice_BcdDevice = 553648162,
-   #[doc = " <summary>\n The boot application.\n </summary>\n <remarks>0x22000023</remarks>"]
+   #[doc = " The boot application. [0x22000023] (BCDE_BOOTMGR_TYPE_BCD_FILEPATH)"]
    BcdBootMgrString_BcdFilePath = 570425379,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x26000024</remarks>"]
+   #[doc = " Indicates whether HORM (Hibernate Once/Resume Many) is enabled. [0x26000024]"]
    BcdBootMgrBoolean_HormEnabled = 637534244,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x26000025</remarks>"]
+   #[doc = " Indicates whether the system is in hibernation root mode. [0x26000025]"]
    BcdBootMgrBoolean_HiberRoot = 637534245,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x22000026</remarks>"]
+   #[doc = " The password override string. [0x22000026]"]
    BcdBootMgrString_PasswordOverride = 570425382,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x22000027</remarks>"]
+   #[doc = " The PIN/passphrase override string. [0x22000027]"]
    BcdBootMgrString_PinpassPhraseOverride = 570425383,
-   #[doc = " <summary>\n Controls whether custom actions are processed before a boot sequence.\n Note This value is supported starting in Windows 8 and Windows Server 2012.\n </summary>\n <remarks>0x26000028</remarks>"]
+   #[doc = " Controls whether custom actions are processed before a boot sequence. Note This value is supported starting in Windows 8 and Windows Server 2012. [0x26000028]"]
    BcdBootMgrBoolean_ProcessCustomActionsFirst = 637534248,
-   #[doc = " <summary>\n Custom Bootstrap Actions.\n </summary>\n <remarks>0x27000030</remarks>"]
+   #[doc = " Custom Bootstrap Actions. [0x27000030] (BCDE_BOOTMGR_TYPE_CUSTOM_ACTIONS_LIST)"]
    BcdBootMgrIntegerList_CustomActionsList = 654311472,
-   #[doc = " <summary>\n Controls whether a boot sequence persists across multiple boots.\n Note This value is supported starting in Windows 8 and Windows Server 2012.\n </summary>\n <remarks>0x26000031</remarks>"]
+   #[doc = " Controls whether a boot sequence persists across multiple boots. Note This value is supported starting in Windows 8 and Windows Server 2012. [0x26000031]"]
    BcdBootMgrBoolean_PersistBootSequence = 637534257,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x26000032</remarks>"]
+   #[doc = " Indicates whether to skip the startup sequence. [0x26000032]"]
    BcdBootMgrBoolean_SkipStartupSequence = 637534258,
 }
+#[doc = " BCD configuration elements for the Boot Manager types."]
 pub use self::_BcdBootMgrElementTypes as BcdBootMgrElementTypes;
 #[repr(i32)]
 #[non_exhaustive]
+#[doc = " Specifies the policy for using the first megabyte of memory."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdLibrary_FirstMegabytePolicy {
-   #[doc = " <summary>\n Use none of the first megabyte of memory.\n </summary>"]
    FirstMegabytePolicyUseNone = 0,
-   #[doc = " <summary>\n Use all of the first megabyte of memory.\n </summary>"]
    FirstMegabytePolicyUseAll = 1,
-   #[doc = " <summary>\n Reserved for future use.\n </summary>"]
    FirstMegabytePolicyUsePrivate = 2,
 }
+#[doc = " Specifies the policy for using the first megabyte of memory."]
 pub use self::_BcdLibrary_FirstMegabytePolicy as BcdLibrary_FirstMegabytePolicy;
 #[repr(i32)]
 #[non_exhaustive]
+#[doc = " Specifies the type of debugger."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdLibrary_DebuggerType {
    DebuggerSerial = 0,
@@ -21138,55 +22617,80 @@ pub enum _BcdLibrary_DebuggerType {
    DebuggerNet = 3,
    DebuggerLocal = 4,
 }
+#[doc = " Specifies the type of debugger."]
 pub use self::_BcdLibrary_DebuggerType as BcdLibrary_DebuggerType;
 #[repr(i32)]
 #[non_exhaustive]
+#[doc = " Specifies the start policy for the debugger."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdLibrary_DebuggerStartPolicy {
-   #[doc = " <summary>\n The debugger will start active.\n </summary>"]
    DebuggerStartActive = 0,
-   #[doc = " <summary>\n The debugger will start in the auto-enabled state.\n If a debugger is attached it will be used; otherwise the debugger port will be available for other applications.\n </summary>"]
+   #[doc = " The debugger will start in the auto-enabled state.\n If a debugger is attached it will be used; otherwise the debugger port will be available for other applications."]
    DebuggerStartAutoEnable = 1,
-   #[doc = " <summary>\n The debugger will not start.\n </summary>"]
+   #[doc = " The debugger will start in the auto-enabled state.\n If a debugger is attached it will be used; otherwise the debugger port will be available for other applications."]
    DebuggerStartDisable = 2,
 }
+#[doc = " Specifies the start policy for the debugger."]
 pub use self::_BcdLibrary_DebuggerStartPolicy as BcdLibrary_DebuggerStartPolicy;
 #[repr(i32)]
 #[non_exhaustive]
+#[doc = " Specifies the access policy for PCI configuration space."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdLibrary_ConfigAccessPolicy {
-   #[doc = " <summary>\n Access to PCI configuration space through the memory-mapped region is allowed.\n </summary>"]
+   #[doc = " Access to PCI configuration space through the memory-mapped region is allowed."]
    ConfigAccessPolicyDefault = 0,
-   #[doc = " <summary>\n Access to PCI configuration space through the memory-mapped region is not allowed.\n This setting is used for platforms that implement memory-mapped configuration space incorrectly.\n The CFC/CF8 access mechanism can be used to access configuration space on these platforms.\n </summary>"]
+   #[doc = " Access to PCI configuration space through the memory-mapped region is not allowed.\n This setting is used for platforms that implement memory-mapped configuration space incorrectly.\n The CFC/CF8 access mechanism can be used to access configuration space on these platforms."]
    ConfigAccessPolicyDisallowMmConfig = 1,
 }
+#[doc = " Specifies the access policy for PCI configuration space."]
 pub use self::_BcdLibrary_ConfigAccessPolicy as BcdLibrary_ConfigAccessPolicy;
 #[repr(i32)]
 #[non_exhaustive]
+#[doc = " Enumeration for UX Display Message Types in the Boot Configuration Data (BCD) library.\n This enumeration defines the different UX display message types that can be specified in the BCD library."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdLibrary_UxDisplayMessageType {
+   #[doc = "< Default display message type."]
    DisplayMessageTypeDefault = 0,
+   #[doc = "< Display message type for resume."]
    DisplayMessageTypeResume = 1,
+   #[doc = "< Display message type for Hyper-V."]
    DisplayMessageTypeHyperV = 2,
+   #[doc = "< Display message type for recovery."]
    DisplayMessageTypeRecovery = 3,
+   #[doc = "< Display message type for startup repair."]
    DisplayMessageTypeStartupRepair = 4,
+   #[doc = "< Display message type for system image recovery."]
    DisplayMessageTypeSystemImageRecovery = 5,
+   #[doc = "< Display message type for command prompt."]
    DisplayMessageTypeCommandPrompt = 6,
+   #[doc = "< Display message type for system restore."]
    DisplayMessageTypeSystemRestore = 7,
+   #[doc = "< Display message type for push button reset."]
    DisplayMessageTypePushButtonReset = 8,
 }
+#[doc = " Enumeration for UX Display Message Types in the Boot Configuration Data (BCD) library.\n This enumeration defines the different UX display message types that can be specified in the BCD library."]
 pub use self::_BcdLibrary_UxDisplayMessageType as BcdLibrary_UxDisplayMessageType;
 #[repr(i32)]
 #[non_exhaustive]
+#[doc = " Enumeration for Safe Boot options in the Boot Configuration Data (BCD) library.\n This enumeration defines the different safe boot modes that can be specified in the BCD library."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum BcdLibrary_SafeBoot {
-   #[doc = " <summary>\n Load the drivers and services specified by name or group under the following registry key:\n HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\SafeBoot\\Minimal.\n </summary>"]
+   #[doc = " Load the drivers and services specified by name or group under the following registry key:\n HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\SafeBoot\\Minimal."]
    SafemodeMinimal = 0,
-   #[doc = " <summary>\n Load the drivers and services specified by name or group under the following registry key:\n HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\SafeBoot\\Network\n </summary>"]
+   #[doc = " Load the drivers and services specified by name or group under the following registry key:\n HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\SafeBoot\\Network."]
    SafemodeNetwork = 1,
-   #[doc = " <summary>\n Boot the system into a repair mode that restores the Active Directory service from backup medium.\n </summary>"]
+   #[doc = " Boot the system into a repair mode that restores the Active Directory service from backup medium."]
    SafemodeDsRepair = 2,
 }
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _BcdLibrary_BootUxPolicy {
+   BootUxPolicyDisabled = 0,
+   BootUxPolicyBasic = 1,
+   BootUxPolicyStandard = 2,
+}
+pub use self::_BcdLibrary_BootUxPolicy as BcdLibrary_BootUxPolicy;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -21211,7 +22715,7 @@ pub enum _BcdLibraryElementTypes {
    BcdLibraryIntegerList_BadMemoryList = 385875978,
    #[doc = " <summary>\n If TRUE, indicates that a boot application can use memory listed in the BcdLibraryIntegerList_BadMemoryList.\n </summary>\n <remarks>0x1600000B</remarks>"]
    BcdLibraryBoolean_AllowBadMemoryAccess = 369098763,
-   #[doc = " <summary>\n Indicates how the first megabyte of memory is to be used. The Integer property is one of the values from the BcdLibrary_FirstMegabytePolicy enumeration.\n </summary>\n <remarks>0x1500000C</remarks>"]
+   #[doc = " <summary>\n Indicates how the first megabyte of memory is to be used. The Integer property is one of the values from the BcdLibrary_FirstMegabytePolicy enumeration. (BCDE_POLICY_LIBRARY_TYPE_FIRST_MEGABYTE_POLICY)\n </summary>\n <remarks>0x1500000C</remarks>"]
    BcdLibraryInteger_FirstMegabytePolicy = 352321548,
    #[doc = " <summary>\n Relocates physical memory on certain AMD processors.\n This value is not used in Windows 8 or Windows Server 2012.\n </summary>\n <remarks>0x1500000D</remarks>"]
    BcdLibraryInteger_RelocatePhysicalMemory = 352321549,
@@ -21359,6 +22863,8 @@ pub enum _BcdLibraryElementTypes {
    BcdLibraryBoolean_NumLockOn = 369098887,
    #[doc = " <summary>\n\n </summary>\n <remarks>0x12000088</remarks>"]
    BcdLibraryString_AdditionalCiPolicy = 301990024,
+   #[doc = " <summary>\n Enabling the 5-Level Paging feature. 0 = Disabled, 1 = Optout, 2 = Optin\n </summary>\n <remarks>0x15000088</remarks>"]
+   BcdLibraryInteger_LinearAddress57 = 352321672,
 }
 pub use self::_BcdLibraryElementTypes as BcdLibraryElementTypes;
 #[repr(i32)]
@@ -21381,55 +22887,59 @@ pub enum _BcdTemplateElementTypes {
 pub use self::_BcdTemplateElementTypes as BcdTemplateElementTypes;
 #[repr(i32)]
 #[non_exhaustive]
-#[doc = " <summary>\n Specifies the no-execute page protection policies.\n </summary>"]
+#[doc = " @brief Specifies the no-execute page protection policies."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdOSLoader_NxPolicy {
-   #[doc = " <summary>\n The no-execute page protection is off by default.\n </summary>"]
+   #[doc = " @brief The no-execute page protection is off by default."]
    NxPolicyOptIn = 0,
-   #[doc = " <summary>\n The no-execute page protection is on by default.\n </summary>"]
+   #[doc = " @brief The no-execute page protection is on by default."]
    NxPolicyOptOut = 1,
-   #[doc = " <summary>\n The no-execute page protection is always off.\n </summary>"]
+   #[doc = " @brief The no-execute page protection is always off."]
    NxPolicyAlwaysOff = 2,
-   #[doc = " <summary>\n The no-execute page protection is always on.\n </summary>"]
+   #[doc = " @brief The no-execute page protection is always on."]
    NxPolicyAlwaysOn = 3,
 }
-#[doc = " <summary>\n Specifies the no-execute page protection policies.\n </summary>"]
+#[doc = " @brief Specifies the no-execute page protection policies."]
 pub use self::_BcdOSLoader_NxPolicy as BcdOSLoader_NxPolicy;
 #[repr(i32)]
 #[non_exhaustive]
-#[doc = " <summary>\n Specifies the Physical Address Extension (PAE) policies.\n </summary>"]
+#[doc = " @brief Specifies the Physical Address Extension (PAE) policies."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdOSLoader_PAEPolicy {
-   #[doc = " <summary>\n Enable PAE if hot-pluggable memory is defined above 4GB.\n </summary>"]
+   #[doc = " @brief Enable PAE if hot-pluggable memory is defined above 4GB."]
    PaePolicyDefault = 0,
-   #[doc = " <summary>\n PAE is enabled.\n </summary>"]
+   #[doc = " @brief PAE is enabled."]
    PaePolicyForceEnable = 1,
-   #[doc = " <summary>\n PAE is disabled.\n </summary>"]
+   #[doc = " @brief PAE is disabled."]
    PaePolicyForceDisable = 2,
 }
-#[doc = " <summary>\n Specifies the Physical Address Extension (PAE) policies.\n </summary>"]
+#[doc = " @brief Specifies the Physical Address Extension (PAE) policies."]
 pub use self::_BcdOSLoader_PAEPolicy as BcdOSLoader_PAEPolicy;
 #[repr(i32)]
 #[non_exhaustive]
+#[doc = " @brief Specifies the boot status policies."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdOSLoader_BootStatusPolicy {
-   #[doc = " <summary>\n Display all boot failures.\n </summary>"]
+   #[doc = " @brief Display all boot failures."]
    BootStatusPolicyDisplayAllFailures = 0,
-   #[doc = " <summary>\n Ignore all boot failures.\n </summary>"]
+   #[doc = " @brief Ignore all boot failures."]
    BootStatusPolicyIgnoreAllFailures = 1,
-   #[doc = " <summary>\n Ignore all shutdown failures.\n </summary>"]
+   #[doc = " @brief Ignore all shutdown failures."]
    BootStatusPolicyIgnoreShutdownFailures = 2,
-   #[doc = " <summary>\n Ignore all boot failures.\n </summary>"]
+   #[doc = " @brief Ignore all boot failures."]
    BootStatusPolicyIgnoreBootFailures = 3,
-   #[doc = " <summary>\n Ignore checkpoint failures.\n </summary>"]
+   #[doc = " @brief Ignore checkpoint failures."]
    BootStatusPolicyIgnoreCheckpointFailures = 4,
-   #[doc = " <summary>\n Display shutdown failures.\n </summary>"]
+   #[doc = " @brief Display shutdown failures."]
    BootStatusPolicyDisplayShutdownFailures = 5,
-   #[doc = " <summary>\n Display boot failures.\n </summary>"]
+   #[doc = " @brief Display boot failures."]
    BootStatusPolicyDisplayBootFailures = 6,
-   #[doc = " <summary>\n Display checkpoint failures.\n </summary>"]
+   #[doc = " @brief Display checkpoint failures."]
    BootStatusPolicyDisplayCheckpointFailures = 7,
+   #[doc = " @brief Always display startup failures."]
+   BootStatusPolicyAlwaysDisplayStartupFailures = 8,
 }
+#[doc = " @brief Specifies the boot status policies."]
 pub use self::_BcdOSLoader_BootStatusPolicy as BcdOSLoaderBootStatusPolicy;
 #[repr(i32)]
 #[non_exhaustive]
@@ -21471,7 +22981,7 @@ pub enum _BcdOSLoaderElementTypes {
    BcdOSLoaderInteger_RemoveMemory = 620757041,
    #[doc = " <summary>\n The amount of memory that should be utilized by the process address space, in bytes.\n This value should be between 2GB and 3GB.\n Increasing this value from the default 2GB decreases the amount of virtual address space available to the system and device drivers.\n </summary>\n <remarks>0x25000032</remarks>"]
    BcdOSLoaderInteger_IncreaseUserVa = 620757042,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000033</remarks>"]
+   #[doc = " <summary>\n BCDE_OSLOADER_TYPE_PERFORMANCE_DATA_MEMORY\n </summary>\n <remarks>0x25000033</remarks>"]
    BcdOSLoaderInteger_PerformaceDataMemory = 620757043,
    #[doc = " <summary>\n Indicates whether the system should use the standard VGA display driver instead of a high-performance display driver.\n </summary>\n <remarks>0x26000040</remarks>"]
    BcdOSLoaderBoolean_UseVgaDriver = 637534272,
@@ -21509,9 +23019,9 @@ pub enum _BcdOSLoaderElementTypes {
    BcdOSLoaderInteger_GroupSize = 620757094,
    #[doc = " <summary>\n Indicates whether the system should use I/O and IRQ resources created by the system firmware instead of using dynamically configured resources.\n </summary>\n <remarks>0x26000070</remarks>"]
    BcdOSLoaderInteger_UseFirmwarePciSettings = 637534320,
-   #[doc = " <summary>\n The PCI Message Signaled Interrupt (MSI) policy. Zero (0) indicates default, and one (1) indicates that MSI interrupts are disabled.\n </summary>\n <remarks>0x25000071</remarks>"]
+   #[doc = " <summary>\n The PCI Message Signaled Interrupt (MSI) policy. Zero (0) indicates default, and one (1) indicates that MSI interrupts are forcefully disabled.\n </summary>\n <remarks>0x25000071</remarks>"]
    BcdOSLoaderInteger_MsiPolicy = 620757105,
-   #[doc = " <summary>\n Undocumented. Zero (0) indicates default, and one (1) indicates that PCI Express is forcefully disabled.\n </summary>\n <remarks>0x25000072</remarks>"]
+   #[doc = " <summary>\n Zero (0) indicates default, and one (1) indicates that PCI Express is forcefully disabled.\n </summary>\n <remarks>0x25000072</remarks>"]
    BcdOSLoaderInteger_PciExpressPolicy = 620757106,
    #[doc = " <summary>\n The Integer property is one of the values from the BcdLibrary_SafeBoot enumeration.\n </summary>\n <remarks>0x25000080</remarks>"]
    BcdOSLoaderInteger_SafeBoot = 620757120,
@@ -21599,7 +23109,7 @@ pub enum _BcdOSLoaderElementTypes {
    BcdOSLoaderBoolean_HypervisorUseVApic = 637534486,
    #[doc = " <summary>\n\n </summary>\n <remarks>0x22000117</remarks>"]
    BcdOSLoaderString_HypervisorLoadOptions = 570425623,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000118</remarks>"]
+   #[doc = " <summary>\n BCDE_POLICY_OSLOADER_TYPE_HYPERVISOR_MSR_FILTER_POLICY\n </summary>\n <remarks>0x25000118</remarks>"]
    BcdOSLoaderInteger_HypervisorMsrFilterPolicy = 620757272,
    #[doc = " <summary>\n\n </summary>\n <remarks>0x25000119</remarks>"]
    BcdOSLoaderInteger_HypervisorMmioNxPolicy = 620757273,
@@ -21607,7 +23117,7 @@ pub enum _BcdOSLoaderElementTypes {
    BcdOSLoaderInteger_HypervisorSchedulerType = 620757274,
    #[doc = " <summary>\n\n </summary>\n <remarks>0x2200011B</remarks>"]
    BcdOSLoaderString_HypervisorRootProcNumaNodes = 570425627,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x2500011C</remarks>"]
+   #[doc = " <summary>\n BCDE_POLICY_OSLOADER_TYPE_HYPERVISOR_PERFMON\n </summary>\n <remarks>0x2500011C</remarks>"]
    BcdOSLoaderInteger_HypervisorPerfmon = 620757276,
    #[doc = " <summary>\n\n </summary>\n <remarks>0x2500011D</remarks>"]
    BcdOSLoaderInteger_HypervisorRootProcPerCore = 620757277,
@@ -21671,7 +23181,7 @@ pub enum _BcdOSLoaderElementTypes {
    BcdOSLoaderBoolean_EventLoggingEnabled = 637534529,
    #[doc = " <summary>\n\n </summary>\n <remarks>0x25000142</remarks>"]
    BcdOSLoaderInteger_VsmLaunchType = 620757314,
-   #[doc = " <summary>\n Undocumented. Zero (0) indicates default, one (1) indicates that disabled and two (2) indicates strict mode.\n </summary>\n <remarks>0x25000144</remarks>"]
+   #[doc = " <summary>\n Zero (0) indicates Disabled, one (1) indicates that Enabled and two (2) indicates strict mode.\n </summary>\n <remarks>0x25000144</remarks>"]
    BcdOSLoaderInteger_HypervisorEnforcedCodeIntegrity = 620757316,
    #[doc = " <summary>\n\n </summary>\n <remarks>0x26000145</remarks>"]
    BcdOSLoaderBoolean_DtraceEnabled = 637534533,
@@ -24059,19 +25569,19 @@ pub struct _MEMORY_PARTITION_CONFIGURATION_INFORMATION {
    pub NumaNode: ULONG,
    pub Channel: ULONG,
    pub NumberOfNumaNodes: ULONG,
-   pub ResidentAvailablePages: ULONG_PTR,
-   pub CommittedPages: ULONG_PTR,
-   pub CommitLimit: ULONG_PTR,
-   pub PeakCommitment: ULONG_PTR,
-   pub TotalNumberOfPages: ULONG_PTR,
-   pub AvailablePages: ULONG_PTR,
-   pub ZeroPages: ULONG_PTR,
-   pub FreePages: ULONG_PTR,
-   pub StandbyPages: ULONG_PTR,
-   pub StandbyPageCountByPriority: [ULONG_PTR; 8usize],
-   pub RepurposedPagesByPriority: [ULONG_PTR; 8usize],
-   pub MaximumCommitLimit: ULONG_PTR,
-   pub Reserved: ULONG_PTR,
+   pub ResidentAvailablePages: SIZE_T,
+   pub CommittedPages: SIZE_T,
+   pub CommitLimit: SIZE_T,
+   pub PeakCommitment: SIZE_T,
+   pub TotalNumberOfPages: SIZE_T,
+   pub AvailablePages: SIZE_T,
+   pub ZeroPages: SIZE_T,
+   pub FreePages: SIZE_T,
+   pub StandbyPages: SIZE_T,
+   pub StandbyPageCountByPriority: [SIZE_T; 8usize],
+   pub RepurposedPagesByPriority: [SIZE_T; 8usize],
+   pub MaximumCommitLimit: SIZE_T,
+   pub Reserved: SIZE_T,
    pub PartitionId: ULONG,
 }
 pub type MEMORY_PARTITION_CONFIGURATION_INFORMATION = _MEMORY_PARTITION_CONFIGURATION_INFORMATION;
@@ -24080,7 +25590,7 @@ pub type PMEMORY_PARTITION_CONFIGURATION_INFORMATION =
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _MEMORY_PARTITION_TRANSFER_INFORMATION {
-   pub NumberOfPages: ULONG_PTR,
+   pub NumberOfPages: SIZE_T,
    pub NumaNode: ULONG,
    pub Flags: ULONG,
 }
@@ -24109,7 +25619,7 @@ pub type PMEMORY_PARTITION_PAGEFILE_INFORMATION = *mut _MEMORY_PARTITION_PAGEFIL
 pub struct _MEMORY_PARTITION_PAGE_COMBINE_INFORMATION {
    pub StopHandle: HANDLE,
    pub Flags: ULONG,
-   pub TotalNumberOfPages: ULONG_PTR,
+   pub TotalNumberOfPages: SIZE_T,
 }
 impl Default for _MEMORY_PARTITION_PAGE_COMBINE_INFORMATION {
    fn default() -> Self {
@@ -24136,7 +25646,7 @@ pub type PMEMORY_PARTITION_PAGE_RANGE = *mut _MEMORY_PARTITION_PAGE_RANGE;
 pub struct _MEMORY_PARTITION_INITIAL_ADD_INFORMATION {
    pub Flags: ULONG,
    pub NumberOfRanges: ULONG,
-   pub NumberOfPagesAdded: ULONG_PTR,
+   pub NumberOfPagesAdded: SIZE_T,
    pub PartitionRanges: [MEMORY_PARTITION_PAGE_RANGE; 1usize],
 }
 pub type MEMORY_PARTITION_INITIAL_ADD_INFORMATION = _MEMORY_PARTITION_INITIAL_ADD_INFORMATION;
@@ -24146,7 +25656,7 @@ pub type PMEMORY_PARTITION_INITIAL_ADD_INFORMATION = *mut _MEMORY_PARTITION_INIT
 pub struct _MEMORY_PARTITION_MEMORY_EVENTS_INFORMATION {
    pub Flags: _MEMORY_PARTITION_MEMORY_EVENTS_INFORMATION__bindgen_ty_1,
    pub HandleAttributes: ULONG,
-   pub DesiredAccess: ULONG,
+   pub DesiredAccess: ACCESS_MASK,
    pub LowCommitCondition: HANDLE,
    pub HighCommitCondition: HANDLE,
    pub MaximumCommitCondition: HANDLE,
@@ -24235,6 +25745,7 @@ pub enum _OBJECT_INFORMATION_CLASS {
    MaxObjectInfoClass = 7,
 }
 pub use self::_OBJECT_INFORMATION_CLASS as OBJECT_INFORMATION_CLASS;
+#[doc = " The OBJECT_BASIC_INFORMATION structure contains basic information about an object."]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _OBJECT_BASIC_INFORMATION {
@@ -24259,8 +25770,11 @@ impl Default for _OBJECT_BASIC_INFORMATION {
       }
    }
 }
+#[doc = " The OBJECT_BASIC_INFORMATION structure contains basic information about an object."]
 pub type OBJECT_BASIC_INFORMATION = _OBJECT_BASIC_INFORMATION;
+#[doc = " The OBJECT_BASIC_INFORMATION structure contains basic information about an object."]
 pub type POBJECT_BASIC_INFORMATION = *mut _OBJECT_BASIC_INFORMATION;
+#[doc = " The OBJECT_NAME_INFORMATION structure contains the name, if there is one, of a given object."]
 #[repr(C)]
 pub struct _OBJECT_NAME_INFORMATION {
    pub Name: UNICODE_STRING,
@@ -24274,8 +25788,11 @@ impl Default for _OBJECT_NAME_INFORMATION {
       }
    }
 }
+#[doc = " The OBJECT_NAME_INFORMATION structure contains the name, if there is one, of a given object."]
 pub type OBJECT_NAME_INFORMATION = _OBJECT_NAME_INFORMATION;
+#[doc = " The OBJECT_NAME_INFORMATION structure contains the name, if there is one, of a given object."]
 pub type POBJECT_NAME_INFORMATION = *mut _OBJECT_NAME_INFORMATION;
+#[doc = " The OBJECT_NAME_INFORMATION structure contains various statistics and properties about an object type."]
 #[repr(C)]
 pub struct _OBJECT_TYPE_INFORMATION {
    pub TypeName: UNICODE_STRING,
@@ -24311,7 +25828,9 @@ impl Default for _OBJECT_TYPE_INFORMATION {
       }
    }
 }
+#[doc = " The OBJECT_NAME_INFORMATION structure contains various statistics and properties about an object type."]
 pub type OBJECT_TYPE_INFORMATION = _OBJECT_TYPE_INFORMATION;
+#[doc = " The OBJECT_NAME_INFORMATION structure contains various statistics and properties about an object type."]
 pub type POBJECT_TYPE_INFORMATION = *mut _OBJECT_TYPE_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -24525,14 +26044,6 @@ impl Default for _INITIAL_TEB {
 }
 pub type INITIAL_TEB = _INITIAL_TEB;
 pub type PINITIAL_TEB = *mut _INITIAL_TEB;
-pub type PRTL_USER_PROCESS_PARAMETERS = *mut _RTL_USER_PROCESS_PARAMETERS;
-pub type PSILO_USER_SHARED_DATA = *mut _SILO_USER_SHARED_DATA;
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct _LEAP_SECOND_DATA {
-   _unused: [u8; 0],
-}
-pub type PLEAP_SECOND_DATA = *mut _LEAP_SECOND_DATA;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _ACTIVATION_CONTEXT_DATA {
@@ -25071,6 +26582,14 @@ impl Default for _ACTIVATION_CONTEXT_STACK {
 }
 pub type ACTIVATION_CONTEXT_STACK = _ACTIVATION_CONTEXT_STACK;
 pub type PACTIVATION_CONTEXT_STACK = *mut _ACTIVATION_CONTEXT_STACK;
+pub type PRTL_USER_PROCESS_PARAMETERS = *mut _RTL_USER_PROCESS_PARAMETERS;
+pub type PSILO_USER_SHARED_DATA = *mut _SILO_USER_SHARED_DATA;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _LEAP_SECOND_DATA {
+   _unused: [u8; 0],
+}
+pub type PLEAP_SECOND_DATA = *mut _LEAP_SECOND_DATA;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _API_SET_NAMESPACE {
@@ -25180,6 +26699,201 @@ impl _TELEMETRY_COVERAGE_HEADER__bindgen_ty_1 {
 }
 pub type TELEMETRY_COVERAGE_HEADER = _TELEMETRY_COVERAGE_HEADER;
 pub type PTELEMETRY_COVERAGE_HEADER = *mut _TELEMETRY_COVERAGE_HEADER;
+#[repr(C)]
+pub struct _WER_RECOVERY_INFO {
+   pub Length: ULONG,
+   pub Callback: PVOID,
+   pub Parameter: PVOID,
+   pub Started: HANDLE,
+   pub Finished: HANDLE,
+   pub InProgress: HANDLE,
+   pub LastError: LONG,
+   pub Successful: BOOL,
+   pub PingInterval: ULONG,
+   pub Flags: ULONG,
+}
+impl Default for _WER_RECOVERY_INFO {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type WER_RECOVERY_INFO = _WER_RECOVERY_INFO;
+pub type PWER_RECOVERY_INFO = *mut _WER_RECOVERY_INFO;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _WER_FILE {
+   pub Flags: USHORT,
+   pub Path: [WCHAR; 260usize],
+}
+impl Default for _WER_FILE {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type WER_FILE = _WER_FILE;
+pub type PWER_FILE = *mut _WER_FILE;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _WER_MEMORY {
+   pub Address: PVOID,
+   pub Size: ULONG,
+}
+impl Default for _WER_MEMORY {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type WER_MEMORY = _WER_MEMORY;
+pub type PWER_MEMORY = *mut _WER_MEMORY;
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct _WER_GATHER {
+   pub Next: PVOID,
+   pub Flags: USHORT,
+   pub v: _WER_GATHER__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union _WER_GATHER__bindgen_ty_1 {
+   pub File: WER_FILE,
+   pub Memory: WER_MEMORY,
+}
+impl Default for _WER_GATHER__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for _WER_GATHER {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type WER_GATHER = _WER_GATHER;
+pub type PWER_GATHER = *mut _WER_GATHER;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _WER_METADATA {
+   pub Next: PVOID,
+   pub Key: [WCHAR; 64usize],
+   pub Value: [WCHAR; 128usize],
+}
+impl Default for _WER_METADATA {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type WER_METADATA = _WER_METADATA;
+pub type PWER_METADATA = *mut _WER_METADATA;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _WER_RUNTIME_DLL {
+   pub Next: PVOID,
+   pub Length: ULONG,
+   pub Context: PVOID,
+   pub CallbackDllPath: [WCHAR; 260usize],
+}
+impl Default for _WER_RUNTIME_DLL {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type WER_RUNTIME_DLL = _WER_RUNTIME_DLL;
+pub type PWER_RUNTIME_DLL = *mut _WER_RUNTIME_DLL;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _WER_DUMP_COLLECTION {
+   pub Next: PVOID,
+   pub ProcessId: ULONG,
+   pub ThreadId: ULONG,
+}
+impl Default for _WER_DUMP_COLLECTION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type WER_DUMP_COLLECTION = _WER_DUMP_COLLECTION;
+pub type PWER_DUMP_COLLECTION = *mut _WER_DUMP_COLLECTION;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _WER_HEAP_MAIN_HEADER {
+   pub Signature: [WCHAR; 16usize],
+   pub Links: LIST_ENTRY,
+   pub Mutex: HANDLE,
+   pub FreeHeap: PVOID,
+   pub FreeCount: ULONG,
+}
+impl Default for _WER_HEAP_MAIN_HEADER {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type WER_HEAP_MAIN_HEADER = _WER_HEAP_MAIN_HEADER;
+pub type PWER_HEAP_MAIN_HEADER = *mut _WER_HEAP_MAIN_HEADER;
+#[repr(C)]
+pub struct _WER_PEB_HEADER_BLOCK {
+   pub Length: LONG,
+   pub Signature: [WCHAR; 16usize],
+   pub AppDataRelativePath: [WCHAR; 64usize],
+   pub RestartCommandLine: [WCHAR; 1024usize],
+   pub RecoveryInfo: WER_RECOVERY_INFO,
+   pub Gather: PWER_GATHER,
+   pub MetaData: PWER_METADATA,
+   pub RuntimeDll: PWER_RUNTIME_DLL,
+   pub DumpCollection: PWER_DUMP_COLLECTION,
+   pub GatherCount: LONG,
+   pub MetaDataCount: LONG,
+   pub DumpCount: LONG,
+   pub Flags: LONG,
+   pub MainHeader: WER_HEAP_MAIN_HEADER,
+   pub Reserved: PVOID,
+}
+impl Default for _WER_PEB_HEADER_BLOCK {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type WER_PEB_HEADER_BLOCK = _WER_PEB_HEADER_BLOCK;
+pub type PWER_PEB_HEADER_BLOCK = *mut _WER_PEB_HEADER_BLOCK;
 pub type GDI_HANDLE_BUFFER = [ULONG; 60usize];
 pub type GDI_HANDLE_BUFFER32 = [ULONG; 34usize];
 pub type GDI_HANDLE_BUFFER64 = [ULONG; 60usize];
@@ -25214,7 +26928,7 @@ pub struct _PEB {
    pub UnicodeCaseTableData: PVOID,
    pub NumberOfProcessors: ULONG,
    pub NtGlobalFlag: ULONG,
-   pub CriticalSectionTimeout: ULARGE_INTEGER,
+   pub CriticalSectionTimeout: LARGE_INTEGER,
    pub HeapSegmentReserve: SIZE_T,
    pub HeapSegmentCommit: SIZE_T,
    pub HeapDeCommitTotalFreeThreshold: SIZE_T,
@@ -25259,7 +26973,7 @@ pub struct _PEB {
    pub OemCodePage: USHORT,
    pub UseCaseMapping: USHORT,
    pub UnusedNlsField: USHORT,
-   pub WerRegistrationData: PVOID,
+   pub WerRegistrationData: PWER_PEB_HEADER_BLOCK,
    pub WerShipAssertPtr: PVOID,
    pub __bindgen_anon_4: _PEB__bindgen_ty_4,
    pub pImageHeaderHash: PVOID,
@@ -25840,7 +27554,7 @@ pub type PGDI_TEB_BATCH = *mut _GDI_TEB_BATCH;
 #[derive(Debug, Copy, Clone)]
 pub struct _TEB_ACTIVE_FRAME_CONTEXT {
    pub Flags: ULONG,
-   pub FrameName: PSTR,
+   pub FrameName: PCSTR,
 }
 impl Default for _TEB_ACTIVE_FRAME_CONTEXT {
    fn default() -> Self {
@@ -25857,7 +27571,7 @@ pub type PTEB_ACTIVE_FRAME_CONTEXT = *mut _TEB_ACTIVE_FRAME_CONTEXT;
 #[derive(Debug, Copy, Clone)]
 pub struct _TEB_ACTIVE_FRAME_CONTEXT_EX {
    pub BasicContext: TEB_ACTIVE_FRAME_CONTEXT,
-   pub SourceLocation: PSTR,
+   pub SourceLocation: PCSTR,
 }
 impl Default for _TEB_ACTIVE_FRAME_CONTEXT_EX {
    fn default() -> Self {
@@ -25905,6 +27619,7 @@ impl Default for _TEB_ACTIVE_FRAME_EX {
 }
 pub type TEB_ACTIVE_FRAME_EX = _TEB_ACTIVE_FRAME_EX;
 pub type PTEB_ACTIVE_FRAME_EX = *mut _TEB_ACTIVE_FRAME_EX;
+#[doc = " Thread Environment Block (TEB) structure.\n\n This structure contains information about the currently executing thread."]
 #[repr(C)]
 pub struct _TEB {
    pub NtTib: NT_TIB,
@@ -26371,6 +28086,7 @@ impl Default for _TEB {
       }
    }
 }
+#[doc = " Thread Environment Block (TEB) structure.\n\n This structure contains information about the currently executing thread."]
 pub type TEB = _TEB;
 #[repr(i32)]
 #[non_exhaustive]
@@ -26592,22 +28308,55 @@ pub type PPROCESS_BASIC_INFORMATION = *mut _PROCESS_BASIC_INFORMATION;
 #[repr(C)]
 pub struct _PROCESS_EXTENDED_BASIC_INFORMATION {
    pub Size: SIZE_T,
-   pub BasicInfo: PROCESS_BASIC_INFORMATION,
    pub __bindgen_anon_1: _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_1,
+   pub __bindgen_anon_2: _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_2,
+}
+#[repr(C)]
+pub union _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_1 {
+   pub BasicInfo: ::core::mem::ManuallyDrop<PROCESS_BASIC_INFORMATION>,
+   pub __bindgen_anon_1:
+      ::core::mem::ManuallyDrop<_PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_1__bindgen_ty_1>,
+}
+#[repr(C)]
+pub struct _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
+   pub ExitStatus: NTSTATUS,
+   pub PebBaseAddress: PPEB,
+   pub AffinityMask: KAFFINITY,
+   pub BasePriority: KPRIORITY,
+   pub UniqueProcessId: HANDLE,
+   pub InheritedFromUniqueProcessId: HANDLE,
+}
+impl Default for _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
 }
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub union _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_1 {
+pub union _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_2 {
    pub Flags: ULONG,
-   pub __bindgen_anon_1: _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_1__bindgen_ty_1,
+   pub __bindgen_anon_1: _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_2__bindgen_ty_1,
 }
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
-pub struct _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
+pub struct _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
    pub _bitfield_align_1: [u32; 0],
    pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize]>,
 }
-impl _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
+impl _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
    #[inline]
    pub fn IsProtectedProcess(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u32) }
@@ -26791,7 +28540,7 @@ impl _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       __bindgen_bitfield_unit
    }
 }
-impl Default for _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_1 {
+impl Default for _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_2 {
    fn default() -> Self {
       let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
       unsafe {
@@ -27562,9 +29311,9 @@ pub type PPROCESS_WINDOW_INFORMATION = *mut _PROCESS_WINDOW_INFORMATION;
 #[derive(Debug, Copy, Clone)]
 pub struct _PROCESS_HANDLE_TABLE_ENTRY_INFO {
    pub HandleValue: HANDLE,
-   pub HandleCount: ULONG_PTR,
-   pub PointerCount: ULONG_PTR,
-   pub GrantedAccess: ULONG,
+   pub HandleCount: SIZE_T,
+   pub PointerCount: SIZE_T,
+   pub GrantedAccess: ACCESS_MASK,
    pub ObjectTypeIndex: ULONG,
    pub HandleAttributes: ULONG,
    pub Reserved: ULONG,
@@ -27583,7 +29332,7 @@ pub type PPROCESS_HANDLE_TABLE_ENTRY_INFO = *mut _PROCESS_HANDLE_TABLE_ENTRY_INF
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _PROCESS_HANDLE_SNAPSHOT_INFORMATION {
-   pub NumberOfHandles: ULONG_PTR,
+   pub NumberOfHandles: SIZE_T,
    pub Reserved: ULONG_PTR,
    pub Handles: [PROCESS_HANDLE_TABLE_ENTRY_INFO; 1usize],
 }
@@ -27598,162 +29347,6 @@ impl Default for _PROCESS_HANDLE_SNAPSHOT_INFORMATION {
 }
 pub type PROCESS_HANDLE_SNAPSHOT_INFORMATION = _PROCESS_HANDLE_SNAPSHOT_INFORMATION;
 pub type PPROCESS_HANDLE_SNAPSHOT_INFORMATION = *mut _PROCESS_HANDLE_SNAPSHOT_INFORMATION;
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY {
-   pub __bindgen_anon_1: _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1,
-}
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub union _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1 {
-   pub Flags: ULONG,
-   pub __bindgen_anon_1: _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1__bindgen_ty_1,
-}
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1__bindgen_ty_1 {
-   pub _bitfield_align_1: [u32; 0],
-   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize]>,
-}
-impl _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1__bindgen_ty_1 {
-   #[inline]
-   pub fn EnablePointerAuthUserIp(&self) -> ULONG {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u32) }
-   }
-   #[inline]
-   pub fn set_EnablePointerAuthUserIp(&mut self, val: ULONG) {
-      unsafe {
-         let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(0usize, 1u8, val as u64)
-      }
-   }
-   #[inline]
-   pub fn ReservedFlags(&self) -> ULONG {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
-   }
-   #[inline]
-   pub fn set_ReservedFlags(&mut self, val: ULONG) {
-      unsafe {
-         let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(1usize, 31u8, val as u64)
-      }
-   }
-   #[inline]
-   pub fn new_bitfield_1(
-      EnablePointerAuthUserIp: ULONG,
-      ReservedFlags: ULONG,
-   ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
-      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
-      __bindgen_bitfield_unit.set(0usize, 1u8, {
-         let EnablePointerAuthUserIp: u32 =
-            unsafe { ::core::mem::transmute(EnablePointerAuthUserIp) };
-         EnablePointerAuthUserIp as u64
-      });
-      __bindgen_bitfield_unit.set(1usize, 31u8, {
-         let ReservedFlags: u32 = unsafe { ::core::mem::transmute(ReservedFlags) };
-         ReservedFlags as u64
-      });
-      __bindgen_bitfield_unit
-   }
-}
-impl Default for _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1 {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-impl Default for _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY = _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY;
-pub type PPROCESS_MITIGATION_USER_POINTER_AUTH_POLICY =
-   *mut _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY;
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct _PROCESS_MITIGATION_SEHOP_POLICY {
-   pub __bindgen_anon_1: _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1,
-}
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub union _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1 {
-   pub Flags: ULONG,
-   pub __bindgen_anon_1: _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1__bindgen_ty_1,
-}
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1__bindgen_ty_1 {
-   pub _bitfield_align_1: [u32; 0],
-   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize]>,
-}
-impl _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1__bindgen_ty_1 {
-   #[inline]
-   pub fn EnableSehop(&self) -> ULONG {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u32) }
-   }
-   #[inline]
-   pub fn set_EnableSehop(&mut self, val: ULONG) {
-      unsafe {
-         let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(0usize, 1u8, val as u64)
-      }
-   }
-   #[inline]
-   pub fn ReservedFlags(&self) -> ULONG {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
-   }
-   #[inline]
-   pub fn set_ReservedFlags(&mut self, val: ULONG) {
-      unsafe {
-         let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(1usize, 31u8, val as u64)
-      }
-   }
-   #[inline]
-   pub fn new_bitfield_1(
-      EnableSehop: ULONG,
-      ReservedFlags: ULONG,
-   ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
-      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
-      __bindgen_bitfield_unit.set(0usize, 1u8, {
-         let EnableSehop: u32 = unsafe { ::core::mem::transmute(EnableSehop) };
-         EnableSehop as u64
-      });
-      __bindgen_bitfield_unit.set(1usize, 31u8, {
-         let ReservedFlags: u32 = unsafe { ::core::mem::transmute(ReservedFlags) };
-         ReservedFlags as u64
-      });
-      __bindgen_bitfield_unit
-   }
-}
-impl Default for _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1 {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-impl Default for _PROCESS_MITIGATION_SEHOP_POLICY {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type PROCESS_MITIGATION_SEHOP_POLICY = _PROCESS_MITIGATION_SEHOP_POLICY;
-pub type PPROCESS_MITIGATION_SEHOP_POLICY = *mut _PROCESS_MITIGATION_SEHOP_POLICY;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _PROCESS_MITIGATION_ACTIVATION_CONTEXT_TRUST_POLICY2 {
@@ -28738,14 +30331,25 @@ impl _PROCESS_LOGGING_INFORMATION__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub fn EnableImpersonationLogging(&self) -> ULONG {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(6usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_EnableImpersonationLogging(&mut self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(6usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(6usize, 26u8) as u32) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 25u8) as u32) }
    }
    #[inline]
    pub fn set_Reserved(&mut self, val: ULONG) {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(6usize, 26u8, val as u64)
+         self._bitfield_1.set(7usize, 25u8, val as u64)
       }
    }
    #[inline]
@@ -28756,6 +30360,7 @@ impl _PROCESS_LOGGING_INFORMATION__bindgen_ty_1 {
       EnableThreadSuspendResumeLogging: ULONG,
       EnableLocalExecProtectVmLogging: ULONG,
       EnableRemoteExecProtectVmLogging: ULONG,
+      EnableImpersonationLogging: ULONG,
       Reserved: ULONG,
    ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
       let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
@@ -28787,7 +30392,12 @@ impl _PROCESS_LOGGING_INFORMATION__bindgen_ty_1 {
             unsafe { ::core::mem::transmute(EnableRemoteExecProtectVmLogging) };
          EnableRemoteExecProtectVmLogging as u64
       });
-      __bindgen_bitfield_unit.set(6usize, 26u8, {
+      __bindgen_bitfield_unit.set(6usize, 1u8, {
+         let EnableImpersonationLogging: u32 =
+            unsafe { ::core::mem::transmute(EnableImpersonationLogging) };
+         EnableImpersonationLogging as u64
+      });
+      __bindgen_bitfield_unit.set(7usize, 25u8, {
          let Reserved: u32 = unsafe { ::core::mem::transmute(Reserved) };
          Reserved as u64
       });
@@ -28924,14 +30534,24 @@ impl Default for _THREAD_LAST_SYSCALL_INFORMATION {
 }
 pub type THREAD_LAST_SYSCALL_INFORMATION = _THREAD_LAST_SYSCALL_INFORMATION;
 pub type PTHREAD_LAST_SYSCALL_INFORMATION = *mut _THREAD_LAST_SYSCALL_INFORMATION;
+#[doc = " The THREAD_CYCLE_TIME_INFORMATION structure contains information about the cycle time of a thread."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _THREAD_CYCLE_TIME_INFORMATION {
    pub AccumulatedCycles: ULONGLONG,
    pub CurrentCycleCount: ULONGLONG,
 }
+#[doc = " The THREAD_CYCLE_TIME_INFORMATION structure contains information about the cycle time of a thread."]
 pub type THREAD_CYCLE_TIME_INFORMATION = _THREAD_CYCLE_TIME_INFORMATION;
+#[doc = " The THREAD_CYCLE_TIME_INFORMATION structure contains information about the cycle time of a thread."]
 pub type PTHREAD_CYCLE_TIME_INFORMATION = *mut _THREAD_CYCLE_TIME_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _THREAD_LOCK_OWNERSHIP {
+   pub SrwLock: [ULONG; 1usize],
+}
+pub type THREAD_LOCK_OWNERSHIP = _THREAD_LOCK_OWNERSHIP;
+pub type PTHREAD_LOCK_OWNERSHIP = *mut _THREAD_LOCK_OWNERSHIP;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -28977,6 +30597,7 @@ impl Default for _THREAD_TEB_INFORMATION {
 }
 pub type THREAD_TEB_INFORMATION = _THREAD_TEB_INFORMATION;
 pub type PTHREAD_TEB_INFORMATION = *mut _THREAD_TEB_INFORMATION;
+#[doc = " The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n\n \\sa https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _COUNTER_READING {
@@ -28994,8 +30615,11 @@ impl Default for _COUNTER_READING {
       }
    }
 }
+#[doc = " The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n\n \\sa https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data"]
 pub type COUNTER_READING = _COUNTER_READING;
+#[doc = " The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n\n \\sa https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data"]
 pub type PCOUNTER_READING = *mut _COUNTER_READING;
+#[doc = " The THREAD_PERFORMANCE_DATA structure aggregates various performance metrics for a thread.\n\n \\remarks https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-performance_data"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _THREAD_PERFORMANCE_DATA {
@@ -29019,8 +30643,11 @@ impl Default for _THREAD_PERFORMANCE_DATA {
       }
    }
 }
+#[doc = " The THREAD_PERFORMANCE_DATA structure aggregates various performance metrics for a thread.\n\n \\remarks https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-performance_data"]
 pub type THREAD_PERFORMANCE_DATA = _THREAD_PERFORMANCE_DATA;
+#[doc = " The THREAD_PERFORMANCE_DATA structure aggregates various performance metrics for a thread.\n\n \\remarks https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-performance_data"]
 pub type PTHREAD_PERFORMANCE_DATA = *mut _THREAD_PERFORMANCE_DATA;
+#[doc = " The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n\n \\sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _THREAD_PROFILING_INFORMATION {
@@ -29038,7 +30665,9 @@ impl Default for _THREAD_PROFILING_INFORMATION {
       }
    }
 }
+#[doc = " The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n\n \\sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata"]
 pub type THREAD_PROFILING_INFORMATION = _THREAD_PROFILING_INFORMATION;
+#[doc = " The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n\n \\sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata"]
 pub type PTHREAD_PROFILING_INFORMATION = *mut _THREAD_PROFILING_INFORMATION;
 #[repr(C)]
 #[repr(align(16))]
@@ -29356,6 +30985,7 @@ impl Default for _THREAD_UMS_INFORMATION {
 }
 pub type THREAD_UMS_INFORMATION = _THREAD_UMS_INFORMATION;
 pub type PTHREAD_UMS_INFORMATION = *mut _THREAD_UMS_INFORMATION;
+#[doc = " The THREAD_NAME_INFORMATION structure assigns a description to a thread.\n\n \\remarks The handle must have THREAD_SET_LIMITED_INFORMATION access.\n \\remarks https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreaddescription"]
 #[repr(C)]
 pub struct _THREAD_NAME_INFORMATION {
    pub ThreadName: UNICODE_STRING,
@@ -29369,7 +30999,9 @@ impl Default for _THREAD_NAME_INFORMATION {
       }
    }
 }
+#[doc = " The THREAD_NAME_INFORMATION structure assigns a description to a thread.\n\n \\remarks The handle must have THREAD_SET_LIMITED_INFORMATION access.\n \\remarks https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreaddescription"]
 pub type THREAD_NAME_INFORMATION = _THREAD_NAME_INFORMATION;
+#[doc = " The THREAD_NAME_INFORMATION structure assigns a description to a thread.\n\n \\remarks The handle must have THREAD_SET_LIMITED_INFORMATION access.\n \\remarks https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreaddescription"]
 pub type PTHREAD_NAME_INFORMATION = *mut _THREAD_NAME_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -29504,7 +31136,7 @@ pub enum _THREAD_STATE_CHANGE_TYPE {
 }
 pub use self::_THREAD_STATE_CHANGE_TYPE as THREAD_STATE_CHANGE_TYPE;
 pub type PTHREAD_STATE_CHANGE_TYPE = *mut _THREAD_STATE_CHANGE_TYPE;
-#[doc = " A pointer to a function that serves as an APC routine.\n\n @param ApcArgument1 Optional. A pointer to the first argument to be passed to the APC routine.\n @param ApcArgument2 Optional. A pointer to the second argument to be passed to the APC routine.\n @param ApcArgument3 Optional. A pointer to the third argument to be passed to the APC routine.\n @return VOID This function does not return a value."]
+#[doc = " A pointer to a function that serves as an APC routine.\n\n @param ApcArgument1 Optional. A pointer to the first argument to be passed to the APC routine.\n @param ApcArgument2 Optional. A pointer to the second argument to be passed to the APC routine.\n @param ApcArgument3 Optional. A pointer to the third argument to be passed to the APC routine."]
 pub type PPS_APC_ROUTINE = ::core::option::Option<
    unsafe extern "C" fn(ApcArgument1: PVOID, ApcArgument2: PVOID, ApcArgument3: PVOID),
 >;
@@ -29539,6 +31171,7 @@ pub struct _PROC_THREAD_ATTRIBUTE {
 }
 pub type PROC_THREAD_ATTRIBUTE = _PROC_THREAD_ATTRIBUTE;
 pub type PPROC_THREAD_ATTRIBUTE = *mut _PROC_THREAD_ATTRIBUTE;
+#[doc = " The PROC_THREAD_ATTRIBUTE_LIST structure contains the list of attributes for process and thread creation."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _PROC_THREAD_ATTRIBUTE_LIST {
@@ -29558,6 +31191,7 @@ impl Default for _PROC_THREAD_ATTRIBUTE_LIST {
       }
    }
 }
+#[doc = " The PROC_THREAD_ATTRIBUTE_LIST structure contains the list of attributes for process and thread creation."]
 pub type PROC_THREAD_ATTRIBUTE_LIST = _PROC_THREAD_ATTRIBUTE_LIST;
 #[repr(i32)]
 #[non_exhaustive]
@@ -31086,26 +32720,6 @@ impl Default for _NTPSS_MEMORY_BULK_INFORMATION {
 pub type NTPSS_MEMORY_BULK_INFORMATION = _NTPSS_MEMORY_BULK_INFORMATION;
 #[doc = " The NTPSS_MEMORY_BULK_INFORMATION structure is used to query basic memory information in bulk for a process."]
 pub type PNTPSS_MEMORY_BULK_INFORMATION = *mut _NTPSS_MEMORY_BULK_INFORMATION;
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub enum _PNP_VETO_TYPE {
-   PNP_VetoTypeUnknown = 0,
-   PNP_VetoLegacyDevice = 1,
-   PNP_VetoPendingClose = 2,
-   PNP_VetoWindowsApp = 3,
-   PNP_VetoWindowsService = 4,
-   PNP_VetoOutstandingOpen = 5,
-   PNP_VetoDevice = 6,
-   PNP_VetoDriver = 7,
-   PNP_VetoIllegalDeviceRequest = 8,
-   PNP_VetoInsufficientPower = 9,
-   PNP_VetoNonDisableable = 10,
-   PNP_VetoLegacyDriver = 11,
-   PNP_VetoInsufficientRights = 12,
-   PNP_VetoAlreadyRemoved = 13,
-}
-pub use self::_PNP_VETO_TYPE as PNP_VETO_TYPE;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _DBGKM_EXCEPTION {
@@ -31514,6 +33128,7 @@ pub enum _FILE_INFORMATION_CLASS {
 }
 pub use self::_FILE_INFORMATION_CLASS as FILE_INFORMATION_CLASS;
 pub type PFILE_INFORMATION_CLASS = *mut _FILE_INFORMATION_CLASS;
+#[doc = " The FILE_BASIC_INFORMATION structure contains timestamps and basic attributes of a file.\n \\li If you specify a value of zero for any of the XxxTime members, the file system keeps a file's current value for that time.\n \\li If you specify a value of -1 for any of the XxxTime members, time stamp updates are disabled for I/O operations preformed on the file handle.\n \\li If you specify a value of -2 for any of the XxxTime members, time stamp updates are enabled for I/O operations preformed on the file handle.\n \\remarks To set the members of this structure, the caller must have FILE_WRITE_ATTRIBUTES access to the file."]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _FILE_BASIC_INFORMATION {
@@ -31532,8 +33147,11 @@ impl Default for _FILE_BASIC_INFORMATION {
       }
    }
 }
+#[doc = " The FILE_BASIC_INFORMATION structure contains timestamps and basic attributes of a file.\n \\li If you specify a value of zero for any of the XxxTime members, the file system keeps a file's current value for that time.\n \\li If you specify a value of -1 for any of the XxxTime members, time stamp updates are disabled for I/O operations preformed on the file handle.\n \\li If you specify a value of -2 for any of the XxxTime members, time stamp updates are enabled for I/O operations preformed on the file handle.\n \\remarks To set the members of this structure, the caller must have FILE_WRITE_ATTRIBUTES access to the file."]
 pub type FILE_BASIC_INFORMATION = _FILE_BASIC_INFORMATION;
+#[doc = " The FILE_BASIC_INFORMATION structure contains timestamps and basic attributes of a file.\n \\li If you specify a value of zero for any of the XxxTime members, the file system keeps a file's current value for that time.\n \\li If you specify a value of -1 for any of the XxxTime members, time stamp updates are disabled for I/O operations preformed on the file handle.\n \\li If you specify a value of -2 for any of the XxxTime members, time stamp updates are enabled for I/O operations preformed on the file handle.\n \\remarks To set the members of this structure, the caller must have FILE_WRITE_ATTRIBUTES access to the file."]
 pub type PFILE_BASIC_INFORMATION = *mut _FILE_BASIC_INFORMATION;
+#[doc = " The FILE_STANDARD_INFORMATION structure contains standard information of a file.\n \\remarks EndOfFile specifies the byte offset to the end of the file.\n Because this value is zero-based, it actually refers to the first free byte in the file; that is, it is the offset to the byte immediately following the last valid byte in the file."]
 #[repr(C)]
 pub struct _FILE_STANDARD_INFORMATION {
    pub AllocationSize: LARGE_INTEGER,
@@ -31551,7 +33169,9 @@ impl Default for _FILE_STANDARD_INFORMATION {
       }
    }
 }
+#[doc = " The FILE_STANDARD_INFORMATION structure contains standard information of a file.\n \\remarks EndOfFile specifies the byte offset to the end of the file.\n Because this value is zero-based, it actually refers to the first free byte in the file; that is, it is the offset to the byte immediately following the last valid byte in the file."]
 pub type FILE_STANDARD_INFORMATION = _FILE_STANDARD_INFORMATION;
+#[doc = " The FILE_STANDARD_INFORMATION structure contains standard information of a file.\n \\remarks EndOfFile specifies the byte offset to the end of the file.\n Because this value is zero-based, it actually refers to the first free byte in the file; that is, it is the offset to the byte immediately following the last valid byte in the file."]
 pub type PFILE_STANDARD_INFORMATION = *mut _FILE_STANDARD_INFORMATION;
 #[repr(C)]
 pub struct _FILE_STANDARD_INFORMATION_EX {
@@ -31582,7 +33202,7 @@ pub struct _FILE_INTERNAL_INFORMATION {
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union _FILE_INTERNAL_INFORMATION__bindgen_ty_1 {
-   pub IndexNumber: LARGE_INTEGER,
+   pub IndexNumber: ULARGE_INTEGER,
    pub __bindgen_anon_1: _FILE_INTERNAL_INFORMATION__bindgen_ty_1__bindgen_ty_1,
 }
 #[repr(C)]
@@ -31593,22 +33213,22 @@ pub struct _FILE_INTERNAL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
 }
 impl _FILE_INTERNAL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
    #[inline]
-   pub fn MftRecordIndex(&self) -> LONGLONG {
+   pub fn MftRecordIndex(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 48u8) as u64) }
    }
    #[inline]
-   pub fn set_MftRecordIndex(&mut self, val: LONGLONG) {
+   pub fn set_MftRecordIndex(&mut self, val: ULONGLONG) {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(0usize, 48u8, val as u64)
       }
    }
    #[inline]
-   pub fn SequenceNumber(&self) -> LONGLONG {
+   pub fn SequenceNumber(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(48usize, 16u8) as u64) }
    }
    #[inline]
-   pub fn set_SequenceNumber(&mut self, val: LONGLONG) {
+   pub fn set_SequenceNumber(&mut self, val: ULONGLONG) {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(48usize, 16u8, val as u64)
@@ -31616,8 +33236,8 @@ impl _FILE_INTERNAL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
    }
    #[inline]
    pub fn new_bitfield_1(
-      MftRecordIndex: LONGLONG,
-      SequenceNumber: LONGLONG,
+      MftRecordIndex: ULONGLONG,
+      SequenceNumber: ULONGLONG,
    ) -> __BindgenBitfieldUnit<[u8; 8usize]> {
       let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 8usize]> = Default::default();
       __bindgen_bitfield_unit.set(0usize, 48u8, {
@@ -31795,7 +33415,7 @@ pub type FILE_COMPRESSION_INFORMATION = _FILE_COMPRESSION_INFORMATION;
 pub type PFILE_COMPRESSION_INFORMATION = *mut _FILE_COMPRESSION_INFORMATION;
 #[repr(C)]
 pub struct _FILE_DISPOSITION_INFORMATION {
-   pub DeleteFileA: BOOLEAN,
+   pub DeleteFileW: BOOLEAN,
 }
 impl Default for _FILE_DISPOSITION_INFORMATION {
    fn default() -> Self {
@@ -32227,6 +33847,7 @@ pub struct _FILE_PROCESS_IDS_USING_FILE_INFORMATION {
 }
 pub type FILE_PROCESS_IDS_USING_FILE_INFORMATION = _FILE_PROCESS_IDS_USING_FILE_INFORMATION;
 pub type PFILE_PROCESS_IDS_USING_FILE_INFORMATION = *mut _FILE_PROCESS_IDS_USING_FILE_INFORMATION;
+#[doc = " The FILE_IS_REMOTE_DEVICE_INFORMATION structure indicates whether the file system that contains the file is a remote file system."]
 #[repr(C)]
 pub struct _FILE_IS_REMOTE_DEVICE_INFORMATION {
    pub IsRemote: BOOLEAN,
@@ -32240,7 +33861,9 @@ impl Default for _FILE_IS_REMOTE_DEVICE_INFORMATION {
       }
    }
 }
+#[doc = " The FILE_IS_REMOTE_DEVICE_INFORMATION structure indicates whether the file system that contains the file is a remote file system."]
 pub type FILE_IS_REMOTE_DEVICE_INFORMATION = _FILE_IS_REMOTE_DEVICE_INFORMATION;
+#[doc = " The FILE_IS_REMOTE_DEVICE_INFORMATION structure indicates whether the file system that contains the file is a remote file system."]
 pub type PFILE_IS_REMOTE_DEVICE_INFORMATION = *mut _FILE_IS_REMOTE_DEVICE_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -32777,9 +34400,6 @@ pub struct _FILE_CASE_SENSITIVE_INFORMATION {
 }
 pub type FILE_CASE_SENSITIVE_INFORMATION = _FILE_CASE_SENSITIVE_INFORMATION;
 pub type PFILE_CASE_SENSITIVE_INFORMATION = *mut _FILE_CASE_SENSITIVE_INFORMATION;
-impl _FILE_KNOWN_FOLDER_TYPE {
-   pub const KnownFolderMax: _FILE_KNOWN_FOLDER_TYPE = _FILE_KNOWN_FOLDER_TYPE::KnownFolderOther;
-}
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -32792,6 +34412,7 @@ pub enum _FILE_KNOWN_FOLDER_TYPE {
    KnownFolderPictures = 5,
    KnownFolderVideos = 6,
    KnownFolderOther = 7,
+   KnownFolderMax = 8,
 }
 pub use self::_FILE_KNOWN_FOLDER_TYPE as FILE_KNOWN_FOLDER_TYPE;
 #[repr(C)]
@@ -33037,7 +34658,7 @@ pub type PFILE_ID_GLOBAL_TX_DIR_INFORMATION = *mut _FILE_ID_GLOBAL_TX_DIR_INFORM
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _FILE_OBJECTID_INFORMATION {
-   pub FileReference: LONGLONG,
+   pub FileReference: ULONGLONG,
    pub ObjectId: [UCHAR; 16usize],
    pub __bindgen_anon_1: _FILE_OBJECTID_INFORMATION__bindgen_ty_1,
 }
@@ -33399,52 +35020,6 @@ pub enum _DIRECTORY_NOTIFY_INFORMATION_CLASS {
 }
 pub use self::_DIRECTORY_NOTIFY_INFORMATION_CLASS as DIRECTORY_NOTIFY_INFORMATION_CLASS;
 pub type PDIRECTORY_NOTIFY_INFORMATION_CLASS = *mut _DIRECTORY_NOTIFY_INFORMATION_CLASS;
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct _FILE_NOTIFY_FULL_INFORMATION {
-   pub NextEntryOffset: ULONG,
-   pub Action: ULONG,
-   pub CreationTime: LARGE_INTEGER,
-   pub LastModificationTime: LARGE_INTEGER,
-   pub LastChangeTime: LARGE_INTEGER,
-   pub LastAccessTime: LARGE_INTEGER,
-   pub AllocatedLength: LARGE_INTEGER,
-   pub FileSize: LARGE_INTEGER,
-   pub FileAttributes: ULONG,
-   pub __bindgen_anon_1: _FILE_NOTIFY_FULL_INFORMATION__bindgen_ty_1,
-   pub FileId: LARGE_INTEGER,
-   pub ParentFileId: LARGE_INTEGER,
-   pub FileNameLength: USHORT,
-   pub FileNameFlags: BYTE,
-   pub Reserved: BYTE,
-   pub FileName: [WCHAR; 1usize],
-}
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub union _FILE_NOTIFY_FULL_INFORMATION__bindgen_ty_1 {
-   pub ReparsePointTag: ULONG,
-   pub EaSize: ULONG,
-}
-impl Default for _FILE_NOTIFY_FULL_INFORMATION__bindgen_ty_1 {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-impl Default for _FILE_NOTIFY_FULL_INFORMATION {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type FILE_NOTIFY_FULL_INFORMATION = _FILE_NOTIFY_FULL_INFORMATION;
-pub type PFILE_NOTIFY_FULL_INFORMATION = *mut _FILE_NOTIFY_FULL_INFORMATION;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -34111,6 +35686,285 @@ impl Default for _FLT_ATTACH {
 }
 pub type FLT_ATTACH = _FLT_ATTACH;
 pub type PFLT_ATTACH = *mut _FLT_ATTACH;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _MUP_FSCTL_UNC_CACHE_ENTRY {
+   pub TotalLength: ULONG,
+   pub UncNameOffset: ULONG,
+   pub UncNameLength: USHORT,
+   pub ProviderNameOffset: ULONG,
+   pub ProviderNameLength: USHORT,
+   pub SurrogateNameOffset: ULONG,
+   pub SurrogateNameLength: USHORT,
+   pub ProviderPriority: ULONG,
+   pub EntryTtl: ULONG,
+   pub Strings: [WCHAR; 1usize],
+}
+pub type MUP_FSCTL_UNC_CACHE_ENTRY = _MUP_FSCTL_UNC_CACHE_ENTRY;
+pub type PMUP_FSCTL_UNC_CACHE_ENTRY = *mut _MUP_FSCTL_UNC_CACHE_ENTRY;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _MUP_FSCTL_UNC_CACHE_INFORMATION {
+   pub MaxCacheSize: ULONG,
+   pub CurrentCacheSize: ULONG,
+   pub EntryTimeout: ULONG,
+   pub TotalEntries: ULONG,
+   pub CacheEntry: [MUP_FSCTL_UNC_CACHE_ENTRY; 1usize],
+}
+pub type MUP_FSCTL_UNC_CACHE_INFORMATION = _MUP_FSCTL_UNC_CACHE_INFORMATION;
+pub type PMUP_FSCTL_UNC_CACHE_INFORMATION = *mut _MUP_FSCTL_UNC_CACHE_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _MUP_FSCTL_UNC_PROVIDER_ENTRY {
+   pub TotalLength: ULONG,
+   pub ReferenceCount: LONG,
+   pub ProviderPriority: ULONG,
+   pub ProviderState: ULONG,
+   pub ProviderId: ULONG,
+   pub ProviderNameLength: USHORT,
+   pub ProviderName: [WCHAR; 1usize],
+}
+pub type MUP_FSCTL_UNC_PROVIDER_ENTRY = _MUP_FSCTL_UNC_PROVIDER_ENTRY;
+pub type PMUP_FSCTL_UNC_PROVIDER_ENTRY = *mut _MUP_FSCTL_UNC_PROVIDER_ENTRY;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _MUP_FSCTL_UNC_PROVIDER_INFORMATION {
+   pub TotalEntries: ULONG,
+   pub ProviderEntry: [MUP_FSCTL_UNC_PROVIDER_ENTRY; 1usize],
+}
+pub type MUP_FSCTL_UNC_PROVIDER_INFORMATION = _MUP_FSCTL_UNC_PROVIDER_INFORMATION;
+pub type PMUP_FSCTL_UNC_PROVIDER_INFORMATION = *mut _MUP_FSCTL_UNC_PROVIDER_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _MUP_FSCTL_SURROGATE_PROVIDER_ENTRY {
+   pub TotalLength: ULONG,
+   pub ReferenceCount: LONG,
+   pub SurrogateType: ULONG,
+   pub SurrogateState: ULONG,
+   pub SurrogatePriority: ULONG,
+   pub SurrogateNameLength: USHORT,
+   pub SurrogateName: [WCHAR; 1usize],
+}
+pub type MUP_FSCTL_SURROGATE_PROVIDER_ENTRY = _MUP_FSCTL_SURROGATE_PROVIDER_ENTRY;
+pub type PMUP_FSCTL_SURROGATE_PROVIDER_ENTRY = *mut _MUP_FSCTL_SURROGATE_PROVIDER_ENTRY;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _MUP_FSCTL_SURROGATE_PROVIDER_INFORMATION {
+   pub TotalEntries: ULONG,
+   pub SurrogateEntry: [MUP_FSCTL_SURROGATE_PROVIDER_ENTRY; 1usize],
+}
+pub type MUP_FSCTL_SURROGATE_PROVIDER_INFORMATION = _MUP_FSCTL_SURROGATE_PROVIDER_INFORMATION;
+pub type PMUP_FSCTL_SURROGATE_PROVIDER_INFORMATION = *mut _MUP_FSCTL_SURROGATE_PROVIDER_INFORMATION;
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct _MUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY {
+   pub NextOffset: ULONG,
+   pub PrefixNameOffset: ULONG,
+   pub PrefixNameCbLength: USHORT,
+   pub __bindgen_anon_1: _MUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY__bindgen_ty_1,
+   pub OpenCount: ULONGLONG,
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union _MUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY__bindgen_ty_1 {
+   pub RequiredHardeningCapabilities: ULONG,
+   pub __bindgen_anon_1: _MUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1,
+}
+#[repr(C)]
+#[repr(align(4))]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _MUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
+   pub _bitfield_align_1: [u8; 0],
+   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 1usize]>,
+   pub __bindgen_padding_0: [u8; 3usize],
+}
+impl _MUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
+   #[inline]
+   pub fn RequiresMutualAuth(&self) -> ULONG {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_RequiresMutualAuth(&mut self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(0usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub fn RequiresIntegrity(&self) -> ULONG {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_RequiresIntegrity(&mut self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub fn RequiresPrivacy(&self) -> ULONG {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_RequiresPrivacy(&mut self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(2usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub fn new_bitfield_1(
+      RequiresMutualAuth: ULONG,
+      RequiresIntegrity: ULONG,
+      RequiresPrivacy: ULONG,
+   ) -> __BindgenBitfieldUnit<[u8; 1usize]> {
+      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 1usize]> = Default::default();
+      __bindgen_bitfield_unit.set(0usize, 1u8, {
+         let RequiresMutualAuth: u32 = unsafe { ::core::mem::transmute(RequiresMutualAuth) };
+         RequiresMutualAuth as u64
+      });
+      __bindgen_bitfield_unit.set(1usize, 1u8, {
+         let RequiresIntegrity: u32 = unsafe { ::core::mem::transmute(RequiresIntegrity) };
+         RequiresIntegrity as u64
+      });
+      __bindgen_bitfield_unit.set(2usize, 1u8, {
+         let RequiresPrivacy: u32 = unsafe { ::core::mem::transmute(RequiresPrivacy) };
+         RequiresPrivacy as u64
+      });
+      __bindgen_bitfield_unit
+   }
+}
+impl Default for _MUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for _MUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type MUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY = _MUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY;
+pub type PMUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY =
+   *mut _MUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_IN {
+   pub Size: ULONG,
+   pub UncPathOffset: ULONG,
+   pub UncPathCbLength: USHORT,
+}
+pub type MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_IN =
+   _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_IN;
+pub type PMUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_IN =
+   *mut _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_IN;
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT {
+   pub Size: ULONG,
+   pub __bindgen_anon_1: _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT__bindgen_ty_1 {
+   pub RequiredHardeningCapabilities: ULONG,
+   pub __bindgen_anon_1:
+      _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT__bindgen_ty_1__bindgen_ty_1,
+}
+#[repr(C)]
+#[repr(align(4))]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT__bindgen_ty_1__bindgen_ty_1 {
+   pub _bitfield_align_1: [u8; 0],
+   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 1usize]>,
+   pub __bindgen_padding_0: [u8; 3usize],
+}
+impl _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT__bindgen_ty_1__bindgen_ty_1 {
+   #[inline]
+   pub fn RequiresMutualAuth(&self) -> ULONG {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_RequiresMutualAuth(&mut self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(0usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub fn RequiresIntegrity(&self) -> ULONG {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_RequiresIntegrity(&mut self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub fn RequiresPrivacy(&self) -> ULONG {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_RequiresPrivacy(&mut self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(2usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub fn new_bitfield_1(
+      RequiresMutualAuth: ULONG,
+      RequiresIntegrity: ULONG,
+      RequiresPrivacy: ULONG,
+   ) -> __BindgenBitfieldUnit<[u8; 1usize]> {
+      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 1usize]> = Default::default();
+      __bindgen_bitfield_unit.set(0usize, 1u8, {
+         let RequiresMutualAuth: u32 = unsafe { ::core::mem::transmute(RequiresMutualAuth) };
+         RequiresMutualAuth as u64
+      });
+      __bindgen_bitfield_unit.set(1usize, 1u8, {
+         let RequiresIntegrity: u32 = unsafe { ::core::mem::transmute(RequiresIntegrity) };
+         RequiresIntegrity as u64
+      });
+      __bindgen_bitfield_unit.set(2usize, 1u8, {
+         let RequiresPrivacy: u32 = unsafe { ::core::mem::transmute(RequiresPrivacy) };
+         RequiresPrivacy as u64
+      });
+      __bindgen_bitfield_unit
+   }
+}
+impl Default for _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT =
+   _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT;
+pub type PMUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT =
+   *mut _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -34706,8 +36560,8 @@ pub struct _ALPC_HANDLE_ATTR32 {
    pub Reserved1: ULONG,
    pub Handle: ULONG,
    pub ObjectType: ULONG,
-   pub DesiredAccess: ULONG,
-   pub GrantedAccess: ULONG,
+   pub DesiredAccess: ACCESS_MASK,
+   pub GrantedAccess: ACCESS_MASK,
 }
 pub type ALPC_HANDLE_ATTR32 = _ALPC_HANDLE_ATTR32;
 pub type PALPC_HANDLE_ATTR32 = *mut _ALPC_HANDLE_ATTR32;
@@ -35865,6 +37719,26 @@ pub type PSUPERFETCH_INFORMATION = *mut _SUPERFETCH_INFORMATION;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _PNP_VETO_TYPE {
+   PNP_VetoTypeUnknown = 0,
+   PNP_VetoLegacyDevice = 1,
+   PNP_VetoPendingClose = 2,
+   PNP_VetoWindowsApp = 3,
+   PNP_VetoWindowsService = 4,
+   PNP_VetoOutstandingOpen = 5,
+   PNP_VetoDevice = 6,
+   PNP_VetoDriver = 7,
+   PNP_VetoIllegalDeviceRequest = 8,
+   PNP_VetoInsufficientPower = 9,
+   PNP_VetoNonDisableable = 10,
+   PNP_VetoLegacyDriver = 11,
+   PNP_VetoInsufficientRights = 12,
+   PNP_VetoAlreadyRemoved = 13,
+}
+pub use self::_PNP_VETO_TYPE as PNP_VETO_TYPE;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _PLUGPLAY_EVENT_CATEGORY {
    HardwareProfileChangeEvent = 0,
    TargetDeviceChangeEvent = 1,
@@ -36143,7 +38017,7 @@ pub enum _POWER_STATE_DISABLED_TYPE {
    PoDisabledStateMaximum = 7,
 }
 pub use self::_POWER_STATE_DISABLED_TYPE as POWER_STATE_DISABLED_TYPE;
-pub use self::_POWER_STATE_DISABLED_TYPE as PPOWER_STATE_DISABLED_TYPE;
+pub type PPOWER_STATE_DISABLED_TYPE = *mut _POWER_STATE_DISABLED_TYPE;
 #[repr(C)]
 pub struct _SYSTEM_POWER_STATE_DISABLE_REASON {
    pub AffectedState: [BOOLEAN; 8usize],
@@ -36558,7 +38432,7 @@ pub type PDIAGNOSTIC_BUFFER = *mut _DIAGNOSTIC_BUFFER;
 #[derive(Copy, Clone)]
 pub struct _WAKE_TIMER_INFO {
    pub OffsetToNext: SIZE_T,
-   pub DueTime: ULARGE_INTEGER,
+   pub DueTime: LARGE_INTEGER,
    pub Period: ULONG,
    pub ReasonContext: DIAGNOSTIC_BUFFER,
 }
@@ -37442,11 +39316,11 @@ pub type POWER_INTERNAL_HOST_ENERGY_SAVER_STATE = _POWER_INTERNAL_HOST_ENERGY_SA
 pub type PPOWER_INTERNAL_HOST_ENERGY_SAVER_STATE = *mut _POWER_INTERNAL_HOST_ENERGY_SAVER_STATE;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct _POWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_INPUT {
+pub struct _POWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_INPUT {
    pub InternalType: POWER_INFORMATION_LEVEL_INTERNAL,
    pub ProcessorNumber: PROCESSOR_NUMBER,
 }
-impl Default for _POWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_INPUT {
+impl Default for _POWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_INPUT {
    fn default() -> Self {
       let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
       unsafe {
@@ -37455,20 +39329,41 @@ impl Default for _POWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_INPUT {
       }
    }
 }
-pub type POWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_INPUT =
-   _POWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_INPUT;
-pub type PPOWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_INPUT =
-   *mut _POWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_INPUT;
+pub type POWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_INPUT =
+   _POWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_INPUT;
+pub type PPOWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_INPUT =
+   *mut _POWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_INPUT;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
-pub struct _POWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_OUTPUT {
+pub struct _POWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_OUTPUT {
    pub Version: ULONG,
    pub NominalFrequency: ULONG,
 }
-pub type POWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_OUTPUT =
-   _POWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_OUTPUT;
-pub type PPOWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_OUTPUT =
-   *mut _POWER_INTERNAL_PROCESSOR_BRANDED_FREQENCY_OUTPUT;
+pub type POWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_OUTPUT =
+   _POWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_OUTPUT;
+pub type PPOWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_OUTPUT =
+   *mut _POWER_INTERNAL_PROCESSOR_BRANDED_FREQUENCY_OUTPUT;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _PROCESSOR_IDLE_VETO {
+   pub Version: ULONG,
+   pub ProcessorNumber: PROCESSOR_NUMBER,
+   pub StateIndex: ULONG,
+   pub VetoReason: ULONG,
+   pub Increment: UCHAR,
+}
+pub type PROCESSOR_IDLE_VETO = _PROCESSOR_IDLE_VETO;
+pub type PPROCESSOR_IDLE_VETO = *mut _PROCESSOR_IDLE_VETO;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _PLATFORM_IDLE_VETO {
+   pub Version: ULONG,
+   pub StateIndex: ULONG,
+   pub VetoReason: ULONG,
+   pub Increment: UCHAR,
+}
+pub type PLATFORM_IDLE_VETO = _PLATFORM_IDLE_VETO;
+pub type PPLATFORM_IDLE_VETO = *mut _PLATFORM_IDLE_VETO;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _POWER_INTERNAL_BOOTAPP_DIAGNOSTIC {
@@ -40338,7 +42233,7 @@ pub type PRTL_EXIT_POOL_THREAD =
    ::core::option::Option<unsafe extern "C" fn(arg1: NTSTATUS) -> NTSTATUS>;
 pub type PRTL_QUERY_REGISTRY_ROUTINE = ::core::option::Option<
    unsafe extern "C" fn(
-      arg1: PWSTR,
+      arg1: PCWSTR,
       arg2: ULONG,
       arg3: PVOID,
       arg4: ULONG,
@@ -40415,14 +42310,25 @@ impl _RTL_ELEVATION_FLAGS__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub fn AdminApprovalModeType(&self) -> ULONG {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 2u8) as u32) }
+   }
+   #[inline]
+   pub fn set_AdminApprovalModeType(&mut self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(3usize, 2u8, val as u64)
+      }
+   }
+   #[inline]
    pub fn ReservedBits(&self) -> ULONG {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 29u8) as u32) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 27u8) as u32) }
    }
    #[inline]
    pub fn set_ReservedBits(&mut self, val: ULONG) {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(3usize, 29u8, val as u64)
+         self._bitfield_1.set(5usize, 27u8, val as u64)
       }
    }
    #[inline]
@@ -40430,6 +42336,7 @@ impl _RTL_ELEVATION_FLAGS__bindgen_ty_1 {
       ElevationEnabled: ULONG,
       VirtualizationEnabled: ULONG,
       InstallerDetectEnabled: ULONG,
+      AdminApprovalModeType: ULONG,
       ReservedBits: ULONG,
    ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
       let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
@@ -40446,7 +42353,11 @@ impl _RTL_ELEVATION_FLAGS__bindgen_ty_1 {
             unsafe { ::core::mem::transmute(InstallerDetectEnabled) };
          InstallerDetectEnabled as u64
       });
-      __bindgen_bitfield_unit.set(3usize, 29u8, {
+      __bindgen_bitfield_unit.set(3usize, 2u8, {
+         let AdminApprovalModeType: u32 = unsafe { ::core::mem::transmute(AdminApprovalModeType) };
+         AdminApprovalModeType as u64
+      });
+      __bindgen_bitfield_unit.set(5usize, 27u8, {
          let ReservedBits: u32 = unsafe { ::core::mem::transmute(ReservedBits) };
          ReservedBits as u64
       });
@@ -42265,41 +44176,6 @@ pub type IMAGE_DVRT_ARM64X_DELTA_FIXUP_RECORD = _IMAGE_DVRT_ARM64X_DELTA_FIXUP_R
 pub type PIMAGE_DVRT_ARM64X_DELTA_FIXUP_RECORD = *mut _IMAGE_DVRT_ARM64X_DELTA_FIXUP_RECORD;
 pub type UNALIGNED_PIMAGE_THUNK_DATA32 = *mut IMAGE_THUNK_DATA32;
 pub type UNALIGNED_PIMAGE_THUNK_DATA64 = *mut IMAGE_THUNK_DATA64;
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct _IMAGE_FUNCTION_OVERRIDE_HEADER {
-   pub FuncOverrideSize: ULONG,
-}
-pub type IMAGE_FUNCTION_OVERRIDE_HEADER = _IMAGE_FUNCTION_OVERRIDE_HEADER;
-pub type PIMAGE_FUNCTION_OVERRIDE_HEADER = *mut IMAGE_FUNCTION_OVERRIDE_HEADER;
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct _IMAGE_BDD_INFO {
-   pub Version: ULONG,
-   pub BDDSize: ULONG,
-}
-pub type IMAGE_BDD_INFO = _IMAGE_BDD_INFO;
-pub type PIMAGE_BDD_INFO = *mut _IMAGE_BDD_INFO;
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct _IMAGE_FUNCTION_OVERRIDE_DYNAMIC_RELOCATION {
-   pub OriginalRva: ULONG,
-   pub BDDOffset: ULONG,
-   pub RvaSize: ULONG,
-   pub BaseRelocSize: ULONG,
-}
-pub type IMAGE_FUNCTION_OVERRIDE_DYNAMIC_RELOCATION = _IMAGE_FUNCTION_OVERRIDE_DYNAMIC_RELOCATION;
-pub type PIMAGE_FUNCTION_OVERRIDE_DYNAMIC_RELOCATION =
-   *mut _IMAGE_FUNCTION_OVERRIDE_DYNAMIC_RELOCATION;
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct _IMAGE_BDD_DYNAMIC_RELOCATION {
-   pub Left: USHORT,
-   pub Right: USHORT,
-   pub Value: ULONG,
-}
-pub type IMAGE_BDD_DYNAMIC_RELOCATION = _IMAGE_BDD_DYNAMIC_RELOCATION;
-pub type PIMAGE_BDD_DYNAMIC_RELOCATION = *mut _IMAGE_BDD_DYNAMIC_RELOCATION;
 #[repr(C)]
 pub struct _TOKEN_SECURITY_ATTRIBUTE_FQBN_VALUE {
    pub Version: ULONG64,
@@ -46403,6 +48279,26 @@ pub enum _VDMSERVICECLASS {
 }
 pub use self::_VDMSERVICECLASS as VDMSERVICECLASS;
 pub type PVDMSERVICECLASS = *mut _VDMSERVICECLASS;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _SECURE_SETTING_VALUE_TYPE {
+   SecureSettingValueTypeBoolean = 0,
+   SecureSettingValueTypeUlong = 1,
+   SecureSettingValueTypeBinary = 2,
+   SecureSettingValueTypeString = 3,
+   SecureSettingValueTypeUnknown = 4,
+}
+pub use self::_SECURE_SETTING_VALUE_TYPE as SECURE_SETTING_VALUE_TYPE;
+pub type PSECURE_SETTING_VALUE_TYPE = *mut _SECURE_SETTING_VALUE_TYPE;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _PROCESS_ACTIVITY_TYPE {
+   ProcessActivityTypeAudio = 0,
+   ProcessActivityTypeMax = 1,
+}
+pub use self::_PROCESS_ACTIVITY_TYPE as PROCESS_ACTIVITY_TYPE;
 pub type PROCESSTRACE_HANDLE = ULONG64;
 pub type CONTROLTRACE_ID = ULONG64;
 #[repr(C)]
@@ -50932,7 +52828,7 @@ pub type PPERFINFO_SESSIONCREATE_INFORMATION = *mut _PERFINFO_SESSIONCREATE_INFO
 pub struct _PERFINFO_PAGE_RANGE_IDENTITY {
    pub __bindgen_anon_1: _PERFINFO_PAGE_RANGE_IDENTITY__bindgen_ty_1,
    pub __bindgen_anon_2: _PERFINFO_PAGE_RANGE_IDENTITY__bindgen_ty_2,
-   pub PageCount: ULONG_PTR,
+   pub PageCount: SIZE_T,
 }
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -51038,7 +52934,7 @@ pub struct _PERFINFO_KERNELMEMORY_RANGE_USAGE {
    pub _bitfield_align_1: [u32; 0],
    pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize]>,
    pub VirtualAddress: PVOID,
-   pub PageCount: ULONG_PTR,
+   pub PageCount: SIZE_T,
 }
 impl Default for _PERFINFO_KERNELMEMORY_RANGE_USAGE {
    fn default() -> Self {
@@ -51863,24 +53759,24 @@ pub type PPERFINFO_FLT_OPERATION_STATUS = *mut _PERFINFO_FLT_OPERATION_STATUS;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _PERFINFO_MEMORY_INFORMATION {
-   pub ZeroPageCount: ULONG_PTR,
-   pub FreePageCount: ULONG_PTR,
-   pub ModifiedPageCount: ULONG_PTR,
-   pub ModifiedNoWritePageCount: ULONG_PTR,
-   pub BadPageCount: ULONG_PTR,
-   pub PageCountByPriority: [ULONG_PTR; 8usize],
-   pub RepurposedPagesByPriority: [ULONG_PTR; 8usize],
-   pub ModifiedPageCountPageFile: ULONG_PTR,
+   pub ZeroPageCount: SIZE_T,
+   pub FreePageCount: SIZE_T,
+   pub ModifiedPageCount: SIZE_T,
+   pub ModifiedNoWritePageCount: SIZE_T,
+   pub BadPageCount: SIZE_T,
+   pub PageCountByPriority: [SIZE_T; 8usize],
+   pub RepurposedPagesByPriority: [SIZE_T; 8usize],
+   pub ModifiedPageCountPageFile: SIZE_T,
 }
 pub type PERFINFO_MEMORY_INFORMATION = _PERFINFO_MEMORY_INFORMATION;
 pub type PPERFINFO_MEMORY_INFORMATION = *mut _PERFINFO_MEMORY_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _PERFINFO_SYSTEM_MEMORY_INFORMATION {
-   pub PagedPoolCommitPageCount: ULONG_PTR,
-   pub NonPagedPoolPageCount: ULONG_PTR,
-   pub MdlPageCount: ULONG_PTR,
-   pub CommitPageCount: ULONG_PTR,
+   pub PagedPoolCommitPageCount: SIZE_T,
+   pub NonPagedPoolPageCount: SIZE_T,
+   pub MdlPageCount: SIZE_T,
+   pub CommitPageCount: SIZE_T,
 }
 pub type PERFINFO_SYSTEM_MEMORY_INFORMATION = _PERFINFO_SYSTEM_MEMORY_INFORMATION;
 pub type PPERFINFO_SYSTEM_MEMORY_INFORMATION = *mut _PERFINFO_SYSTEM_MEMORY_INFORMATION;
@@ -51888,14 +53784,14 @@ pub type PPERFINFO_SYSTEM_MEMORY_INFORMATION = *mut _PERFINFO_SYSTEM_MEMORY_INFO
 #[derive(Copy, Clone)]
 pub struct _PERFINFO_WORKINGSET_ENTRY {
    pub __bindgen_anon_1: _PERFINFO_WORKINGSET_ENTRY__bindgen_ty_1,
-   pub WorkingSetPageCount: ULONG_PTR,
-   pub CommitPageCount: ULONG_PTR,
+   pub WorkingSetPageCount: SIZE_T,
+   pub CommitPageCount: SIZE_T,
    pub __bindgen_anon_2: _PERFINFO_WORKINGSET_ENTRY__bindgen_ty_2,
-   pub PrivateWorkingSetPageCount: ULONG_PTR,
-   pub StoreSizeInPages: ULONG_PTR,
-   pub StoredPageCount: ULONG_PTR,
-   pub CommitDebtInPages: ULONG_PTR,
-   pub SharedCommitInPages: ULONG_PTR,
+   pub PrivateWorkingSetPageCount: SIZE_T,
+   pub StoreSizeInPages: SIZE_T,
+   pub StoredPageCount: SIZE_T,
+   pub CommitDebtInPages: SIZE_T,
+   pub SharedCommitInPages: SIZE_T,
 }
 #[repr(C, packed)]
 #[derive(Copy, Clone)]
@@ -51915,8 +53811,8 @@ impl Default for _PERFINFO_WORKINGSET_ENTRY__bindgen_ty_1 {
 #[repr(C, packed)]
 #[derive(Copy, Clone)]
 pub union _PERFINFO_WORKINGSET_ENTRY__bindgen_ty_2 {
-   pub PagedPoolPageCount: ULONG_PTR,
-   pub VirtualSizeInPages: ULONG_PTR,
+   pub PagedPoolPageCount: SIZE_T,
+   pub VirtualSizeInPages: SIZE_T,
 }
 impl Default for _PERFINFO_WORKINGSET_ENTRY__bindgen_ty_2 {
    fn default() -> Self {
@@ -52813,6 +54709,65 @@ impl Default for _TELEMETRY_COVERAGE_POINT {
 }
 pub type TELEMETRY_COVERAGE_POINT = _TELEMETRY_COVERAGE_POINT;
 pub type PTELEMETRY_COVERAGE_POINT = *mut _TELEMETRY_COVERAGE_POINT;
+pub type PNOTIFICATIONCALLBACK =
+   ::core::option::Option<unsafe extern "C" fn(arg1: PWNODE_HEADER, arg2: ULONG_PTR)>;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _MOFRESOURCEINFOA {
+   pub ImagePath: PSTR,
+   pub ResourceName: PSTR,
+   pub ResourceSize: ULONG,
+   pub ResourceBuffer: PUCHAR,
+}
+impl Default for _MOFRESOURCEINFOA {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type MOFRESOURCEINFOA = _MOFRESOURCEINFOA;
+pub type PMOFRESOURCEINFOA = *mut _MOFRESOURCEINFOA;
+pub type MOFRESOURCEINFO = _MOFRESOURCEINFOW;
+pub type PMOFRESOURCEINFO = *mut _MOFRESOURCEINFOW;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _MOFRESOURCEINFOW {
+   pub ImagePath: LPWSTR,
+   pub ResourceName: LPWSTR,
+   pub ResourceSize: ULONG,
+   pub ResourceBuffer: PUCHAR,
+}
+impl Default for _MOFRESOURCEINFOW {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type MOFRESOURCEINFOW = _MOFRESOURCEINFOW;
+pub type PMOFRESOURCEINFOW = *mut _MOFRESOURCEINFOW;
+#[repr(C)]
+pub struct _WMIGUIDINFORMATION {
+   pub Size: ULONG,
+   pub IsExpensive: BOOLEAN,
+   pub IsEventOnly: BOOLEAN,
+}
+impl Default for _WMIGUIDINFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type WMIGUIDINFORMATION = _WMIGUIDINFORMATION;
+pub type PWMIGUIDINFORMATION = *mut _WMIGUIDINFORMATION;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -52922,6 +54877,159 @@ impl Default for _CONSOLEENDTASK {
 }
 pub type CONSOLEENDTASK = _CONSOLEENDTASK;
 pub type PCONSOLEENDTASK = *mut _CONSOLEENDTASK;
+#[repr(i32)]
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum _USERTHREADINFOCLASS {
+   __bindgen_cannot_repr_c_on_empty_enum = 0,
+}
+pub use self::_USERTHREADINFOCLASS as USERTHREADINFOCLASS;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _KERNEL_CALLBACK_TABLE {
+   pub __fnCOPYDATA: ULONG_PTR,
+   pub __fnCOPYGLOBALDATA: ULONG_PTR,
+   pub __fnEMPTY1: ULONG_PTR,
+   pub __fnNCDESTROY: ULONG_PTR,
+   pub __fnDWORDOPTINLPMSG: ULONG_PTR,
+   pub __fnINOUTDRAG: ULONG_PTR,
+   pub __fnGETTEXTLENGTHS1: ULONG_PTR,
+   pub __fnINCNTOUTSTRING: ULONG_PTR,
+   pub __fnINCNTOUTSTRINGNULL: ULONG_PTR,
+   pub __fnINLPCOMPAREITEMSTRUCT: ULONG_PTR,
+   pub __fnINLPCREATESTRUCT: ULONG_PTR,
+   pub __fnINLPDELETEITEMSTRUCT: ULONG_PTR,
+   pub __fnINLPDRAWITEMSTRUCT: ULONG_PTR,
+   pub __fnPOPTINLPUINT1: ULONG_PTR,
+   pub __fnPOPTINLPUINT2: ULONG_PTR,
+   pub __fnINLPMDICREATESTRUCT: ULONG_PTR,
+   pub __fnINOUTLPMEASUREITEMSTRUCT: ULONG_PTR,
+   pub __fnINLPWINDOWPOS: ULONG_PTR,
+   pub __fnINOUTLPPOINT51: ULONG_PTR,
+   pub __fnINOUTLPSCROLLINFO: ULONG_PTR,
+   pub __fnINOUTLPRECT: ULONG_PTR,
+   pub __fnINOUTNCCALCSIZE: ULONG_PTR,
+   pub __fnINOUTLPPOINT52: ULONG_PTR,
+   pub __fnINPAINTCLIPBRD: ULONG_PTR,
+   pub __fnINSIZECLIPBRD: ULONG_PTR,
+   pub __fnINDESTROYCLIPBRD: ULONG_PTR,
+   pub __fnINSTRINGNULL1: ULONG_PTR,
+   pub __fnINSTRINGNULL2: ULONG_PTR,
+   pub __fnINDEVICECHANGE: ULONG_PTR,
+   pub __fnPOWERBROADCAST: ULONG_PTR,
+   pub __fnINLPUAHDRAWMENU1: ULONG_PTR,
+   pub __fnOPTOUTLPDWORDOPTOUTLPDWORD1: ULONG_PTR,
+   pub __fnOPTOUTLPDWORDOPTOUTLPDWORD2: ULONG_PTR,
+   pub __fnOUTDWORDINDWORD: ULONG_PTR,
+   pub __fnOUTLPRECT: ULONG_PTR,
+   pub __fnOUTSTRING: ULONG_PTR,
+   pub __fnPOPTINLPUINT3: ULONG_PTR,
+   pub __fnPOUTLPINT: ULONG_PTR,
+   pub __fnSENTDDEMSG: ULONG_PTR,
+   pub __fnINOUTSTYLECHANGE1: ULONG_PTR,
+   pub __fnHkINDWORD: ULONG_PTR,
+   pub __fnHkINLPCBTACTIVATESTRUCT: ULONG_PTR,
+   pub __fnHkINLPCBTCREATESTRUCT: ULONG_PTR,
+   pub __fnHkINLPDEBUGHOOKSTRUCT: ULONG_PTR,
+   pub __fnHkINLPMOUSEHOOKSTRUCTEX1: ULONG_PTR,
+   pub __fnHkINLPKBDLLHOOKSTRUCT: ULONG_PTR,
+   pub __fnHkINLPMSLLHOOKSTRUCT: ULONG_PTR,
+   pub __fnHkINLPMSG: ULONG_PTR,
+   pub __fnHkINLPRECT: ULONG_PTR,
+   pub __fnHkOPTINLPEVENTMSG: ULONG_PTR,
+   pub __xxxClientCallDelegateThread: ULONG_PTR,
+   pub __ClientCallDummyCallback1: ULONG_PTR,
+   pub __ClientCallDummyCallback2: ULONG_PTR,
+   pub __fnSHELLWINDOWMANAGEMENTCALLOUT: ULONG_PTR,
+   pub __fnSHELLWINDOWMANAGEMENTNOTIFY: ULONG_PTR,
+   pub __ClientCallDummyCallback3: ULONG_PTR,
+   pub __xxxClientCallDitThread: ULONG_PTR,
+   pub __xxxClientEnableMMCSS: ULONG_PTR,
+   pub __xxxClientUpdateDpi: ULONG_PTR,
+   pub __xxxClientExpandStringW: ULONG_PTR,
+   pub __ClientCopyDDEIn1: ULONG_PTR,
+   pub __ClientCopyDDEIn2: ULONG_PTR,
+   pub __ClientCopyDDEOut1: ULONG_PTR,
+   pub __ClientCopyDDEOut2: ULONG_PTR,
+   pub __ClientCopyImage: ULONG_PTR,
+   pub __ClientEventCallback: ULONG_PTR,
+   pub __ClientFindMnemChar: ULONG_PTR,
+   pub __ClientFreeDDEHandle: ULONG_PTR,
+   pub __ClientFreeLibrary: ULONG_PTR,
+   pub __ClientGetCharsetInfo: ULONG_PTR,
+   pub __ClientGetDDEFlags: ULONG_PTR,
+   pub __ClientGetDDEHookData: ULONG_PTR,
+   pub __ClientGetListboxString: ULONG_PTR,
+   pub __ClientGetMessageMPH: ULONG_PTR,
+   pub __ClientLoadImage: ULONG_PTR,
+   pub __ClientLoadLibrary: ULONG_PTR,
+   pub __ClientLoadMenu: ULONG_PTR,
+   pub __ClientLoadLocalT1Fonts: ULONG_PTR,
+   pub __ClientPSMTextOut: ULONG_PTR,
+   pub __ClientLpkDrawTextEx: ULONG_PTR,
+   pub __ClientExtTextOutW: ULONG_PTR,
+   pub __ClientGetTextExtentPointW: ULONG_PTR,
+   pub __ClientCharToWchar: ULONG_PTR,
+   pub __ClientAddFontResourceW: ULONG_PTR,
+   pub __ClientThreadSetup: ULONG_PTR,
+   pub __ClientDeliverUserApc: ULONG_PTR,
+   pub __ClientNoMemoryPopup: ULONG_PTR,
+   pub __ClientMonitorEnumProc: ULONG_PTR,
+   pub __ClientCallWinEventProc: ULONG_PTR,
+   pub __ClientWaitMessageExMPH: ULONG_PTR,
+   pub __ClientCallDummyCallback4: ULONG_PTR,
+   pub __ClientCallDummyCallback5: ULONG_PTR,
+   pub __ClientImmLoadLayout: ULONG_PTR,
+   pub __ClientImmProcessKey: ULONG_PTR,
+   pub __fnIMECONTROL: ULONG_PTR,
+   pub __fnINWPARAMDBCSCHAR: ULONG_PTR,
+   pub __fnGETTEXTLENGTHS2: ULONG_PTR,
+   pub __ClientCallDummyCallback6: ULONG_PTR,
+   pub __ClientLoadStringW: ULONG_PTR,
+   pub __ClientLoadOLE: ULONG_PTR,
+   pub __ClientRegisterDragDrop: ULONG_PTR,
+   pub __ClientRevokeDragDrop: ULONG_PTR,
+   pub __fnINOUTMENUGETOBJECT: ULONG_PTR,
+   pub __ClientPrinterThunk: ULONG_PTR,
+   pub __fnOUTLPCOMBOBOXINFO: ULONG_PTR,
+   pub __fnOUTLPSCROLLBARINFO: ULONG_PTR,
+   pub __fnINLPUAHDRAWMENU2: ULONG_PTR,
+   pub __fnINLPUAHDRAWMENUITEM: ULONG_PTR,
+   pub __fnINLPUAHDRAWMENU3: ULONG_PTR,
+   pub __fnINOUTLPUAHMEASUREMENUITEM: ULONG_PTR,
+   pub __fnINLPUAHDRAWMENU4: ULONG_PTR,
+   pub __fnOUTLPTITLEBARINFOEX: ULONG_PTR,
+   pub __fnTOUCH: ULONG_PTR,
+   pub __fnGESTURE: ULONG_PTR,
+   pub __fnPOPTINLPUINT4: ULONG_PTR,
+   pub __fnPOPTINLPUINT5: ULONG_PTR,
+   pub __xxxClientCallDefaultInputHandler: ULONG_PTR,
+   pub __fnEMPTY2: ULONG_PTR,
+   pub __ClientRimDevCallback: ULONG_PTR,
+   pub __xxxClientCallMinTouchHitTestingCallback: ULONG_PTR,
+   pub __ClientCallLocalMouseHooks: ULONG_PTR,
+   pub __xxxClientBroadcastThemeChange: ULONG_PTR,
+   pub __xxxClientCallDevCallbackSimple: ULONG_PTR,
+   pub __xxxClientAllocWindowClassExtraBytes: ULONG_PTR,
+   pub __xxxClientFreeWindowClassExtraBytes: ULONG_PTR,
+   pub __fnGETWINDOWDATA: ULONG_PTR,
+   pub __fnINOUTSTYLECHANGE2: ULONG_PTR,
+   pub __fnHkINLPMOUSEHOOKSTRUCTEX2: ULONG_PTR,
+   pub __xxxClientCallDefWindowProc: ULONG_PTR,
+   pub __fnSHELLSYNCDISPLAYCHANGED: ULONG_PTR,
+   pub __fnHkINLPCHARHOOKSTRUCT: ULONG_PTR,
+   pub __fnINTERCEPTEDWINDOWACTION: ULONG_PTR,
+   pub __xxxTooltipCallback: ULONG_PTR,
+   pub __xxxClientInitPSBInfo: ULONG_PTR,
+   pub __xxxClientDoScrollMenu: ULONG_PTR,
+   pub __xxxClientEndScroll: ULONG_PTR,
+   pub __xxxClientDrawSize: ULONG_PTR,
+   pub __xxxClientDrawScrollBar: ULONG_PTR,
+   pub __xxxClientHitTestScrollBar: ULONG_PTR,
+   pub __xxxClientTrackInit: ULONG_PTR,
+}
+pub type KERNEL_CALLBACK_TABLE = _KERNEL_CALLBACK_TABLE;
+pub type PKERNEL_CALLBACK_TABLE = *mut _KERNEL_CALLBACK_TABLE;
 extern "C" {
    pub static GUID_NULL: GUID;
    pub static mut NlsAnsiCodePage: USHORT;
@@ -52933,21 +55041,21 @@ extern "C" {
    pub fn NtSetDebugFilterState(ComponentId: ULONG, Level: ULONG, State: BOOLEAN) -> NTSTATUS;
    pub fn NtYieldExecution() -> NTSTATUS;
    pub fn LdrLoadDll(
-      DllPath: PWSTR,
+      DllPath: PCWSTR,
       DllCharacteristics: PULONG,
       DllName: PUNICODE_STRING,
       DllHandle: *mut PVOID,
    ) -> NTSTATUS;
    pub fn LdrUnloadDll(DllHandle: PVOID) -> NTSTATUS;
    pub fn LdrGetDllHandle(
-      DllPath: PWSTR,
+      DllPath: PCWSTR,
       DllCharacteristics: PULONG,
       DllName: PUNICODE_STRING,
       DllHandle: *mut PVOID,
    ) -> NTSTATUS;
    pub fn LdrGetDllHandleEx(
       Flags: ULONG,
-      DllPath: PWSTR,
+      DllPath: PCWSTR,
       DllCharacteristics: PULONG,
       DllName: PUNICODE_STRING,
       DllHandle: *mut PVOID,
@@ -53054,9 +55162,10 @@ extern "C" {
    pub fn LdrStandardizeSystemPath(SystemPath: PUNICODE_STRING) -> PUNICODE_STRING;
    pub fn LdrGetFailureData() -> PLDR_FAILURE_DATA;
    pub static mut LdrSystemDllInitBlock: PS_SYSTEM_DLL_INIT_BLOCK;
+   pub static mut RtlpScpCfgNtdllExports: RTL_SCPCFG_NTDLL_EXPORTS;
    pub fn LdrAddLoadAsDataTable(
       Module: PVOID,
-      FilePath: PWSTR,
+      FilePath: PCWSTR,
       Size: SIZE_T,
       Handle: HANDLE,
       ActCtx: PACTIVATION_CONTEXT,
@@ -53115,6 +55224,13 @@ extern "C" {
       CultureName: PVOID,
       CultureNameLength: PULONG,
       Flags: ULONG,
+   ) -> NTSTATUS;
+   pub fn LdrpResGetResourceDirectory(
+      DllHandle: PVOID,
+      Size: SIZE_T,
+      Flags: ULONG,
+      ResourceDirectory: *mut PIMAGE_RESOURCE_DIRECTORY,
+      OutHeaders: *mut PIMAGE_NT_HEADERS,
    ) -> NTSTATUS;
    #[doc = " The LdrResSearchResource function searches for a resource in a DLL.\n\n @param DllHandle A handle to the DLL.\n @param ResourceInfo A pointer to the resource information.\n @param Level The level of the resource.\n @param Flags Flags for the resource search.\n @param ResourceBuffer An optional pointer to receive the resource buffer.\n @param ResourceLength An optional pointer to receive the resource length.\n @param CultureName An optional buffer to receive the culture name.\n @param CultureNameLength An optional pointer to receive the length of the culture name.\n @return NTSTATUS Successful or errant status."]
    pub fn LdrResSearchResource(
@@ -53230,8 +55346,10 @@ extern "C" {
    pub fn LdrSetImplicitPathOptions(ImplicitPathOptions: ULONG) -> NTSTATUS;
    #[doc = " The LdrControlFlowGuardEnforced function checks if Control Flow Guard is enforced.\n\n @return BOOLEAN TRUE if Control Flow Guard is enforced, FALSE otherwise."]
    pub fn LdrControlFlowGuardEnforced() -> BOOLEAN;
+   #[doc = " The LdrControlFlowGuardEnforcedWithExportSuppression function checks if Control Flow Guard is\n enforced with export suppression.\n\n @return BOOLEAN TRUE if Control Flow Guard is enforced, FALSE otherwise."]
+   pub fn LdrControlFlowGuardEnforcedWithExportSuppression() -> BOOLEAN;
    pub fn LdrIsModuleSxsRedirected(DllHandle: PVOID) -> BOOLEAN;
-   pub fn LdrUpdatePackageSearchPath(SearchPathA: PWSTR) -> NTSTATUS;
+   pub fn LdrUpdatePackageSearchPath(SearchPathW: PCWSTR) -> NTSTATUS;
    pub fn LdrCreateEnclave(
       ProcessHandle: HANDLE,
       BaseAddress: *mut PVOID,
@@ -53258,32 +55376,56 @@ extern "C" {
    ) -> NTSTATUS;
    pub fn LdrLoadEnclaveModule(
       BaseAddress: PVOID,
-      DllPath: PWSTR,
+      DllPath: PCWSTR,
       DllName: PUNICODE_STRING,
    ) -> NTSTATUS;
+   #[doc = " This function forcefully terminates the calling program if it is invoked inside a loader callout. Otherwise, it has no effect.\n\n @remarks This routine does not catch all potential deadlock cases; it is possible for a thread inside a loader callout\n to acquire a lock while some thread outside a loader callout holds the same lock and makes a call into the loader.\n In other words, there can be a lock order inversion between the loader lock and a client lock."]
+   pub fn LdrFastFailInLoaderCallout();
+   pub fn LdrFlushAlternateResourceModules() -> BOOLEAN;
+   pub fn LdrDllRedirectionCallback(
+      Flags: ULONG,
+      DllName: PCWSTR,
+      DllPath: PCWSTR,
+      DllCharacteristics: PULONG,
+      CallbackData: PVOID,
+      EffectiveDllPath: *mut PCWSTR,
+   ) -> NTSTATUS;
+   pub fn LdrSetDllManifestProber(Routine: PVOID);
+   pub static mut LdrpChildNtdll: BOOLEAN;
+   pub fn LdrpResGetMappingSize(
+      BaseAddress: PVOID,
+      Size: PSIZE_T,
+      Flags: ULONG,
+      GetFileSizeFromLoadAsDataTable: BOOLEAN,
+   );
+   #[doc = " The NtDelayExecution routine suspends the current thread until the specified condition is met.\n\n @param Alertable The function returns when either the time-out period has elapsed or when the APC function is called.\n @param DelayInterval The time interval for which execution is to be suspended, in milliseconds.\n - A value of zero causes the thread to relinquish the remainder of its time slice to any other thread that is ready to run.\n - If there are no other threads ready to run, the function returns immediately, and the thread continues execution.\n - A value of INFINITE indicates that the suspension should not time out.\n @return NTSTATUS Successful or errant status. The return value is STATUS_USER_APC when Alertable is TRUE, and the function returned due to one or more I/O completion callback functions.\n @remarks Note that a ready thread is not guaranteed to run immediately. Consequently, the thread will not run until some arbitrary time after the sleep interval elapses,\n based upon the system \"tick\" frequency and the load factor from other processes.\n @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleepex"]
    pub fn NtDelayExecution(Alertable: BOOLEAN, DelayInterval: PLARGE_INTEGER) -> NTSTATUS;
+   #[doc = " Retrieves the value of the specified firmware environment variable.\n The user account that the app is running under must have the SE_SYSTEM_ENVIRONMENT_NAME privilege.\n\n @param VariableName The name of the firmware environment variable. The pointer must not be NULL.\n @param VariableValue A pointer to a buffer that receives the value of the specified firmware environment variable.\n @param ValueLength The size of the \\c VariableValue buffer, in bytes.\n @param ReturnLength If the function succeeds, the return length is the number of bytes stored in the \\c VariableValue buffer.\n @return NTSTATUS Successful or errant status."]
    pub fn NtQuerySystemEnvironmentValue(
       VariableName: PUNICODE_STRING,
       VariableValue: PWSTR,
       ValueLength: USHORT,
       ReturnLength: PUSHORT,
    ) -> NTSTATUS;
+   #[doc = " Retrieves the value of the specified firmware environment variable and its attributes.\n The user account that the app is running under must have the SE_SYSTEM_ENVIRONMENT_NAME privilege.\n\n @param VariableName The name of the firmware environment variable. The pointer must not be NULL.\n @param VendorGuid The GUID that represents the namespace of the firmware environment variable.\n @param Buffer A pointer to a buffer that receives the value of the specified firmware environment variable.\n @param BufferLength The size of the \\c Buffer, in bytes.\n @param Attributes Bitmask identifying UEFI variable attributes associated with the variable.\n @return NTSTATUS Successful or errant status."]
+   pub fn NtQuerySystemEnvironmentValueEx(
+      VariableName: PUNICODE_STRING,
+      VendorGuid: PCGUID,
+      Buffer: PVOID,
+      BufferLength: PULONG,
+      Attributes: PULONG,
+   ) -> NTSTATUS;
+   #[doc = " Sets the value of the specified firmware environment variable.\n The user account that the app is running under must have the SE_SYSTEM_ENVIRONMENT_NAME privilege.\n\n @param VariableName The name of the firmware environment variable. The pointer must not be NULL.\n @param VariableValue A pointer to the new value for the firmware environment variable.\n If this parameter is zero, the firmware environment variable is deleted.\n @return NTSTATUS Successful or errant status."]
    pub fn NtSetSystemEnvironmentValue(
       VariableName: PUNICODE_STRING,
       VariableValue: PUNICODE_STRING,
    ) -> NTSTATUS;
-   pub fn NtQuerySystemEnvironmentValueEx(
-      VariableName: PUNICODE_STRING,
-      VendorGuid: PCGUID,
-      Value: PVOID,
-      ValueLength: PULONG,
-      Attributes: PULONG,
-   ) -> NTSTATUS;
+   #[doc = " Sets the value of the specified firmware environment variable and the attributes that indicate how this variable is stored and maintained.\n The user account that the app is running under must have the SE_SYSTEM_ENVIRONMENT_NAME privilege.\n\n @param VariableName The name of the firmware environment variable. The pointer must not be NULL.\n @param VendorGuid The GUID that represents the namespace of the firmware environment variable.\n @param Buffer A pointer to the new value for the firmware environment variable.\n @param BufferLength The size of the pValue buffer, in bytes.\n Unless the VARIABLE_ATTRIBUTE_APPEND_WRITE, VARIABLE_ATTRIBUTE_AUTHENTICATED_WRITE_ACCESS,\n or VARIABLE_ATTRIBUTE_TIME_BASED_AUTHENTICATED_WRITE_ACCESS variable attribute is set via dwAttributes,\n setting this value to zero will result in the deletion of this variable.\n @param Attributes Bitmask to set UEFI variable attributes associated with the variable.\n @return NTSTATUS Successful or errant status."]
    pub fn NtSetSystemEnvironmentValueEx(
       VariableName: PUNICODE_STRING,
       VendorGuid: PCGUID,
-      Value: PVOID,
-      ValueLength: ULONG,
+      Buffer: PVOID,
+      BufferLength: ULONG,
       Attributes: ULONG,
    ) -> NTSTATUS;
    pub fn NtEnumerateSystemEnvironmentValuesEx(
@@ -53318,6 +55460,7 @@ extern "C" {
       Data: PVOID,
       DataSize: ULONG,
    ) -> NTSTATUS;
+   #[doc = " The NtCreateEvent routine creates an event object, sets the initial state of the event to the specified value,\n and opens a handle to the object with the specified desired access.\n\n @param EventHandle A pointer to a variable that receives the event object handle.\n @param DesiredAccess The access mask that specifies the requested access to the event object.\n @param ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param EventType The type of the event, which can be SynchronizationEvent or a NotificationEvent.\n @param InitialState The initial state of the event object.\n @return NTSTATUS Successful or errant status.\n @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-zwcreateevent"]
    pub fn NtCreateEvent(
       EventHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -53325,16 +55468,25 @@ extern "C" {
       EventType: EVENT_TYPE,
       InitialState: BOOLEAN,
    ) -> NTSTATUS;
+   #[doc = " The NtOpenEvent routine opens a handle to an existing event object.\n\n @param EventHandle A pointer to a variable that receives the event object handle.\n @param DesiredAccess The access mask that specifies the requested access to the event object.\n @param ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @return NTSTATUS Successful or errant status."]
    pub fn NtOpenEvent(
       EventHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: POBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
+   #[doc = " The NtSetEvent routine sets an event object to the signaled state.\n\n @param EventHandle A handle to the event object.\n @param PreviousState A pointer to a variable that receives the previous state of the event object.\n @return NTSTATUS Successful or errant status."]
    pub fn NtSetEvent(EventHandle: HANDLE, PreviousState: PLONG) -> NTSTATUS;
+   #[doc = " The NtSetEventEx routine sets an event object to the signaled state and optionally acquires a lock.\n\n @param ThreadId A handle to the thread.\n @param Lock A pointer to an RTL_SRWLOCK structure that specifies the lock to acquire.\n @return NTSTATUS Successful or errant status."]
+   pub fn NtSetEventEx(ThreadId: HANDLE, Lock: PRTL_SRWLOCK) -> NTSTATUS;
+   #[doc = " The NtSetEventBoostPriority routine sets an event object to the signaled state and boosts the priority of threads waiting on the event.\n\n @param EventHandle A handle to the event object.\n @return NTSTATUS Successful or errant status."]
    pub fn NtSetEventBoostPriority(EventHandle: HANDLE) -> NTSTATUS;
+   #[doc = " The NtClearEvent routine sets an event object to the not-signaled state.\n\n @param EventHandle A handle to the event object.\n @return NTSTATUS Successful or errant status."]
    pub fn NtClearEvent(EventHandle: HANDLE) -> NTSTATUS;
+   #[doc = " The NtResetEvent routine sets an event object to the not-signaled state and optionally returns the previous state.\n\n @param EventHandle A handle to the event object.\n @param PreviousState A pointer to a variable that receives the previous state of the event object.\n @return NTSTATUS Successful or errant status.\n @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent"]
    pub fn NtResetEvent(EventHandle: HANDLE, PreviousState: PLONG) -> NTSTATUS;
+   #[doc = " The NtPulseEvent routine sets an event object to the signaled state and then resets it to the not-signaled state after releasing the appropriate number of waiting threads.\n\n @param EventHandle A handle to the event object.\n @param PreviousState A pointer to a variable that receives the previous state of the event object.\n @return NTSTATUS Successful or errant status.\n @see https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-pulseevent"]
    pub fn NtPulseEvent(EventHandle: HANDLE, PreviousState: PLONG) -> NTSTATUS;
+   #[doc = " The NtQueryEvent routine retrieves information about an event object.\n\n @param EventHandle A handle to the event object.\n @param EventInformationClass The type of information to be retrieved.\n @param EventInformation A pointer to a buffer that receives the requested information.\n @param EventInformationLength The size of the buffer pointed to by EventInformation.\n @param ReturnLength A pointer to a variable that receives the size of the data returned in the buffer.\n @return NTSTATUS Successful or errant status."]
    pub fn NtQueryEvent(
       EventHandle: HANDLE,
       EventInformationClass: EVENT_INFORMATION_CLASS,
@@ -53345,12 +55497,12 @@ extern "C" {
    pub fn NtCreateEventPair(
       EventPairHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn NtOpenEventPair(
       EventPairHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn NtSetLowEventPair(EventPairHandle: HANDLE) -> NTSTATUS;
    pub fn NtSetHighEventPair(EventPairHandle: HANDLE) -> NTSTATUS;
@@ -53361,13 +55513,13 @@ extern "C" {
    pub fn NtCreateMutant(
       MutantHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       InitialOwner: BOOLEAN,
    ) -> NTSTATUS;
    pub fn NtOpenMutant(
       MutantHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn NtReleaseMutant(MutantHandle: HANDLE, PreviousCount: PLONG) -> NTSTATUS;
    pub fn NtQueryMutant(
@@ -53380,14 +55532,14 @@ extern "C" {
    pub fn NtCreateSemaphore(
       SemaphoreHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       InitialCount: LONG,
       MaximumCount: LONG,
    ) -> NTSTATUS;
    pub fn NtOpenSemaphore(
       SemaphoreHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn NtReleaseSemaphore(
       SemaphoreHandle: HANDLE,
@@ -53404,13 +55556,13 @@ extern "C" {
    pub fn NtCreateTimer(
       TimerHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       TimerType: TIMER_TYPE,
    ) -> NTSTATUS;
    pub fn NtOpenTimer(
       TimerHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn NtSetTimer(
       TimerHandle: HANDLE,
@@ -53444,7 +55596,7 @@ extern "C" {
    pub fn NtCreateTimer2(
       TimerHandle: PHANDLE,
       Reserved1: PVOID,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       Attributes: ULONG,
       DesiredAccess: ACCESS_MASK,
    ) -> NTSTATUS;
@@ -53485,13 +55637,13 @@ extern "C" {
    pub fn NtCreateKeyedEvent(
       KeyedEventHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       Flags: ULONG,
    ) -> NTSTATUS;
    pub fn NtOpenKeyedEvent(
       KeyedEventHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn NtReleaseKeyedEvent(
       KeyedEventHandle: HANDLE,
@@ -53563,7 +55715,7 @@ extern "C" {
    pub fn NtCreateWorkerFactory(
       WorkerFactoryHandleReturn: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       CompletionPortHandle: HANDLE,
       WorkerProcessHandle: HANDLE,
       StartRoutine: PVOID,
@@ -53598,13 +55750,17 @@ extern "C" {
       PacketsReturned: PULONG,
       DeferredWork: PWORKER_FACTORY_DEFERRED_WORK,
    ) -> NTSTATUS;
+   #[doc = " The NtQuerySystemTime routine obtains the current system time.\n\n @param SystemTime A pointer to a LARGE_INTEGER structure that receives the system time. This is a 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 (UTC).\n @return NTSTATUS Successful or errant status.\n @see https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntquerysystemtime"]
    pub fn NtQuerySystemTime(SystemTime: PLARGE_INTEGER) -> NTSTATUS;
+   #[doc = " The NtSetSystemTime routine sets the current system time and date. The system time is expressed in Coordinated Universal Time (UTC).\n\n @param SystemTime A pointer to a LARGE_INTEGER structure that that contains the new system date and time.\n @param PreviousTime A pointer to a LARGE_INTEGER structure that that contains the previous system time.\n @return NTSTATUS Successful or errant status.\n @remarks The calling process must have the SE_SYSTEMTIME_NAME privilege.\n @see https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-setsystemtime"]
    pub fn NtSetSystemTime(SystemTime: PLARGE_INTEGER, PreviousTime: PLARGE_INTEGER) -> NTSTATUS;
+   #[doc = " The NtQueryTimerResolution routine retrieves the range and current value of the system interrupt timer.\n\n @param MaximumTime The maximum timer resolution, in 100-nanosecond units.\n @param MinimumTime The minimum timer resolution, in 100-nanosecond units.\n @param CurrentTime The current timer resolution, in 100-nanosecond units.\n @return NTSTATUS Successful or errant status."]
    pub fn NtQueryTimerResolution(
       MaximumTime: PULONG,
       MinimumTime: PULONG,
       CurrentTime: PULONG,
    ) -> NTSTATUS;
+   #[doc = " The NtSetTimerResolution routine sets the system interrupt timer resolution to the specified value.\n\n @param DesiredTime The desired timer resolution, in 100-nanosecond units.\n @param SetResolution If TRUE, the timer resolution is set to the value specified by DesiredTime. If FALSE, the timer resolution is reset to the default value.\n @param ActualTime The actual timer resolution, in 100-nanosecond units.\n @return NTSTATUS Successful or errant status."]
    pub fn NtSetTimerResolution(
       DesiredTime: ULONG,
       SetResolution: BOOLEAN,
@@ -53614,12 +55770,12 @@ extern "C" {
       PerformanceCounter: PLARGE_INTEGER,
       PerformanceFrequency: PLARGE_INTEGER,
    ) -> NTSTATUS;
-   pub fn NtQueryAuxiliaryCounterFrequency(AuxiliaryCounterFrequency: PLARGE_INTEGER) -> NTSTATUS;
+   pub fn NtQueryAuxiliaryCounterFrequency(AuxiliaryCounterFrequency: PULONG64) -> NTSTATUS;
    pub fn NtConvertBetweenAuxiliaryCounterAndPerformanceCounter(
       ConvertAuxiliaryToPerformanceCounter: BOOLEAN,
-      PerformanceOrAuxiliaryCounterValue: PLARGE_INTEGER,
-      ConvertedValue: PLARGE_INTEGER,
-      ConversionError: PLARGE_INTEGER,
+      PerformanceOrAuxiliaryCounterValue: PULONG64,
+      ConvertedValue: PULONG64,
+      ConversionError: PULONG64,
    ) -> NTSTATUS;
    pub fn NtAllocateLocallyUniqueId(Luid: PLUID) -> NTSTATUS;
    pub fn NtSetUuidSeed(Seed: PCHAR) -> NTSTATUS;
@@ -53695,9 +55851,9 @@ extern "C" {
       BaseAddress: *mut PVOID,
    ) -> NTSTATUS;
    pub fn NtGetMUIRegistryInfo(Flags: ULONG, DataSize: PULONG, Data: PVOID) -> NTSTATUS;
-   pub fn NtAddAtom(AtomName: PWSTR, Length: ULONG, Atom: PRTL_ATOM) -> NTSTATUS;
-   pub fn NtAddAtomEx(AtomName: PWSTR, Length: ULONG, Atom: PRTL_ATOM, Flags: ULONG) -> NTSTATUS;
-   pub fn NtFindAtom(AtomName: PWSTR, Length: ULONG, Atom: PRTL_ATOM) -> NTSTATUS;
+   pub fn NtAddAtom(AtomName: PCWSTR, Length: ULONG, Atom: PRTL_ATOM) -> NTSTATUS;
+   pub fn NtAddAtomEx(AtomName: PCWSTR, Length: ULONG, Atom: PRTL_ATOM, Flags: ULONG) -> NTSTATUS;
+   pub fn NtFindAtom(AtomName: PCWSTR, Length: ULONG, Atom: PRTL_ATOM) -> NTSTATUS;
    pub fn NtDeleteAtom(Atom: RTL_ATOM) -> NTSTATUS;
    pub fn NtQueryInformationAtom(
       Atom: RTL_ATOM,
@@ -53739,6 +55895,17 @@ extern "C" {
    pub static GUID_WINDOWS_SETUP_PCAT: GUID;
    pub static GUID_WINDOWS_SETUP_RAMDISK_OPTIONS: GUID;
    pub static GUID_WINDOWS_SETUP_BOOT_ENTRY: GUID;
+   pub static GUID_VHD_BOOT_OPTIONS: GUID;
+   pub static PARTITION_BASIC_DATA_GUID: GUID;
+   pub static PARTITION_CLUSTER_GUID: GUID;
+   pub static PARTITION_ENTRY_UNUSED_GUID: GUID;
+   pub static PARTITION_LDM_DATA_GUID: GUID;
+   pub static PARTITION_LDM_METADATA_GUID: GUID;
+   pub static PARTITION_MSFT_RECOVERY_GUID: GUID;
+   pub static PARTITION_MSFT_RESERVED_GUID: GUID;
+   pub static PARTITION_MSFT_SNAPSHOT_GUID: GUID;
+   pub static PARTITION_SPACES_GUID: GUID;
+   pub static PARTITION_SYSTEM_GUID: GUID;
    #[doc = " Sets the logging level and callback routine for BCD messages.\n\n @param BcdLoggingLevel The logging level to set.\n @param BcdMessageCallbackRoutine The callback routine for BCD messages.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdSetLogging(
       BcdLoggingLevel: BCD_MESSAGE_TYPE,
@@ -53924,6 +56091,14 @@ extern "C" {
       BufferSize: SIZE_T,
       NumberOfBytesRead: PSIZE_T,
    ) -> NTSTATUS;
+   pub fn NtWow64ReadVirtualMemory64(
+      ProcessHandle: HANDLE,
+      BaseAddress: PVOID,
+      Buffer: PVOID,
+      BufferSize: ULONGLONG,
+      NumberOfBytesRead: PULONGLONG,
+      Flags: ULONG,
+   ) -> NTSTATUS;
    pub fn NtReadVirtualMemoryEx(
       ProcessHandle: HANDLE,
       BaseAddress: PVOID,
@@ -53938,6 +56113,13 @@ extern "C" {
       Buffer: PVOID,
       BufferSize: SIZE_T,
       NumberOfBytesWritten: PSIZE_T,
+   ) -> NTSTATUS;
+   pub fn NtWow64WriteVirtualMemory64(
+      ProcessHandle: HANDLE,
+      BaseAddress: PVOID,
+      Buffer: PVOID,
+      BufferSize: ULONGLONG,
+      NumberOfBytesWritten: PULONGLONG,
    ) -> NTSTATUS;
    pub fn NtProtectVirtualMemory(
       ProcessHandle: HANDLE,
@@ -53954,6 +56136,14 @@ extern "C" {
       MemoryInformationLength: SIZE_T,
       ReturnLength: PSIZE_T,
    ) -> NTSTATUS;
+   pub fn NtWow64QueryVirtualMemory64(
+      ProcessHandle: HANDLE,
+      BaseAddress: PVOID,
+      MemoryInformationClass: MEMORY_INFORMATION_CLASS,
+      MemoryInformation: PVOID,
+      MemoryInformationLength: ULONGLONG,
+      ReturnLength: PULONGLONG,
+   ) -> NTSTATUS;
    pub fn NtFlushVirtualMemory(
       ProcessHandle: HANDLE,
       BaseAddress: *mut PVOID,
@@ -53963,7 +56153,7 @@ extern "C" {
    pub fn NtSetInformationVirtualMemory(
       ProcessHandle: HANDLE,
       VmInformationClass: VIRTUAL_MEMORY_INFORMATION_CLASS,
-      NumberOfEntries: ULONG_PTR,
+      NumberOfEntries: SIZE_T,
       VirtualAddresses: PMEMORY_RANGE_ENTRY,
       VmInformation: PVOID,
       VmInformationLength: ULONG,
@@ -53983,7 +56173,7 @@ extern "C" {
    pub fn NtCreateSection(
       SectionHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       MaximumSize: PLARGE_INTEGER,
       SectionPageProtection: ULONG,
       AllocationAttributes: ULONG,
@@ -53992,7 +56182,7 @@ extern "C" {
    pub fn NtCreateSectionEx(
       SectionHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       MaximumSize: PLARGE_INTEGER,
       SectionPageProtection: ULONG,
       AllocationAttributes: ULONG,
@@ -54003,7 +56193,7 @@ extern "C" {
    pub fn NtOpenSection(
       SectionHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn NtMapViewOfSection(
       SectionHandle: HANDLE,
@@ -54050,13 +56240,13 @@ extern "C" {
       ParentPartitionHandle: HANDLE,
       PartitionHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       PreferredNode: ULONG,
    ) -> NTSTATUS;
    pub fn NtOpenPartition(
       PartitionHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn NtManagePartition(
       TargetHandle: HANDLE,
@@ -54067,17 +56257,17 @@ extern "C" {
    ) -> NTSTATUS;
    pub fn NtMapUserPhysicalPages(
       VirtualAddress: PVOID,
-      NumberOfPages: ULONG_PTR,
+      NumberOfPages: SIZE_T,
       UserPfnArray: PULONG_PTR,
    ) -> NTSTATUS;
    pub fn NtMapUserPhysicalPagesScatter(
       VirtualAddresses: *mut PVOID,
-      NumberOfPages: ULONG_PTR,
+      NumberOfPages: SIZE_T,
       UserPfnArray: PULONG_PTR,
    ) -> NTSTATUS;
    pub fn NtAllocateUserPhysicalPages(
       ProcessHandle: HANDLE,
-      NumberOfPages: PULONG_PTR,
+      NumberOfPages: PSIZE_T,
       UserPfnArray: PULONG_PTR,
    ) -> NTSTATUS;
    pub fn NtAllocateUserPhysicalPagesEx(
@@ -54279,20 +56469,22 @@ extern "C" {
       SymbolicLinkInformationLength: ULONG,
    ) -> NTSTATUS;
    pub fn NtQueryPortInformationProcess() -> NTSTATUS;
+   #[doc = " Creates a new process.\n\n @param ProcessHandle A pointer to a handle that receives the process object handle.\n @param DesiredAccess The access rights desired for the process object.\n @param ObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new process.\n @param ParentProcess A handle to the parent process.\n @param InheritObjectTable If TRUE, the new process inherits the object table of the parent process.\n @param SectionHandle Optional. A handle to a section object to be used for the new process.\n @param DebugPort Optional. A handle to a debug port to be used for the new process.\n @param TokenHandle Optional. A handle to an access token to be used for the new process.\n @return NTSTATUS Successful or errant status."]
    pub fn NtCreateProcess(
       ProcessHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ParentProcess: HANDLE,
       InheritObjectTable: BOOLEAN,
       SectionHandle: HANDLE,
       DebugPort: HANDLE,
       TokenHandle: HANDLE,
    ) -> NTSTATUS;
+   #[doc = " Creates a new process with extended options.\n\n @param ProcessHandle A pointer to a handle that receives the process object handle.\n @param DesiredAccess The access rights desired for the process object.\n @param ObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new process.\n @param ParentProcess A handle to the parent process.\n @param Flags Flags that control the creation of the process. These flags are defined as PROCESS_CREATE_FLAGS_*.\n @param SectionHandle Optional. A handle to a section object to be used for the new process.\n @param DebugPort Optional. A handle to a debug port to be used for the new process.\n @param TokenHandle Optional. A handle to an access token to be used for the new process.\n @param Reserved Reserved for future use. Must be zero.\n @return NTSTATUS Successful or errant status."]
    pub fn NtCreateProcessEx(
       ProcessHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ParentProcess: HANDLE,
       Flags: ULONG,
       SectionHandle: HANDLE,
@@ -54300,14 +56492,18 @@ extern "C" {
       TokenHandle: HANDLE,
       Reserved: ULONG,
    ) -> NTSTATUS;
+   #[doc = " Opens an existing process object.\n\n @param ProcessHandle A pointer to a handle that receives the process object handle.\n @param DesiredAccess The access rights desired for the process object.\n @param ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new process.\n @param ClientId Optional. A pointer to a CLIENT_ID structure that specifies the client ID of the process to be opened.\n @return NTSTATUS Successful or errant status."]
    pub fn NtOpenProcess(
       ProcessHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ClientId: PCLIENT_ID,
    ) -> NTSTATUS;
+   #[doc = " Terminates the specified process.\n\n @param ProcessHandle Optional. A handle to the process to be terminated. If this parameter is NULL, the calling process is terminated.\n @param ExitStatus The exit status to be used by the process and the process's termination status.\n @return NTSTATUS Successful or errant status."]
    pub fn NtTerminateProcess(ProcessHandle: HANDLE, ExitStatus: NTSTATUS) -> NTSTATUS;
+   #[doc = " Suspends the specified process.\n\n @param ProcessHandle A handle to the process to be suspended.\n @return NTSTATUS Successful or errant status."]
    pub fn NtSuspendProcess(ProcessHandle: HANDLE) -> NTSTATUS;
+   #[doc = " Resumes the specified process.\n\n @param ProcessHandle A handle to the process to be resumed.\n @return NTSTATUS Successful or errant status."]
    pub fn NtResumeProcess(ProcessHandle: HANDLE) -> NTSTATUS;
    pub static mut __ImageBase: IMAGE_DOS_HEADER;
    #[doc = " Retrieves information about the specified process.\n\n @param ProcessHandle A handle to the process.\n @param ProcessInformationClass The type of process information to be retrieved.\n @param ProcessInformation A pointer to a buffer that receives the process information.\n @param ProcessInformationLength The size of the buffer pointed to by the ProcessInformation parameter.\n @param ReturnLength An optional pointer to a variable that receives the size of the data returned.\n @return NTSTATUS Successful or errant status."]
@@ -54318,7 +56514,14 @@ extern "C" {
       ProcessInformationLength: ULONG,
       ReturnLength: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Retrieves a handle to the next process in the system.\n\n @param ProcessHandle An optional handle to the current process.\n @param DesiredAccess The access rights desired for the new process handle.\n @param HandleAttributes The attributes for the new process handle.\n @param Flags Flags that modify the behavior of the function.\n @param NewProcessHandle A pointer to a variable that receives the handle to the next process.\n @return NTSTATUS Successful or errant status."]
+   pub fn NtWow64QueryInformationProcess64(
+      ProcessHandle: HANDLE,
+      ProcessInformationClass: PROCESSINFOCLASS,
+      ProcessInformation: PVOID,
+      ProcessInformationLength: ULONG,
+      ReturnLength: PULONG,
+   ) -> NTSTATUS;
+   #[doc = " Retrieves a handle to the next process in the system.\n\n @param ProcessHandle An optional handle to a process. If this parameter is NULL, the function retrieves the first process in the system.\n @param DesiredAccess The access rights desired for the new process handle.\n @param HandleAttributes The attributes for the new process handle.\n @param Flags Flags that modify the behavior of the function. This can be a combination of the following flags:\n - PROCESS_GET_NEXT_FLAGS_PREVIOUS_PROCESS (0x00000001): Retrieve the previous process in the system.\n @param NewProcessHandle A pointer to a variable that receives the handle to the next process.\n @return NTSTATUS Successful or errant status."]
    pub fn NtGetNextProcess(
       ProcessHandle: HANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -54326,6 +56529,7 @@ extern "C" {
       Flags: ULONG,
       NewProcessHandle: PHANDLE,
    ) -> NTSTATUS;
+   #[doc = " Retrieves a handle to the next thread in the system.\n\n @param ProcessHandle A handle to the process for enumerateration of threads.\n @param ThreadHandle An optional handle to a thread. If this parameter is NULL, the function retrieves the first thread in the process.\n @param DesiredAccess The access rights desired for the new process handle.\n @param HandleAttributes The attributes for the new process handle.\n @param Flags Flags that modify the behavior of the function. This can be a combination of the following flags:\n - THREAD_GET_NEXT_FLAGS_PREVIOUS_THREAD (0x00000001): Retrieve the previous thread in the process.\n @param NewProcessHandle A pointer to a variable that receives the handle to the next process.\n @return NTSTATUS Successful or errant status."]
    pub fn NtGetNextThread(
       ProcessHandle: HANDLE,
       ThreadHandle: HANDLE,
@@ -54341,10 +56545,11 @@ extern "C" {
       ProcessInformation: PVOID,
       ProcessInformationLength: ULONG,
    ) -> NTSTATUS;
+   #[doc = " Creates a state change handle for changing the suspension state of a process.\n\n @param ProcessStateChangeHandle A pointer to a variable that receives the handle.\n @param DesiredAccess The access rights desired for the handle.\n @param ObjectAttributes Optional attributes for the handle.\n @param ProcessHandle A handle to the process.\n @param Reserved Reserved for future use.\n @return NTSTATUS Successful or errant status."]
    pub fn NtCreateProcessStateChange(
       ProcessStateChangeHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ProcessHandle: HANDLE,
       Reserved: ULONG64,
    ) -> NTSTATUS;
@@ -54357,14 +56562,15 @@ extern "C" {
       ExtendedInformationLength: SIZE_T,
       Reserved: ULONG64,
    ) -> NTSTATUS;
-   #[doc = " Creates a state change handle for changing the suspension state of a process.\n\n @param ProcessStateChangeHandle A pointer to a variable that receives the handle.\n @param DesiredAccess The access rights desired for the handle.\n @param ObjectAttributes Optional attributes for the handle.\n @param ProcessHandle A handle to the process.\n @param Reserved Reserved for future use.\n @return NTSTATUS Successful or errant status."]
+   #[doc = " Creates a state change handle for changing the suspension state of a thread.\n\n @param ThreadStateChangeHandle A pointer to a variable that receives the handle.\n @param DesiredAccess The access rights desired for the handle.\n @param ObjectAttributes Optional attributes for the handle.\n @param ThreadHandle A handle to the thread.\n @param Reserved Reserved for future use.\n @return NTSTATUS Successful or errant status."]
    pub fn NtCreateThreadStateChange(
       ThreadStateChangeHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ThreadHandle: HANDLE,
       Reserved: ULONG64,
    ) -> NTSTATUS;
+   #[doc = " Changes the suspension state of a thread.\n\n @param ThreadStateChangeHandle A handle to the thread state change object.\n @param ThreadHandle A handle to the thread.\n @param StateChangeType The type of state change.\n @param ExtendedInformation Optional extended information.\n @param ExtendedInformationLength The length of the extended information.\n @param Reserved Reserved for future use.\n @return NTSTATUS Successful or errant status."]
    pub fn NtChangeThreadState(
       ThreadStateChangeHandle: HANDLE,
       ThreadHandle: HANDLE,
@@ -54373,24 +56579,29 @@ extern "C" {
       ExtendedInformationLength: SIZE_T,
       Reserved: ULONG64,
    ) -> NTSTATUS;
+   #[doc = " Creates a new thread in the specified process.\n\n @param ThreadHandle A pointer to a handle that receives the thread object handle.\n @param DesiredAccess The access rights desired for the thread object.\n @param ObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n @param ProcessHandle A handle to the process in which the thread is to be created.\n @param ClientId A pointer to a CLIENT_ID structure that receives the client ID of the new thread.\n @param ThreadContext A pointer to a CONTEXT structure that specifies the initial context of the new thread.\n @param InitialTeb A pointer to an INITIAL_TEB structure that specifies the initial stack limits of the new thread.\n @param CreateSuspended If TRUE, the thread is created in a suspended state.\n @return NTSTATUS Successful or errant status."]
    pub fn NtCreateThread(
       ThreadHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ProcessHandle: HANDLE,
       ClientId: PCLIENT_ID,
       ThreadContext: PCONTEXT,
       InitialTeb: PINITIAL_TEB,
       CreateSuspended: BOOLEAN,
    ) -> NTSTATUS;
+   #[doc = " Opens an existing thread object.\n\n @param ThreadHandle A pointer to a handle that receives the thread object handle.\n @param DesiredAccess The access rights desired for the thread object.\n @param ObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n @param ClientId Optional. A pointer to a CLIENT_ID structure that specifies the client ID of the thread to be opened.\n @return NTSTATUS Successful or errant status."]
    pub fn NtOpenThread(
       ThreadHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ClientId: PCLIENT_ID,
    ) -> NTSTATUS;
+   #[doc = " Terminates the specified thread.\n\n @param ThreadHandle Optional. A handle to the thread to be terminated. If this parameter is NULL, the calling thread is terminated.\n @param ExitStatus The exit status to be used by the thread and the thread's termination status.\n @return NTSTATUS Successful or errant status."]
    pub fn NtTerminateThread(ThreadHandle: HANDLE, ExitStatus: NTSTATUS) -> NTSTATUS;
+   #[doc = " Suspends the specified thread.\n\n @param ThreadHandle A handle to the thread to be suspended.\n @param PreviousSuspendCount Optional. A pointer to a variable that receives the thread's previous suspend count.\n @return NTSTATUS Successful or errant status."]
    pub fn NtSuspendThread(ThreadHandle: HANDLE, PreviousSuspendCount: PULONG) -> NTSTATUS;
+   #[doc = " Resumes the specified thread.\n\n @param ThreadHandle A handle to the thread to be resumed.\n @param PreviousSuspendCount Optional. A pointer to a variable that receives the thread's previous suspend count.\n @return NTSTATUS Successful or errant status."]
    pub fn NtResumeThread(ThreadHandle: HANDLE, PreviousSuspendCount: PULONG) -> NTSTATUS;
    #[doc = " Retrieves the number of the current processor.\n\n @return ULONG The number of the current processor."]
    pub fn NtGetCurrentProcessorNumber() -> ULONG;
@@ -54400,6 +56611,7 @@ extern "C" {
    pub fn NtGetContextThread(ThreadHandle: HANDLE, ThreadContext: PCONTEXT) -> NTSTATUS;
    #[doc = " Sets the context of the specified thread.\n\n @param ThreadHandle A handle to the thread.\n @param ThreadContext A pointer to a CONTEXT structure that specifies the thread context.\n @return NTSTATUS Successful or errant status."]
    pub fn NtSetContextThread(ThreadHandle: HANDLE, ThreadContext: PCONTEXT) -> NTSTATUS;
+   #[doc = " Retrieves information about the specified thread.\n\n @param ThreadHandle A handle to the thread.\n @param ThreadInformationClass The type of thread information to be retrieved.\n @param ThreadInformation A pointer to a buffer that receives the thread information.\n @param ThreadInformationLength The size of the buffer pointed to by the ThreadInformation parameter.\n @param ReturnLength An optional pointer to a variable that receives the size of the data returned.\n @return NTSTATUS Successful or errant status."]
    pub fn NtQueryInformationThread(
       ThreadHandle: HANDLE,
       ThreadInformationClass: THREADINFOCLASS,
@@ -54407,21 +56619,39 @@ extern "C" {
       ThreadInformationLength: ULONG,
       ReturnLength: PULONG,
    ) -> NTSTATUS;
+   #[doc = " Sets information for the specified thread.\n\n @param ThreadHandle A handle to the thread.\n @param ThreadInformationClass The type of thread information to be set.\n @param ThreadInformation A pointer to a buffer that contains the thread information.\n @param ThreadInformationLength The size of the buffer pointed to by the ThreadInformation parameter.\n @return NTSTATUS Successful or errant status."]
    pub fn NtSetInformationThread(
       ThreadHandle: HANDLE,
       ThreadInformationClass: THREADINFOCLASS,
       ThreadInformation: PVOID,
       ThreadInformationLength: ULONG,
    ) -> NTSTATUS;
+   #[doc = " Sends an alert to the specified thread.\n\n @param ThreadHandle A handle to the thread to be alerted.\n @return NTSTATUS Successful or errant status."]
    pub fn NtAlertThread(ThreadHandle: HANDLE) -> NTSTATUS;
+   #[doc = " Resumes a thread that was previously suspended and sends an alert to it.\n\n @param ThreadHandle A handle to the thread to be resumed and alerted.\n @param PreviousSuspendCount An optional pointer to a variable that receives the thread's previous suspend count.\n @return NTSTATUS Successful or errant status."]
    pub fn NtAlertResumeThread(ThreadHandle: HANDLE, PreviousSuspendCount: PULONG) -> NTSTATUS;
+   #[doc = " Tests whether the current thread has an alert pending.\n\n @return NTSTATUS Successful or errant status."]
    pub fn NtTestAlert() -> NTSTATUS;
+   #[doc = " Sends an alert to the specified thread.\n\n @param ThreadId The thread ID of the thread to be alerted.\n @return NTSTATUS Successful or errant status."]
+   pub fn NtAlertThreadByThreadId(ThreadId: HANDLE) -> NTSTATUS;
+   pub fn NtAlertThreadByThreadIdEx(ThreadId: HANDLE, Lock: PRTL_SRWLOCK) -> NTSTATUS;
+   pub fn NtAlertMultipleThreadByThreadId(
+      MultipleThreadId: PHANDLE,
+      Count: ULONG,
+      Boost: PVOID,
+      BoostCount: ULONG,
+   ) -> NTSTATUS;
+   #[doc = " Waits for an alert to be delivered to the specified thread.\n\n @param Address The address to wait for an alert on.\n @param Timeout The timeout value for waiting, or NULL for no timeout.\n @return NTSTATUS Successful or errant status."]
+   pub fn NtWaitForAlertByThreadId(Address: PVOID, Timeout: PLARGE_INTEGER) -> NTSTATUS;
+   #[doc = " Impersonates a client thread.\n\n @param ServerThreadHandle A handle to the server thread.\n @param ClientThreadHandle A handle to the client thread.\n @param SecurityQos A pointer to a SECURITY_QUALITY_OF_SERVICE structure that specifies the impersonation level and context tracking mode.\n @return NTSTATUS Successful or errant status."]
    pub fn NtImpersonateThread(
       ServerThreadHandle: HANDLE,
       ClientThreadHandle: HANDLE,
       SecurityQos: PSECURITY_QUALITY_OF_SERVICE,
    ) -> NTSTATUS;
+   #[doc = " Registers a thread termination port.\n\n @param PortHandle A handle to the port to be registered.\n @return NTSTATUS Successful or errant status."]
    pub fn NtRegisterThreadTerminatePort(PortHandle: HANDLE) -> NTSTATUS;
+   #[doc = " Sets LDT (Local Descriptor Table) entries.\n\n @param Selector0 The first selector.\n @param Entry0Low The low part of the first entry.\n @param Entry0Hi The high part of the first entry.\n @param Selector1 The second selector.\n @param Entry1Low The low part of the second entry.\n @param Entry1Hi The high part of the second entry.\n @return NTSTATUS Successful or errant status."]
    pub fn NtSetLdtEntries(
       Selector0: ULONG,
       Entry0Low: ULONG,
@@ -54430,7 +56660,7 @@ extern "C" {
       Entry1Low: ULONG,
       Entry1Hi: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Dispatches the Asynchronous Procedure Call (APC) from the NtQueueApc* functions to the specified routine.\n\n @param ApcRoutine A pointer to the APC routine to be executed.\n @param Parameter Optional. A pointer to a parameter to be passed to the APC routine.\n @param ActxContext Optional. A handle to an activation context.\n @return VOID This function does not return a value."]
+   #[doc = " Dispatches the Asynchronous Procedure Call (APC) from the NtQueueApc* functions to the specified routine.\n\n @param ApcRoutine A pointer to the APC routine to be executed.\n @param Parameter Optional. A pointer to a parameter to be passed to the APC routine.\n @param ActxContext Optional. A handle to an activation context."]
    pub fn RtlDispatchAPC(ApcRoutine: PAPCFUNC, Parameter: PVOID, ActxContext: HANDLE);
    #[doc = " Queues an APC (Asynchronous Procedure Call) to a thread.\n\n @param ThreadHandle Handle to the thread to which the APC is to be queued.\n @param ApcRoutine A pointer to the RtlDispatchAPC function or custom APC routine to be executed.\n @param ApcArgument1 Optional first argument to be passed to the APC routine.\n @param ApcArgument2 Optional second argument to be passed to the APC routine.\n @param ApcArgument3 Optional third argument to be passed to the APC routine.\n @return NTSTATUS Successful or errant status.\n @remarks The APC will be executed in the context of the specified thread when the thread enters an alertable wait state or when any\n process calls the NtTestAlert, NtAlertThread, NtAlertResumeThread or NtAlertThreadByThreadId functions."]
    pub fn NtQueueApcThread(
@@ -54459,18 +56689,14 @@ extern "C" {
       ApcArgument2: PVOID,
       ApcArgument3: PVOID,
    ) -> NTSTATUS;
-   #[doc = " Sends an alert to the specified thread.\n\n @param ThreadId The thread ID of the thread to be alerted.\n @return NTSTATUS Successful or errant status."]
-   pub fn NtAlertThreadByThreadId(ThreadId: HANDLE) -> NTSTATUS;
-   #[doc = " Waits for an alert to be delivered to the specified thread.\n\n @param Address The address to wait for an alert on.\n @param Timeout The timeout value for waiting, or NULL for no timeout.\n @return NTSTATUS Successful or errant status."]
-   pub fn NtWaitForAlertByThreadId(Address: PVOID, Timeout: PLARGE_INTEGER) -> NTSTATUS;
    #[doc = " Creates a new process and primary thread.\n\n @param ProcessHandle A pointer to a handle that receives the process object handle.\n @param ThreadHandle A pointer to a handle that receives the thread object handle.\n @param ProcessDesiredAccess The access rights desired for the process object.\n @param ThreadDesiredAccess The access rights desired for the thread object.\n @param ProcessObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new process.\n @param ThreadObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n @param ProcessFlags Flags that control the creation of the process. These flags are defined as PROCESS_CREATE_FLAGS_*.\n @param ThreadFlags Flags that control the creation of the thread. These flags are defined as THREAD_CREATE_FLAGS_*.\n @param ProcessParameters Optional. A pointer to a RTL_USER_PROCESS_PARAMETERS structure that specifies the parameters for the new process.\n @param CreateInfo A pointer to a PS_CREATE_INFO structure that specifies additional information for the process creation.\n @param AttributeList Optional. A pointer to a list of attributes for the process and thread.\n @return NTSTATUS Successful or errant status."]
    pub fn NtCreateUserProcess(
       ProcessHandle: PHANDLE,
       ThreadHandle: PHANDLE,
       ProcessDesiredAccess: ACCESS_MASK,
       ThreadDesiredAccess: ACCESS_MASK,
-      ProcessObjectAttributes: POBJECT_ATTRIBUTES,
-      ThreadObjectAttributes: POBJECT_ATTRIBUTES,
+      ProcessObjectAttributes: PCOBJECT_ATTRIBUTES,
+      ThreadObjectAttributes: PCOBJECT_ATTRIBUTES,
       ProcessFlags: ULONG,
       ThreadFlags: ULONG,
       ProcessParameters: PRTL_USER_PROCESS_PARAMETERS,
@@ -54481,7 +56707,7 @@ extern "C" {
    pub fn NtCreateThreadEx(
       ThreadHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ProcessHandle: HANDLE,
       StartRoutine: PUSER_THREAD_START_ROUTINE,
       Argument: PVOID,
@@ -54491,19 +56717,25 @@ extern "C" {
       MaximumStackSize: SIZE_T,
       AttributeList: PPS_ATTRIBUTE_LIST,
    ) -> NTSTATUS;
+   #[doc = " Creates or opens a job object.\n\n @param JobHandle A handle to the job object.\n @param DesiredAccess The access rights desired for the thread object.\n @param ObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n @return NTSTATUS Successful or errant status."]
    pub fn NtCreateJobObject(
       JobHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
+   #[doc = " Opens an existing job object.\n\n @param JobHandle A handle to the job object.\n @param DesiredAccess The access rights desired for the thread object.\n @param ObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n @return NTSTATUS Successful or errant status."]
    pub fn NtOpenJobObject(
       JobHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
+   #[doc = " Assigns a process to an existing job object.\n\n @param JobHandle A handle to the job object to which the process will be associated. The handle must have the JOB_OBJECT_ASSIGN_PROCESS access right.\n @param ProcessHandle A handle to the process to associate with the job object. The handle must have the PROCESS_SET_QUOTA and PROCESS_TERMINATE access rights.\n @return NTSTATUS Successful or errant status."]
    pub fn NtAssignProcessToJobObject(JobHandle: HANDLE, ProcessHandle: HANDLE) -> NTSTATUS;
+   #[doc = " Terminates all processes associated with the job object. If the job is nested, all processes currently associated with the job and all child jobs in the hierarchy are terminated.\n\n @param JobHandle A handle to the job whose processes will be terminated. The handle must have the JOB_OBJECT_TERMINATE access right.\n @param ExitStatus The exit status to be used by all processes and threads in the job object.\n @return NTSTATUS Successful or errant status."]
    pub fn NtTerminateJobObject(JobHandle: HANDLE, ExitStatus: NTSTATUS) -> NTSTATUS;
+   #[doc = " Checks if a process is associated with a job object.\n\n @param ProcessHandle A handle to the process to be checked.\n @param JobHandle An optional handle to the job object. If this parameter is NULL, the function checks if the process is associated with any job object.\n @return NTSTATUS Successful or errant status.\n @remarks This function can be used to determine if a process is running within a job object, which can be useful for managing process resources and constraints."]
    pub fn NtIsProcessInJob(ProcessHandle: HANDLE, JobHandle: HANDLE) -> NTSTATUS;
+   #[doc = " Retrieves information about a job object.\n\n @param JobHandle An optional handle to the job object. If this parameter is NULL, the function retrieves information about the job object associated with the calling process.\n @param JobObjectInformationClass The type of job object information to be retrieved.\n @param JobObjectInformation A pointer to a buffer that receives the job object information.\n @param JobObjectInformationLength The size of the buffer pointed to by the JobObjectInformation parameter.\n @param ReturnLength An optional pointer to a variable that receives the size of the data returned.\n @return NTSTATUS Successful or errant status.\n @remarks This function can be used to query various types of information about a job object, such as accounting information, limit information, and process ID list."]
    pub fn NtQueryInformationJobObject(
       JobHandle: HANDLE,
       JobObjectInformationClass: JOBOBJECTINFOCLASS,
@@ -54511,18 +56743,20 @@ extern "C" {
       JobObjectInformationLength: ULONG,
       ReturnLength: PULONG,
    ) -> NTSTATUS;
+   #[doc = " Sets information for a job object.\n\n @param JobHandle A handle to the job object.\n @param JobObjectInformationClass The type of job object information to be set.\n @param JobObjectInformation A pointer to a buffer that contains the job object information.\n @param JobObjectInformationLength The size of the buffer pointed to by the JobObjectInformation parameter.\n @return NTSTATUS Successful or errant status.\n @remarks This function can be used to set various types of information for a job object, such as limit information, UI restrictions, and security limit information."]
    pub fn NtSetInformationJobObject(
       JobHandle: HANDLE,
       JobObjectInformationClass: JOBOBJECTINFOCLASS,
       JobObjectInformation: PVOID,
       JobObjectInformationLength: ULONG,
    ) -> NTSTATUS;
+   #[doc = " Creates a set of job objects.\n\n @param NumJob The number of job objects in the set.\n @param UserJobSet A pointer to an array of JOB_SET_ARRAY structures that specify the job objects in the set.\n @param Flags Reserved for future use. Must be zero.\n @return NTSTATUS Successful or errant status.\n @remarks This function can be used to create a set of job objects, which can be useful for managing groups of related processes."]
    pub fn NtCreateJobSet(NumJob: ULONG, UserJobSet: PJOB_SET_ARRAY, Flags: ULONG) -> NTSTATUS;
    pub fn NtRevertContainerImpersonation() -> NTSTATUS;
    #[doc = " Allocates a memory reserve object.\n\n @param MemoryReserveHandle Pointer to a variable that receives the memory reserve object handle.\n @param ObjectAttributes Pointer to an object attributes structure.\n @param Type The type of memory reserve.\n @return NTSTATUS Successful or errant status."]
    pub fn NtAllocateReserveObject(
       MemoryReserveHandle: PHANDLE,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       Type: MEMORY_RESERVE_TYPE,
    ) -> NTSTATUS;
    #[doc = " Captures a snapshot of the specified process.\n\n @param SnapshotHandle Pointer to a variable that receives the snapshot handle.\n @param ProcessHandle Handle to the process.\n @param CaptureFlags Flags indicating what to capture.\n @param ThreadContextFlags Optional flags for capturing thread context.\n @return NTSTATUS Successful or errant status."]
@@ -54562,8 +56796,8 @@ extern "C" {
    pub fn DbgUserBreakPoint();
    pub fn DbgBreakPoint();
    pub fn DbgBreakPointWithStatus(Status: ULONG);
-   pub fn DbgPrint(Format: PCSTR, ...) -> ULONG;
-   pub fn DbgPrintEx(ComponentId: ULONG, Level: ULONG, Format: PCSTR, ...) -> ULONG;
+   pub fn DbgPrint(Format: PCCH, ...) -> ULONG;
+   pub fn DbgPrintEx(ComponentId: ULONG, Level: ULONG, Format: PCCH, ...) -> ULONG;
    pub fn vDbgPrintEx(ComponentId: ULONG, Level: ULONG, Format: PCCH, arglist: va_list) -> ULONG;
    pub fn vDbgPrintExWithPrefix(
       Prefix: PCCH,
@@ -54572,6 +56806,7 @@ extern "C" {
       Format: PCCH,
       arglist: va_list,
    ) -> ULONG;
+   pub fn DbgPrintReturnControlC(Format: PCCH, ...) -> ULONG;
    pub fn DbgQueryDebugFilterState(ComponentId: ULONG, Level: ULONG) -> NTSTATUS;
    pub fn DbgSetDebugFilterState(ComponentId: ULONG, Level: ULONG, State: BOOLEAN) -> NTSTATUS;
    pub fn DbgPrompt(Prompt: PCCH, Response: PCH, Length: ULONG) -> ULONG;
@@ -54642,7 +56877,7 @@ extern "C" {
    ) -> NTSTATUS;
    pub fn NtCreateNamedPipeFile(
       FileHandle: PHANDLE,
-      DesiredAccess: ULONG,
+      DesiredAccess: ACCESS_MASK,
       ObjectAttributes: POBJECT_ATTRIBUTES,
       IoStatusBlock: PIO_STATUS_BLOCK,
       ShareAccess: ULONG,
@@ -54658,7 +56893,7 @@ extern "C" {
    ) -> NTSTATUS;
    pub fn NtCreateMailslotFile(
       FileHandle: PHANDLE,
-      DesiredAccess: ULONG,
+      DesiredAccess: ACCESS_MASK,
       ObjectAttributes: POBJECT_ATTRIBUTES,
       IoStatusBlock: PIO_STATUS_BLOCK,
       CreateOptions: ULONG,
@@ -54906,7 +57141,9 @@ extern "C" {
       WatchTree: BOOLEAN,
       DirectoryNotifyInformationClass: DIRECTORY_NOTIFY_INFORMATION_CLASS,
    ) -> NTSTATUS;
+   #[doc = " \\brief The NtLoadDriver function loads a driver specified by the DriverServiceName parameter.\n \\param DriverServiceName A pointer to a UNICODE_STRING structure that specifies the name of the driver service to load.\n \\return NTSTATUS The status code returned by the function. Possible values include, but are not limited to:\n - STATUS_SUCCESS: The driver was successfully loaded.\n - STATUS_INVALID_PARAMETER: The DriverServiceName parameter is invalid.\n - STATUS_INSUFFICIENT_RESOURCES: There are insufficient resources to load the driver.\n - STATUS_OBJECT_NAME_NOT_FOUND: The specified driver service name was not found.\n - STATUS_OBJECT_PATH_NOT_FOUND: The path to the driver service was not found.\n - STATUS_OBJECT_NAME_COLLISION: A driver with the same name already exists."]
    pub fn NtLoadDriver(DriverServiceName: PUNICODE_STRING) -> NTSTATUS;
+   #[doc = " \\brief The NtUnloadDriver function unloads a driver specified by the DriverServiceName parameter.\n \\param DriverServiceName A pointer to a UNICODE_STRING structure that specifies the name of the driver service to unload.\n \\return NTSTATUS The status code returned by the function. Possible values include, but are not limited to:\n - STATUS_SUCCESS: The driver was successfully unloaded.\n - STATUS_INVALID_PARAMETER: The DriverServiceName parameter is invalid.\n - STATUS_OBJECT_NAME_NOT_FOUND: The specified driver service name was not found.\n - STATUS_OBJECT_PATH_NOT_FOUND: The path to the driver service was not found.\n - STATUS_OBJECT_NAME_COLLISION: A driver with the same name already exists."]
    pub fn NtUnloadDriver(DriverServiceName: PUNICODE_STRING) -> NTSTATUS;
    pub fn NtCreateIoCompletion(
       IoCompletionHandle: PHANDLE,
@@ -55215,7 +57452,7 @@ extern "C" {
    pub fn NtAlpcSendWaitReceivePort(
       PortHandle: HANDLE,
       Flags: ULONG,
-      SendMessageA: PPORT_MESSAGE,
+      SendMessageW: PPORT_MESSAGE,
       SendMessageAttributes: PALPC_MESSAGE_ATTRIBUTES,
       ReceiveMessage: PPORT_MESSAGE,
       BufferLength: PSIZE_T,
@@ -55335,7 +57572,7 @@ extern "C" {
    pub fn NtGetDevicePowerState(Device: HANDLE, State: PDEVICE_POWER_STATE) -> NTSTATUS;
    #[doc = " Checks if the system resume is automatic.\n\n @return BOOLEAN TRUE if the system resume is automatic, FALSE otherwise."]
    pub fn NtIsSystemResumeAutomatic() -> BOOLEAN;
-   #[doc = " Creates a new registry key routine or opens an existing one.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] TitleIndex Reserved.\n @param[in, optional] Class A pointer to a UNICODE_STRING structure that specifies the class of the key.\n @param[in] CreateOptions The options to use when creating the key.\n @param[out, optional] Disposition A pointer to a variable that receives the disposition value.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Creates a new registry key routine or opens an existing one.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] TitleIndex Reserved.\n @param[in, optional] Class A pointer to a UNICODE_STRING structure that specifies the class of the key.\n @param[in] CreateOptions The options to use when creating the key.\n @param[out, optional] Disposition A pointer to a variable that receives the disposition value.\n @return NTSTATUS Successful or errant status."]
    pub fn NtCreateKey(
       KeyHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -55345,7 +57582,7 @@ extern "C" {
       CreateOptions: ULONG,
       Disposition: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Creates a new registry key or opens an existing one, and it associates the key with a transaction.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] TitleIndex Reserved.\n @param[in, optional] Class A pointer to a UNICODE_STRING structure that specifies the class of the key.\n @param[in] CreateOptions The options to use when creating the key.\n @param[in] TransactionHandle A handle to the transaction.\n @param[out, optional] Disposition A pointer to a variable that receives the disposition value.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Creates a new registry key or opens an existing one, and it associates the key with a transaction.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] TitleIndex Reserved.\n @param[in, optional] Class A pointer to a UNICODE_STRING structure that specifies the class of the key.\n @param[in] CreateOptions The options to use when creating the key.\n @param[in] TransactionHandle A handle to the transaction.\n @param[out, optional] Disposition A pointer to a variable that receives the disposition value.\n @return NTSTATUS Successful or errant status."]
    pub fn NtCreateKeyTransacted(
       KeyHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -55356,27 +57593,27 @@ extern "C" {
       TransactionHandle: HANDLE,
       Disposition: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Opens an existing registry key.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @return NTSTATUS The status of the operation.\n @remarks NtOpenKey ignores the security information in the ObjectAttributes structure."]
+   #[doc = " Opens an existing registry key.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @return NTSTATUS Successful or errant status.\n @remarks NtOpenKey ignores the security information in the ObjectAttributes structure."]
    pub fn NtOpenKey(
       KeyHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: POBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
-   #[doc = " Opens an existing registry key and associates the key with a transaction.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] TransactionHandle A handle to the transaction.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Opens an existing registry key and associates the key with a transaction.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] TransactionHandle A handle to the transaction.\n @return NTSTATUS Successful or errant status."]
    pub fn NtOpenKeyTransacted(
       KeyHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: POBJECT_ATTRIBUTES,
       TransactionHandle: HANDLE,
    ) -> NTSTATUS;
-   #[doc = " Opens an existing registry key with extended options.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] OpenOptions The options to use when opening the key.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Opens an existing registry key with extended options.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] OpenOptions The options to use when opening the key.\n @return NTSTATUS Successful or errant status."]
    pub fn NtOpenKeyEx(
       KeyHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: POBJECT_ATTRIBUTES,
       OpenOptions: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Opens an existing registry key in a transaction with extended options.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] OpenOptions The options to use when opening the key.\n @param[in] TransactionHandle A handle to the transaction.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Opens an existing registry key in a transaction with extended options.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] OpenOptions The options to use when opening the key.\n @param[in] TransactionHandle A handle to the transaction.\n @return NTSTATUS Successful or errant status."]
    pub fn NtOpenKeyTransactedEx(
       KeyHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -55384,13 +57621,13 @@ extern "C" {
       OpenOptions: ULONG,
       TransactionHandle: HANDLE,
    ) -> NTSTATUS;
-   #[doc = " Deletes a registry key.\n\n @param[in] KeyHandle A handle to the key to be deleted.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Deletes a registry key.\n\n @param[in] KeyHandle A handle to the key to be deleted.\n @return NTSTATUS Successful or errant status."]
    pub fn NtDeleteKey(KeyHandle: HANDLE) -> NTSTATUS;
-   #[doc = " Renames a registry key.\n\n @param[in] KeyHandle A handle to the key to be renamed.\n @param[in] NewName A pointer to a UNICODE_STRING structure that specifies the new name of the key.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Renames a registry key.\n\n @param[in] KeyHandle A handle to the key to be renamed.\n @param[in] NewName A pointer to a UNICODE_STRING structure that specifies the new name of the key.\n @return NTSTATUS Successful or errant status."]
    pub fn NtRenameKey(KeyHandle: HANDLE, NewName: PUNICODE_STRING) -> NTSTATUS;
-   #[doc = " Deletes a value from a registry key.\n\n @param[in] KeyHandle A handle to the key that contains the value to be deleted.\n @param[in] ValueName A pointer to a UNICODE_STRING structure that specifies the name of the value to be deleted.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Deletes a value from a registry key.\n\n @param[in] KeyHandle A handle to the key that contains the value to be deleted.\n @param[in] ValueName A pointer to a UNICODE_STRING structure that specifies the name of the value to be deleted.\n @return NTSTATUS Successful or errant status."]
    pub fn NtDeleteValueKey(KeyHandle: HANDLE, ValueName: PUNICODE_STRING) -> NTSTATUS;
-   #[doc = " Queries information about a registry key.\n\n @param[in] KeyHandle A handle to the key to be queried.\n @param[in] KeyInformationClass The type of information to be queried.\n @param[out] KeyInformation A pointer to a buffer that receives the key information.\n @param[in] Length The size of the buffer.\n @param[out] ResultLength A pointer to a variable that receives the size of the data returned.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Queries information about a registry key.\n\n @param[in] KeyHandle A handle to the key to be queried.\n @param[in] KeyInformationClass The type of information to be queried.\n @param[out] KeyInformation A pointer to a buffer that receives the key information.\n @param[in] Length The size of the buffer.\n @param[out] ResultLength A pointer to a variable that receives the size of the data returned.\n @return NTSTATUS Successful or errant status."]
    pub fn NtQueryKey(
       KeyHandle: HANDLE,
       KeyInformationClass: KEY_INFORMATION_CLASS,
@@ -55398,14 +57635,14 @@ extern "C" {
       Length: ULONG,
       ResultLength: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Sets information for a registry key.\n\n @param[in] KeyHandle A handle to the key to be modified.\n @param[in] KeySetInformationClass The type of information to be set.\n @param[in] KeySetInformation A pointer to a buffer that contains the key information.\n @param[in] KeySetInformationLength The size of the buffer.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Sets information for a registry key.\n\n @param[in] KeyHandle A handle to the key to be modified.\n @param[in] KeySetInformationClass The type of information to be set.\n @param[in] KeySetInformation A pointer to a buffer that contains the key information.\n @param[in] KeySetInformationLength The size of the buffer.\n @return NTSTATUS Successful or errant status."]
    pub fn NtSetInformationKey(
       KeyHandle: HANDLE,
       KeySetInformationClass: KEY_SET_INFORMATION_CLASS,
       KeySetInformation: PVOID,
       KeySetInformationLength: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Queries the value of a registry key.\n\n @param[in] KeyHandle A handle to the key to be queried.\n @param[in] ValueName A pointer to a UNICODE_STRING structure that specifies the name of the value to be queried.\n @param[in] KeyValueInformationClass The type of information to be queried.\n @param[out] KeyValueInformation A pointer to a buffer that receives the value information.\n @param[in] Length The size of the buffer.\n @param[out] ResultLength A pointer to a variable that receives the size of the data returned.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Queries the value of a registry key.\n\n @param[in] KeyHandle A handle to the key to be queried.\n @param[in] ValueName A pointer to a UNICODE_STRING structure that specifies the name of the value to be queried.\n @param[in] KeyValueInformationClass The type of information to be queried.\n @param[out] KeyValueInformation A pointer to a buffer that receives the value information.\n @param[in] Length The size of the buffer.\n @param[out] ResultLength A pointer to a variable that receives the size of the data returned.\n @return NTSTATUS Successful or errant status."]
    pub fn NtQueryValueKey(
       KeyHandle: HANDLE,
       ValueName: PUNICODE_STRING,
@@ -55414,7 +57651,7 @@ extern "C" {
       Length: ULONG,
       ResultLength: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Sets the value of a registry key.\n\n @param[in] KeyHandle A handle to the key to be modified.\n @param[in] ValueName A pointer to a UNICODE_STRING structure that specifies the name of the value to be set.\n @param[in, optional] TitleIndex Reserved.\n @param[in] Type The type of the value.\n @param[in] Data A pointer to a buffer that contains the value data.\n @param[in] DataSize The size of the buffer.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Sets the value of a registry key.\n\n @param[in] KeyHandle A handle to the key to be modified.\n @param[in] ValueName A pointer to a UNICODE_STRING structure that specifies the name of the value to be set.\n @param[in, optional] TitleIndex Reserved.\n @param[in] Type The type of the value.\n @param[in] Data A pointer to a buffer that contains the value data.\n @param[in] DataSize The size of the buffer.\n @return NTSTATUS Successful or errant status."]
    pub fn NtSetValueKey(
       KeyHandle: HANDLE,
       ValueName: PUNICODE_STRING,
@@ -55423,7 +57660,7 @@ extern "C" {
       Data: PVOID,
       DataSize: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Queries multiple values of a registry key.\n\n @param[in] KeyHandle A handle to the key to be queried.\n @param[in, out] ValueEntries A pointer to an array of KEY_VALUE_ENTRY structures that specify the values to be queried.\n @param[in] EntryCount The number of entries in the array.\n @param[out] ValueBuffer A pointer to a buffer that receives the value data.\n @param[in, out] BufferLength A pointer to a variable that specifies the size of the buffer and receives the size of the data returned.\n @param[out, optional] RequiredBufferLength A pointer to a variable that receives the size of the buffer required to hold the data.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Queries multiple values of a registry key.\n\n @param[in] KeyHandle A handle to the key to be queried.\n @param[in, out] ValueEntries A pointer to an array of KEY_VALUE_ENTRY structures that specify the values to be queried.\n @param[in] EntryCount The number of entries in the array.\n @param[out] ValueBuffer A pointer to a buffer that receives the value data.\n @param[in, out] BufferLength A pointer to a variable that specifies the size of the buffer and receives the size of the data returned.\n @param[out, optional] RequiredBufferLength A pointer to a variable that receives the size of the buffer required to hold the data.\n @return NTSTATUS Successful or errant status."]
    pub fn NtQueryMultipleValueKey(
       KeyHandle: HANDLE,
       ValueEntries: PKEY_VALUE_ENTRY,
@@ -55432,7 +57669,7 @@ extern "C" {
       BufferLength: PULONG,
       RequiredBufferLength: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Enumerates the subkeys of a registry key.\n\n @param[in] KeyHandle A handle to the key to be enumerated.\n @param[in] Index The index of the subkey to be enumerated.\n @param[in] KeyInformationClass The type of information to be queried.\n @param[out] KeyInformation A pointer to a buffer that receives the key information.\n @param[in] Length The size of the buffer.\n @param[out] ResultLength A pointer to a variable that receives the size of the data returned.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Enumerates the subkeys of a registry key.\n\n @param[in] KeyHandle A handle to the key to be enumerated.\n @param[in] Index The index of the subkey to be enumerated.\n @param[in] KeyInformationClass The type of information to be queried.\n @param[out] KeyInformation A pointer to a buffer that receives the key information.\n @param[in] Length The size of the buffer.\n @param[out] ResultLength A pointer to a variable that receives the size of the data returned.\n @return NTSTATUS Successful or errant status."]
    pub fn NtEnumerateKey(
       KeyHandle: HANDLE,
       Index: ULONG,
@@ -55441,7 +57678,7 @@ extern "C" {
       Length: ULONG,
       ResultLength: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Enumerates the values of a registry key.\n\n @param[in] KeyHandle A handle to the key to be enumerated.\n @param[in] Index The index of the value to be enumerated.\n @param[in] KeyValueInformationClass The type of information to be queried.\n @param[out] KeyValueInformation A pointer to a buffer that receives the value information.\n @param[in] Length The size of the buffer.\n @param[out] ResultLength A pointer to a variable that receives the size of the data returned.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Enumerates the values of a registry key.\n\n @param[in] KeyHandle A handle to the key to be enumerated.\n @param[in] Index The index of the value to be enumerated.\n @param[in] KeyValueInformationClass The type of information to be queried.\n @param[out] KeyValueInformation A pointer to a buffer that receives the value information.\n @param[in] Length The size of the buffer.\n @param[out] ResultLength A pointer to a variable that receives the size of the data returned.\n @return NTSTATUS Successful or errant status."]
    pub fn NtEnumerateValueKey(
       KeyHandle: HANDLE,
       Index: ULONG,
@@ -55450,21 +57687,21 @@ extern "C" {
       Length: ULONG,
       ResultLength: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Flushes the changes to a registry key.\n\n @param[in] KeyHandle A handle to the key to be flushed.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Flushes the changes to a registry key.\n\n @param[in] KeyHandle A handle to the key to be flushed.\n @return NTSTATUS Successful or errant status."]
    pub fn NtFlushKey(KeyHandle: HANDLE) -> NTSTATUS;
-   #[doc = " Compacts the specified registry keys.\n\n @param[in] Count The number of keys to be compacted.\n @param[in] KeyArray An array of handles to the keys to be compacted.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Compacts the specified registry keys.\n\n @param[in] Count The number of keys to be compacted.\n @param[in] KeyArray An array of handles to the keys to be compacted.\n @return NTSTATUS Successful or errant status."]
    pub fn NtCompactKeys(Count: ULONG, KeyArray: *mut HANDLE) -> NTSTATUS;
-   #[doc = " Compresses a registry key.\n\n @param[in] KeyHandle A handle to the key to be compressed.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Compresses a registry key.\n\n @param[in] KeyHandle A handle to the key to be compressed.\n @return NTSTATUS Successful or errant status."]
    pub fn NtCompressKey(KeyHandle: HANDLE) -> NTSTATUS;
-   #[doc = " Loads a registry key from a file.\n\n @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.\n @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Loads a registry key from a file.\n\n @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.\n @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.\n @return NTSTATUS Successful or errant status."]
    pub fn NtLoadKey(TargetKey: POBJECT_ATTRIBUTES, SourceFile: POBJECT_ATTRIBUTES) -> NTSTATUS;
-   #[doc = " Loads a registry key from a file with additional options.\n\n @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.\n @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.\n @param[in] Flags The options to use when loading the key.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Loads a registry key from a file with additional options.\n\n @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.\n @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.\n @param[in] Flags The options to use when loading the key.\n @return NTSTATUS Successful or errant status."]
    pub fn NtLoadKey2(
       TargetKey: POBJECT_ATTRIBUTES,
       SourceFile: POBJECT_ATTRIBUTES,
       Flags: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Loads a registry key from a file with extended options.\n\n @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.\n @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.\n @param[in] Flags The options to use when loading the key.\n @param[in, optional] TrustClassKey A handle to the trust class key.\n @param[in, optional] Event A handle to an event.\n @param[in, optional] DesiredAccess The access mask that specifies the desired access rights.\n @param[out, optional] RootHandle A pointer to a handle that receives the root handle.\n @param[in, reserved] Reserved Reserved.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Loads a registry key from a file with extended options.\n\n @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.\n @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.\n @param[in] Flags The options to use when loading the key.\n @param[in, optional] TrustClassKey A handle to the trust class key.\n @param[in, optional] Event A handle to an event.\n @param[in, optional] DesiredAccess The access mask that specifies the desired access rights.\n @param[out, optional] RootHandle A pointer to a handle that receives the root handle.\n @param[in, reserved] Reserved Reserved.\n @return NTSTATUS Successful or errant status."]
    pub fn NtLoadKeyEx(
       TargetKey: POBJECT_ATTRIBUTES,
       SourceFile: POBJECT_ATTRIBUTES,
@@ -55475,7 +57712,7 @@ extern "C" {
       RootHandle: PHANDLE,
       Reserved: PVOID,
    ) -> NTSTATUS;
-   #[doc = " Loads a registry key from a file with extended parameters.\n\n @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.\n @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.\n @param[in] Flags The options to use when loading the key.\n @param[in] ExtendedParameters A pointer to an array of extended parameters.\n @param[in] ExtendedParameterCount The number of extended parameters.\n @param[in, optional] DesiredAccess The access mask that specifies the desired access rights.\n @param[out, optional] RootHandle A pointer to a handle that receives the root handle.\n @param[in, reserved] Reserved Reserved.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Loads a registry key from a file with extended parameters.\n\n @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.\n @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.\n @param[in] Flags The options to use when loading the key.\n @param[in] ExtendedParameters A pointer to an array of extended parameters.\n @param[in] ExtendedParameterCount The number of extended parameters.\n @param[in, optional] DesiredAccess The access mask that specifies the desired access rights.\n @param[out, optional] RootHandle A pointer to a handle that receives the root handle.\n @param[in, reserved] Reserved Reserved.\n @return NTSTATUS Successful or errant status."]
    pub fn NtLoadKey3(
       TargetKey: POBJECT_ATTRIBUTES,
       SourceFile: POBJECT_ATTRIBUTES,
@@ -55486,7 +57723,7 @@ extern "C" {
       RootHandle: PHANDLE,
       Reserved: PVOID,
    ) -> NTSTATUS;
-   #[doc = " Replaces a registry key.\n\n @param[in] NewFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the new file.\n @param[in] TargetHandle A handle to the target key.\n @param[in] OldFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the old file.\n @return NTSTATUS The status of the operation."]
+   #[doc = " Replaces a registry key.\n\n @param[in] NewFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the new file.\n @param[in] TargetHandle A handle to the target key.\n @param[in] OldFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the old file.\n @return NTSTATUS Successful or errant status."]
    pub fn NtReplaceKey(
       NewFile: POBJECT_ATTRIBUTES,
       TargetHandle: HANDLE,
@@ -55690,6 +57927,14 @@ extern "C" {
       Node: PRTL_BALANCED_NODE,
    ) -> BOOLEAN;
    pub fn RtlRbRemoveNode(Tree: PRTL_RB_TREE, Node: PRTL_BALANCED_NODE) -> BOOLEAN;
+   pub fn RtlCompareExchangePointerMapping(
+      Node1: PRTL_BALANCED_NODE,
+      Node2: PRTL_BALANCED_NODE,
+      Node3: *mut PRTL_BALANCED_NODE,
+      Node4: *mut PRTL_BALANCED_NODE,
+   ) -> NTSTATUS;
+   pub fn RtlQueryPointerMapping(Tree: PRTL_RB_TREE, Children: PRTL_BALANCED_NODE) -> NTSTATUS;
+   pub fn RtlRemovePointerMapping(Tree: PRTL_RB_TREE, Children: PRTL_BALANCED_NODE) -> NTSTATUS;
    pub fn RtlInitHashTableContext(Context: PRTL_DYNAMIC_HASH_TABLE_CONTEXT);
    pub fn RtlInitHashTableContextFromEnumerator(
       Context: PRTL_DYNAMIC_HASH_TABLE_CONTEXT,
@@ -55703,6 +57948,12 @@ extern "C" {
    pub fn RtlActiveEnumeratorsHashTable(HashTable: PRTL_DYNAMIC_HASH_TABLE) -> ULONG;
    pub fn RtlCreateHashTable(
       HashTable: *mut PRTL_DYNAMIC_HASH_TABLE,
+      Shift: ULONG,
+      Flags: ULONG,
+   ) -> BOOLEAN;
+   pub fn RtlCreateHashTableEx(
+      HashTable: *mut PRTL_DYNAMIC_HASH_TABLE,
+      InitialSize: ULONG,
       Shift: ULONG,
       Flags: ULONG,
    ) -> BOOLEAN;
@@ -55788,6 +58039,8 @@ extern "C" {
    ) -> ULONG;
    pub fn RtlQueryCriticalSectionOwner(EventHandle: HANDLE) -> HANDLE;
    pub fn RtlCheckForOrphanedCriticalSections(ThreadHandle: HANDLE);
+   #[doc = " Enables the creation of early critical section events.\n\n This function allows the system to create critical section events early in the process\n initialization. It is typically used to ensure that critical sections are properly\n initialized and can be used safely during the early stages of process startup.\n @remarks This function sets the FLG_CRITSEC_EVENT_CREATION flag in the PEB flags field.\n @return A pointer to the Process Environment Block (PEB)."]
+   pub fn RtlEnableEarlyCriticalSectionEventCreation() -> PPEB;
    pub fn RtlInitializeResource(Resource: PRTL_RESOURCE);
    pub fn RtlDeleteResource(Resource: PRTL_RESOURCE);
    pub fn RtlAcquireResourceShared(Resource: PRTL_RESOURCE, Wait: BOOLEAN) -> BOOLEAN;
@@ -55795,6 +58048,7 @@ extern "C" {
    pub fn RtlReleaseResource(Resource: PRTL_RESOURCE);
    pub fn RtlConvertSharedToExclusive(Resource: PRTL_RESOURCE);
    pub fn RtlConvertExclusiveToShared(Resource: PRTL_RESOURCE);
+   pub fn RtlDumpResource(Resource: PRTL_RESOURCE) -> ULONG;
    pub fn RtlInitializeSRWLock(SRWLock: PRTL_SRWLOCK);
    pub fn RtlAcquireSRWLockExclusive(SRWLock: PRTL_SRWLOCK);
    pub fn RtlAcquireSRWLockShared(SRWLock: PRTL_SRWLOCK);
@@ -55803,6 +58057,12 @@ extern "C" {
    pub fn RtlTryAcquireSRWLockExclusive(SRWLock: PRTL_SRWLOCK) -> BOOLEAN;
    pub fn RtlTryAcquireSRWLockShared(SRWLock: PRTL_SRWLOCK) -> BOOLEAN;
    pub fn RtlAcquireReleaseSRWLockExclusive(SRWLock: PRTL_SRWLOCK);
+   pub fn RtlConvertSRWLockExclusiveToShared(SRWLock: PRTL_SRWLOCK) -> BOOLEAN;
+   pub fn RtlRcuAllocate(Size: SIZE_T) -> PVOID;
+   pub fn RtlRcuFree(Rcu: PULONG) -> LOGICAL;
+   pub fn RtlRcuReadLock(SRWLock: PRTL_SRWLOCK, Rcu: PULONG);
+   pub fn RtlRcuReadUnlock(SRWLock: PRTL_SRWLOCK, Rcu: *mut PULONG);
+   pub fn RtlRcuSynchronize(SRWLock: PRTL_SRWLOCK) -> LONG;
    pub fn RtlInitializeConditionVariable(ConditionVariable: PRTL_CONDITION_VARIABLE);
    pub fn RtlSleepConditionVariableCS(
       ConditionVariable: PRTL_CONDITION_VARIABLE,
@@ -55828,7 +58088,9 @@ extern "C" {
       Timeout: PLARGE_INTEGER,
    ) -> NTSTATUS;
    pub fn RtlWakeAddressAll(Address: PVOID);
+   pub fn RtlWakeAddressAllNoFence(Address: PVOID);
    pub fn RtlWakeAddressSingle(Address: PVOID);
+   pub fn RtlWakeAddressSingleNoFence(Address: PVOID);
    pub fn RtlInitEmptyAnsiString(AnsiString: PANSI_STRING, Buffer: PCHAR, MaximumLength: USHORT);
    pub fn RtlInitString(DestinationString: PSTRING, SourceString: PCSTR);
    pub fn RtlInitStringEx(DestinationString: PSTRING, SourceString: PCSZ) -> NTSTATUS;
@@ -55933,9 +58195,10 @@ extern "C" {
    pub fn RtlEraseUnicodeString(String: PUNICODE_STRING);
    pub fn RtlAnsiStringToUnicodeString(
       DestinationString: PUNICODE_STRING,
-      SourceString: PANSI_STRING,
+      SourceString: PCANSI_STRING,
       AllocateDestinationString: BOOLEAN,
    ) -> NTSTATUS;
+   pub fn RtlxAnsiStringToUnicodeSize(AnsiString: PCANSI_STRING) -> ULONG;
    pub fn RtlUnicodeStringToAnsiString(
       DestinationString: PANSI_STRING,
       SourceString: PUNICODE_STRING,
@@ -56372,6 +58635,20 @@ extern "C" {
       RuntimeData: PUNICODE_STRING,
       Flags: ULONG,
    ) -> NTSTATUS;
+   pub fn RtlCreateProcessParametersWithTemplate(
+      pProcessParameters: *mut PRTL_USER_PROCESS_PARAMETERS,
+      ImagePathName: PUNICODE_STRING,
+      DllPath: PUNICODE_STRING,
+      CurrentDirectory: PUNICODE_STRING,
+      CommandLine: PUNICODE_STRING,
+      Environment: PVOID,
+      WindowTitle: PUNICODE_STRING,
+      DesktopInfo: PUNICODE_STRING,
+      ShellInfo: PUNICODE_STRING,
+      RuntimeData: PUNICODE_STRING,
+      RedirectionDllName: PUNICODE_STRING,
+      Flags: ULONG,
+   ) -> NTSTATUS;
    pub fn RtlDestroyProcessParameters(ProcessParameters: PRTL_USER_PROCESS_PARAMETERS) -> NTSTATUS;
    pub fn RtlNormalizeProcessParams(
       ProcessParameters: PRTL_USER_PROCESS_PARAMETERS,
@@ -56381,7 +58658,7 @@ extern "C" {
    ) -> PRTL_USER_PROCESS_PARAMETERS;
    pub fn RtlCreateUserProcess(
       NtImagePathName: PUNICODE_STRING,
-      AttributesDeprecated: ULONG,
+      ExtendedParameters: ULONG,
       ProcessParameters: PRTL_USER_PROCESS_PARAMETERS,
       ProcessSecurityDescriptor: PSECURITY_DESCRIPTOR,
       ThreadSecurityDescriptor: PSECURITY_DESCRIPTOR,
@@ -56406,6 +58683,8 @@ extern "C" {
       DebugPort: HANDLE,
       ProcessInformation: PRTL_USER_PROCESS_INFORMATION,
    ) -> NTSTATUS;
+   pub fn RtlPrepareForProcessCloning() -> NTSTATUS;
+   pub fn RtlCompleteProcessCloning(Completed: LOGICAL) -> NTSTATUS;
    pub fn RtlUpdateClonedCriticalSection(CriticalSection: PRTL_CRITICAL_SECTION);
    pub fn RtlUpdateClonedSRWLock(SRWLock: PRTL_SRWLOCK, Shared: LOGICAL);
    pub fn RtlCreateProcessReflection(
@@ -56505,15 +58784,19 @@ extern "C" {
       PassContext: BOOLEAN,
       AlreadySuspended: BOOLEAN,
    ) -> NTSTATUS;
+   #[doc = " Registers a vectored exception handler.\n\n @param First If this parameter is TRUE, the handler is the first handler in the list.\n @param Handler A pointer to the vectored exception handler to be called.\n @return A handle to the vectored exception handler.\n @see https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredexceptionhandler"]
    pub fn RtlAddVectoredExceptionHandler(
       First: ULONG,
       Handler: PVECTORED_EXCEPTION_HANDLER,
    ) -> PVOID;
+   #[doc = " Removes a vectored exception handler.\n\n @param Handle A handle to the vectored exception handler to remove.\n @return The function returns 0 if the handler is removed, or -1 if the handler is not found.\n @see https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredexceptionhandler"]
    pub fn RtlRemoveVectoredExceptionHandler(Handle: PVOID) -> ULONG;
+   #[doc = " Registers a vectored continue handler.\n\n @param First If this parameter is TRUE, the handler is the first handler in the list.\n @param Handler A pointer to the vectored exception handler to be called.\n @return A handle to the vectored continue handler.\n @see https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredcontinuehandler"]
    pub fn RtlAddVectoredContinueHandler(
       First: ULONG,
       Handler: PVECTORED_EXCEPTION_HANDLER,
    ) -> PVOID;
+   #[doc = " Removes a vectored continue handler.\n\n @param Handle A handle to the vectored continue handler to remove.\n @return The function returns 0 if the handler is removed, or -1 if the handler is not found.\n @see https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredcontinuehandler"]
    pub fn RtlRemoveVectoredContinueHandler(Handle: PVOID) -> ULONG;
    pub fn RtlSetUnhandledExceptionFilter(
       UnhandledExceptionFilter: PRTLP_UNHANDLED_EXCEPTION_FILTER,
@@ -56525,6 +58808,21 @@ extern "C" {
    ) -> LONG;
    pub fn RtlKnownExceptionFilter(ExceptionPointers: PEXCEPTION_POINTERS) -> LONG;
    pub fn RtlGetFunctionTableListHead() -> PLIST_ENTRY;
+   pub fn RtlInitializeSListHead(ListHead: PSLIST_HEADER);
+   pub fn RtlFirstEntrySList(ListHead: *const SLIST_HEADER) -> PSLIST_ENTRY;
+   pub fn RtlInterlockedPopEntrySList(ListHead: PSLIST_HEADER) -> PSLIST_ENTRY;
+   pub fn RtlInterlockedPushEntrySList(
+      ListHead: PSLIST_HEADER,
+      ListEntry: PSLIST_ENTRY,
+   ) -> PSLIST_ENTRY;
+   pub fn RtlInterlockedPushListSListEx(
+      ListHead: PSLIST_HEADER,
+      List: PSLIST_ENTRY,
+      ListEnd: PSLIST_ENTRY,
+      Count: DWORD,
+   ) -> PSLIST_ENTRY;
+   pub fn RtlInterlockedFlushSList(ListHead: PSLIST_HEADER) -> PSLIST_ENTRY;
+   pub fn RtlQueryDepthSList(ListHead: PSLIST_HEADER) -> WORD;
    pub fn RtlGetActiveActivationContext(ActivationContext: PACTIVATION_CONTEXT) -> NTSTATUS;
    pub fn RtlAddRefActivationContext(ActivationContext: PACTIVATION_CONTEXT);
    pub fn RtlReleaseActivationContext(ActivationContext: PACTIVATION_CONTEXT);
@@ -56567,8 +58865,8 @@ extern "C" {
    pub fn RtlQueryActivationContextApplicationSettings(
       Flags: ULONG,
       ActivationContext: PACTIVATION_CONTEXT,
-      SettingsNameSpace: PWSTR,
-      SettingName: PWSTR,
+      SettingsNameSpace: PCWSTR,
+      SettingName: PCWSTR,
       Buffer: PWSTR,
       BufferLength: SIZE_T,
       RequiredLength: PSIZE_T,
@@ -56629,9 +58927,26 @@ extern "C" {
       IsLongJumpTarget: PBOOL,
    ) -> NTSTATUS;
    pub fn RtlValidateUserCallTarget(Address: PVOID, Flags: PULONG);
+   pub fn RtlCompareMemory(
+      Source1: *const cty::c_void,
+      Source2: *const cty::c_void,
+      Length: SIZE_T,
+   ) -> SIZE_T;
    pub fn RtlCompareMemoryUlong(Source: PVOID, Length: SIZE_T, Pattern: ULONG) -> SIZE_T;
    pub fn RtlFillMemoryUlong(Destination: PVOID, Length: SIZE_T, Pattern: ULONG);
    pub fn RtlIsZeroMemory(Buffer: PVOID, Length: SIZE_T) -> BOOLEAN;
+   pub fn RtlCrc32(Buffer: *const cty::c_void, Size: usize, InitialCrc: DWORD) -> DWORD;
+   pub fn RtlCrc64(Buffer: *const cty::c_void, Size: usize, InitialCrc: ULONGLONG) -> ULONGLONG;
+   pub fn RtlGetSystemGlobalData(
+      DataId: RTL_SYSTEM_GLOBAL_DATA_ID,
+      Buffer: PVOID,
+      Size: DWORD,
+   ) -> DWORD;
+   pub fn RtlSetSystemGlobalData(
+      DataId: RTL_SYSTEM_GLOBAL_DATA_ID,
+      Buffer: PVOID,
+      Size: DWORD,
+   ) -> DWORD;
    pub fn RtlCreateEnvironment(
       CloneCurrentEnvironment: BOOLEAN,
       Environment: *mut PVOID,
@@ -56683,8 +58998,7 @@ extern "C" {
       Destination: PUNICODE_STRING,
       ReturnedLength: PULONG,
    ) -> NTSTATUS;
-   pub fn RtlSetEnvironmentStrings(NewEnvironment: PCWCHAR, NewEnvironmentSize: SIZE_T)
-      -> NTSTATUS;
+   pub fn RtlSetEnvironmentStrings(NewEnvironment: PCWSTR, NewEnvironmentSize: SIZE_T) -> NTSTATUS;
    pub static mut RtlDosPathSeperatorsString: UNICODE_STRING;
    pub static mut RtlAlternateDosPathSeperatorString: UNICODE_STRING;
    pub static mut RtlNtPathSeperatorString: UNICODE_STRING;
@@ -56811,10 +59125,10 @@ extern "C" {
       RealName: PUNICODE_STRING,
       LocalName: PUNICODE_STRING,
    ) -> NTSTATUS;
-   pub fn RtlGetSearchPath(SearchPathA: *mut PWSTR) -> NTSTATUS;
+   pub fn RtlGetSearchPath(SearchPathW: *mut PWSTR) -> NTSTATUS;
    pub fn RtlSetSearchPathMode(Flags: ULONG) -> NTSTATUS;
-   pub fn RtlGetExePath(DosPathName: PCWSTR, SearchPathA: *mut PWSTR) -> NTSTATUS;
-   pub fn RtlReleasePath(Path: PWSTR);
+   pub fn RtlGetExePath(DosPathName: PCWSTR, SearchPathW: *mut PWSTR) -> NTSTATUS;
+   pub fn RtlReleasePath(Path: PCWSTR);
    pub fn RtlReplaceSystemDirectoryInPath(
       Destination: PUNICODE_STRING,
       Machine: USHORT,
@@ -56882,8 +59196,8 @@ extern "C" {
    pub fn RtlCreateTagHeap(
       HeapHandle: PVOID,
       Flags: ULONG,
-      TagPrefix: PWSTR,
-      TagNames: PWSTR,
+      TagPrefix: PCWSTR,
+      TagNames: PCWSTR,
    ) -> ULONG;
    pub fn RtlQueryTagHeap(
       HeapHandle: PVOID,
@@ -56960,7 +59274,7 @@ extern "C" {
    pub fn RtlResetMemoryBlockLookaside(MemoryBlockLookaside: PVOID) -> NTSTATUS;
    pub fn RtlLockMemoryBlockLookaside(MemoryBlockLookaside: PVOID) -> NTSTATUS;
    pub fn RtlUnlockMemoryBlockLookaside(MemoryBlockLookaside: PVOID) -> NTSTATUS;
-   pub fn RtlGetCurrentTransaction() -> HANDLE;
+   pub fn RtlGetCurrentTransaction(ExistingFileName: PCWSTR, NewFileName: PCWSTR) -> HANDLE;
    pub fn RtlSetCurrentTransaction(TransactionHandle: HANDLE) -> LOGICAL;
    pub fn RtlIsEqualLuid(L1: PLUID, L2: PLUID) -> BOOLEAN;
    pub fn RtlIsZeroLuid(L1: PLUID) -> BOOLEAN;
@@ -56974,6 +59288,10 @@ extern "C" {
       Src: PLUID_AND_ATTRIBUTES,
       Dest: PLUID_AND_ATTRIBUTES,
    );
+   pub fn RtlConvertUlongToLargeInteger(UnsignedInteger: ULONG) -> LARGE_INTEGER;
+   pub fn RtlConvertLongToLargeInteger(SignedInteger: LONG) -> LARGE_INTEGER;
+   pub fn RtlEnlargedIntegerMultiply(Multiplicand: LONG, Multiplier: LONG) -> LARGE_INTEGER;
+   pub fn RtlEnlargedUnsignedMultiply(Multiplicand: ULONG, Multiplier: ULONG) -> LARGE_INTEGER;
    pub fn RtlCreateQueryDebugBuffer(
       MaximumCommit: ULONG,
       UseEventPair: BOOLEAN,
@@ -56992,6 +59310,7 @@ extern "C" {
       Buffer: PRTL_DEBUG_INFORMATION,
    ) -> NTSTATUS;
    pub fn RtlIsAnyDebuggerPresent() -> BOOLEAN;
+   pub fn RtlDebugPrintTimes() -> NTSTATUS;
    pub fn RtlFindMessage(
       DllHandle: PVOID,
       MessageTableId: ULONG,
@@ -57000,7 +59319,7 @@ extern "C" {
       MessageEntry: *mut PMESSAGE_RESOURCE_ENTRY,
    ) -> NTSTATUS;
    pub fn RtlFormatMessage(
-      MessageFormat: PWSTR,
+      MessageFormat: PCWSTR,
       MaximumWidth: ULONG,
       IgnoreInserts: BOOLEAN,
       ArgumentsAreAnsi: BOOLEAN,
@@ -57011,7 +59330,7 @@ extern "C" {
       ReturnLength: PULONG,
    ) -> NTSTATUS;
    pub fn RtlFormatMessageEx(
-      MessageFormat: PWSTR,
+      MessageFormat: PCWSTR,
       MaximumWidth: ULONG,
       IgnoreInserts: BOOLEAN,
       ArgumentsAreAnsi: BOOLEAN,
@@ -57025,7 +59344,7 @@ extern "C" {
    pub fn RtlGetFileMUIPath(
       Flags: ULONG,
       FilePath: PCWSTR,
-      Language: PWSTR,
+      Language: PCWSTR,
       LanguageLength: PULONG,
       FileMUIPath: PWSTR,
       FileMUIPathLength: PULONG,
@@ -57156,14 +59475,15 @@ extern "C" {
    pub fn RtlSecondsSince1980ToTime(ElapsedSeconds: ULONG, Time: PLARGE_INTEGER);
    pub fn RtlTimeToSecondsSince1970(Time: PLARGE_INTEGER, ElapsedSeconds: PULONG) -> BOOLEAN;
    pub fn RtlSecondsSince1970ToTime(ElapsedSeconds: ULONG, Time: PLARGE_INTEGER);
-   pub fn RtlGetSystemTimePrecise() -> LARGE_INTEGER;
+   pub fn RtlGetSystemTimePrecise() -> ULONGLONG;
    pub fn RtlGetSystemTimeAndBias(
       TimeZoneBias: KSYSTEM_TIME,
       TimeZoneBiasEffectiveStart: PLARGE_INTEGER,
       TimeZoneBiasEffectiveEnd: PLARGE_INTEGER,
    ) -> KSYSTEM_TIME;
-   pub fn RtlGetInterruptTimePrecise(PerformanceCounter: PLARGE_INTEGER) -> LARGE_INTEGER;
+   pub fn RtlGetInterruptTimePrecise(PerformanceCounter: PLARGE_INTEGER) -> ULONGLONG;
    pub fn RtlQueryUnbiasedInterruptTime(InterruptTime: PLARGE_INTEGER) -> BOOLEAN;
+   pub fn RtlBeginReadTickLock(TimeUpdateLock: PULONGLONG) -> ULONGLONG;
    pub fn RtlQueryTimeZoneInformation(TimeZoneInformation: PRTL_TIME_ZONE_INFORMATION) -> NTSTATUS;
    pub fn RtlSetTimeZoneInformation(TimeZoneInformation: PRTL_TIME_ZONE_INFORMATION) -> NTSTATUS;
    pub fn RtlInitializeBitMap(BitMapHeader: PRTL_BITMAP, BitMapBuffer: PULONG, SizeOfBitMap: ULONG);
@@ -57293,12 +59613,12 @@ extern "C" {
    pub fn RtlEmptyAtomTable(AtomTableHandle: PVOID, IncludePinnedAtoms: BOOLEAN) -> NTSTATUS;
    pub fn RtlAddAtomToAtomTable(
       AtomTableHandle: PVOID,
-      AtomName: PWSTR,
+      AtomName: PCWSTR,
       Atom: PRTL_ATOM,
    ) -> NTSTATUS;
    pub fn RtlLookupAtomInAtomTable(
       AtomTableHandle: PVOID,
-      AtomName: PWSTR,
+      AtomName: PCWSTR,
       Atom: PRTL_ATOM,
    ) -> NTSTATUS;
    pub fn RtlDeleteAtomFromAtomTable(AtomTableHandle: PVOID, Atom: RTL_ATOM) -> NTSTATUS;
@@ -57311,7 +59631,7 @@ extern "C" {
       AtomName: PWSTR,
       AtomNameLength: PULONG,
    ) -> NTSTATUS;
-   pub fn RtlGetIntegerAtom(AtomName: PWSTR, IntegerAtom: PUSHORT) -> BOOLEAN;
+   pub fn RtlGetIntegerAtom(AtomName: PCWSTR, IntegerAtom: PUSHORT) -> BOOLEAN;
    pub fn RtlValidSid(Sid: PSID) -> BOOLEAN;
    pub fn RtlEqualSid(Sid1: PSID, Sid2: PSID) -> BOOLEAN;
    pub fn RtlEqualPrefixSid(Sid1: PSID, Sid2: PSID) -> BOOLEAN;
@@ -57405,12 +59725,16 @@ extern "C" {
       CapabilityGroupSid: PSID,
       CapabilitySid: PSID,
    ) -> NTSTATUS;
+   #[doc = " The RtlCreateSecurityDescriptor routine initializes a new absolute-format security descriptor.\n On return, the security descriptor is initialized with no system ACL, no discretionary ACL, no owner, no primary group, and all control flags set to zero.\n\n \\param SecurityDescriptor Pointer to the buffer for the \\ref SECURITY_DESCRIPTOR to be initialized.\n \\param Revision Specifies the revision level to assign to the security descriptor. Set this parameter to SECURITY_DESCRIPTOR_REVISION.\n @return NTSTATUS Successful or errant status.\n @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlcreatesecuritydescriptor"]
    pub fn RtlCreateSecurityDescriptor(
       SecurityDescriptor: PSECURITY_DESCRIPTOR,
       Revision: ULONG,
    ) -> NTSTATUS;
+   #[doc = " The RtlValidSecurityDescriptor routine checks a given security descriptor's validity.\n\n \\param SecurityDescriptor Pointer to the \\ref SECURITY_DESCRIPTOR to be checked.\n @return Returns TRUE if the security descriptor is valid, or FALSE otherwise.\n @remarks The routine checks the validity of an absolute-format security descriptor. To check the validity of a self-relative security descriptor, use the \\ref RtlValidRelativeSecurityDescriptor routine instead.\n @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidsecuritydescriptor"]
    pub fn RtlValidSecurityDescriptor(SecurityDescriptor: PSECURITY_DESCRIPTOR) -> BOOLEAN;
+   #[doc = " The RtlLengthSecurityDescriptor routine returns the size of a given security descriptor.\n\n \\param SecurityDescriptor A pointer to a \\ref SECURITY_DESCRIPTOR structure whose length the function retrieves.\n @return Returns the length, in bytes, of the SECURITY_DESCRIPTOR structure.\n @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtllengthsecuritydescriptor"]
    pub fn RtlLengthSecurityDescriptor(SecurityDescriptor: PSECURITY_DESCRIPTOR) -> ULONG;
+   #[doc = " The RtlValidRelativeSecurityDescriptor routine checks the validity of a self-relative security descriptor.\n\n \\param SecurityDescriptorInput A pointer to the buffer that contains the security descriptor in self-relative format.\n The buffer must begin with a SECURITY_DESCRIPTOR structure, which is followed by the rest of the security descriptor data.\n \\param SecurityDescriptorLength The size of the SecurityDescriptorInput structure.\n \\param RequiredInformation A SECURITY_INFORMATION value that specifies the information that is required to be contained in the security descriptor.\n @return RtlValidRelativeSecurityDescriptor returns TRUE if the security descriptor is valid and includes the information that the RequiredInformation parameter specifies. Otherwise, this routine returns FALSE.\n @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidrelativesecuritydescriptor"]
    pub fn RtlValidRelativeSecurityDescriptor(
       SecurityDescriptorInput: PSECURITY_DESCRIPTOR,
       SecurityDescriptorLength: ULONG,
@@ -57463,16 +59787,19 @@ extern "C" {
       Sacl: *mut PACL,
       SaclDefaulted: PBOOLEAN,
    ) -> NTSTATUS;
+   #[doc = " The RtlSetOwnerSecurityDescriptor routine sets the owner information of an absolute-format security descriptor. It replaces any owner information that is already present in the security descriptor.\n\n \\param SecurityDescriptor Pointer to the SECURITY_DESCRIPTOR structure whose owner is to be set. RtlSetOwnerSecurityDescriptor replaces any existing owner with the new owner.\n \\param Owner Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.\n \\li \\c This pointer, not the SID structure itself, is copied into the security descriptor.\n \\li \\c If this parameter is NULL, RtlSetOwnerSecurityDescriptor clears the security descriptor's owner information. This marks the security descriptor as having no owner.\n \\param OwnerDefaulted Set to TRUE if the owner information is derived from a default mechanism.\n \\li \\c If this value is TRUE, it is default information. RtlSetOwnerSecurityDescriptor sets the SE_OWNER_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.\n \\li \\c If this parameter is FALSE, the SE_OWNER_DEFAULTED flag is cleared.\n @return NTSTATUS Successful or errant status.\n @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetownersecuritydescriptor"]
    pub fn RtlSetOwnerSecurityDescriptor(
       SecurityDescriptor: PSECURITY_DESCRIPTOR,
       Owner: PSID,
       OwnerDefaulted: BOOLEAN,
    ) -> NTSTATUS;
+   #[doc = " The RtlGetOwnerSecurityDescriptor routine returns the owner information for a given security descriptor.\n\n \\param SecurityDescriptor Pointer to the SECURITY_DESCRIPTOR structure.\n \\param Owner Pointer to an address to receive a pointer to the owner security identifier (SID). If the security descriptor does not currently contain an owner SID, Owner receives NULL.\n \\param OwnerDefaulted Pointer to a Boolean variable that receives TRUE if the owner information is derived from a default mechanism, FALSE otherwise. Valid only if Owner receives a non-NULL value.\n @return NTSTATUS Successful or errant status.\n @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlgetownersecuritydescriptor"]
    pub fn RtlGetOwnerSecurityDescriptor(
       SecurityDescriptor: PSECURITY_DESCRIPTOR,
       Owner: *mut PSID,
       OwnerDefaulted: PBOOLEAN,
    ) -> NTSTATUS;
+   #[doc = " The RtlSetGroupSecurityDescriptor routine sets the primary group information of an absolute-format security descriptor. It replaces any primary group information that is already present in the security descriptor.\n\n \\param SecurityDescriptor Pointer to the SECURITY_DESCRIPTOR structure whose primary group is to be set. RtlSetGroupSecurityDescriptor replaces any existing primary group with the new primary group.\n \\param Group Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.\n \\li \\c This pointer, not the SID structure itself, is copied into the security descriptor.\n \\li \\c If Group is NULL, RtlSetGroupSecurityDescriptor clears the security descriptor's primary group information. This marks the security descriptor as having no primary group.\n \\param GroupDefaulted Set this Boolean variable to TRUE if the primary group information is derived from a default mechanism.\n \\li \\c If this parameter is TRUE, RtlSetGroupSecurityDescriptor sets the SE_GROUP_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.\n \\li \\c If this parameter is FALSE, RtlSetGroupSecurityDescriptor clears the SE_GROUP_DEFAULTED flag.\n @return NTSTATUS Successful or errant status.\n @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetgroupsecuritydescriptor"]
    pub fn RtlSetGroupSecurityDescriptor(
       SecurityDescriptor: PSECURITY_DESCRIPTOR,
       Group: PSID,
@@ -57517,10 +59844,12 @@ extern "C" {
       NewSecurityDescriptorLength: PDWORD,
       CheckOnly: BOOLEAN,
    ) -> BOOLEAN;
+   #[doc = " Checks if all desired accesses are granted.\n\n This function determines whether all the accesses specified in the DesiredAccess\n mask are granted by the GrantedAccess mask.\n\n \\param GrantedAccess The access mask that specifies the granted accesses.\n \\param DesiredAccess The access mask that specifies the desired accesses.\n @return Returns TRUE if all desired accesses are granted, otherwise FALSE."]
    pub fn RtlAreAllAccessesGranted(
       GrantedAccess: ACCESS_MASK,
       DesiredAccess: ACCESS_MASK,
    ) -> BOOLEAN;
+   #[doc = " Checks if any of the desired accesses are granted.\n\n This function determines if any of the access rights specified in the DesiredAccess\n mask are present in the GrantedAccess mask.\n\n \\param GrantedAccess The access mask that specifies the granted access rights.\n \\param DesiredAccess The access mask that specifies the desired access rights.\n @return Returns TRUE if any of the desired access rights are granted, otherwise FALSE."]
    pub fn RtlAreAnyAccessesGranted(
       GrantedAccess: ACCESS_MASK,
       DesiredAccess: ACCESS_MASK,
@@ -57874,8 +60203,8 @@ extern "C" {
    pub fn RtlDeleteTimerQueueEx(TimerQueueHandle: HANDLE, Event: HANDLE) -> NTSTATUS;
    pub fn RtlFormatCurrentUserKeyPath(CurrentUserKeyPath: PUNICODE_STRING) -> NTSTATUS;
    pub fn RtlOpenCurrentUser(DesiredAccess: ACCESS_MASK, CurrentUserKey: PHANDLE) -> NTSTATUS;
-   pub fn RtlCreateRegistryKey(RelativeTo: ULONG, Path: PWSTR) -> NTSTATUS;
-   pub fn RtlCheckRegistryKey(RelativeTo: ULONG, Path: PWSTR) -> NTSTATUS;
+   pub fn RtlCreateRegistryKey(RelativeTo: ULONG, Path: PCWSTR) -> NTSTATUS;
+   pub fn RtlCheckRegistryKey(RelativeTo: ULONG, Path: PCWSTR) -> NTSTATUS;
    pub fn RtlQueryRegistryValues(
       RelativeTo: ULONG,
       Path: PCWSTR,
@@ -57922,7 +60251,13 @@ extern "C" {
       PerformanceData: PPERFORMANCE_DATA,
    ) -> NTSTATUS;
    pub fn RtlGetNativeSystemInformation(
-      SystemInformationClass: ULONG,
+      SystemInformationClass: SYSTEM_INFORMATION_CLASS,
+      NativeSystemInformation: PVOID,
+      InformationLength: ULONG,
+      ReturnLength: PULONG,
+   ) -> NTSTATUS;
+   pub fn NtWow64GetNativeSystemInformation(
+      SystemInformationClass: SYSTEM_INFORMATION_CLASS,
       NativeSystemInformation: PVOID,
       InformationLength: ULONG,
       ReturnLength: PULONG,
@@ -57980,18 +60315,34 @@ extern "C" {
       ElementSize: *mut PULONG,
       ElementCount: *mut PULONG,
       EventTrace: *mut PVOID,
+   ) -> PRTL_UNLOAD_EVENT_TRACE;
+   pub fn RtlCaptureStackBackTrace(
+      FramesToSkip: DWORD,
+      FramesToCapture: DWORD,
+      BackTrace: *mut PVOID,
+      BackTraceHash: PDWORD,
+   ) -> WORD;
+   pub fn RtlCaptureContext(ContextRecord: PCONTEXT);
+   pub fn RtlCaptureContext2(ContextRecord: PCONTEXT);
+   pub fn RtlRestoreContext(ContextRecord: PCONTEXT, ExceptionRecord: *mut _EXCEPTION_RECORD);
+   pub fn RtlUnwind(
+      TargetFrame: PVOID,
+      TargetIp: PVOID,
+      ExceptionRecord: PEXCEPTION_RECORD,
+      ReturnValue: PVOID,
    );
+   pub fn RtlPcToFileHeader(PcValue: PVOID, BaseOfImage: *mut PVOID) -> PVOID;
    pub fn RtlQueryPerformanceCounter(PerformanceCounter: PLARGE_INTEGER) -> LOGICAL;
    pub fn RtlQueryPerformanceFrequency(PerformanceFrequency: PLARGE_INTEGER) -> LOGICAL;
    pub fn RtlQueryImageMitigationPolicy(
-      ImagePath: PWSTR,
+      ImagePath: PCWSTR,
       Policy: IMAGE_MITIGATION_POLICY,
       Flags: ULONG,
       Buffer: PVOID,
       BufferSize: ULONG,
    ) -> NTSTATUS;
    pub fn RtlSetImageMitigationPolicy(
-      ImagePath: PWSTR,
+      ImagePath: PCWSTR,
       Policy: IMAGE_MITIGATION_POLICY,
       Flags: ULONG,
       Buffer: PVOID,
@@ -58051,10 +60402,19 @@ extern "C" {
       AppContainerSidType: PAPPCONTAINER_SID_TYPE,
    ) -> NTSTATUS;
    pub fn RtlFlsAlloc(Callback: PFLS_CALLBACK_FUNCTION, FlsIndex: PULONG) -> NTSTATUS;
+   pub fn RtlFlsAllocEx(
+      Callback: PFLS_CALLBACK_FUNCTION,
+      arg1: PULONG,
+      FlsIndex: PULONG,
+   ) -> NTSTATUS;
    pub fn RtlFlsFree(FlsIndex: ULONG) -> NTSTATUS;
    pub fn RtlFlsGetValue(FlsIndex: ULONG, FlsData: *mut PVOID) -> NTSTATUS;
    pub fn RtlFlsGetValue2(FlsIndex: ULONG) -> PVOID;
    pub fn RtlFlsSetValue(FlsIndex: ULONG, FlsData: PVOID) -> NTSTATUS;
+   pub fn RtlProcessFlsData(ProcessHandle: HANDLE, FlsData: PPVOID) -> NTSTATUS;
+   pub fn RtlTlsAlloc(TlsIndex: PULONG) -> NTSTATUS;
+   pub fn RtlTlsFree(TlsIndex: ULONG) -> NTSTATUS;
+   pub fn RtlTlsSetValue(TlsIndex: ULONG, TlsData: PVOID) -> NTSTATUS;
    pub fn RtlIsStateSeparationEnabled() -> BOOLEAN;
    pub fn RtlGetPersistedStateLocation(
       SourceID: PCWSTR,
@@ -58209,6 +60569,11 @@ extern "C" {
       ConfigurationBuffer: PVOID,
       ConfigurationBufferSize: ULONG,
    ) -> NTSTATUS;
+   pub fn RtlNotifyFeatureToggleUsage(
+      FeatureUsageReport: PRTL_FEATURE_USAGE_REPORT,
+      FeatureId: RTL_FEATURE_ID,
+      Flags: ULONG,
+   ) -> NTSTATUS;
    pub fn RtlRunOnceInitialize(RunOnce: PRTL_RUN_ONCE);
    pub fn RtlRunOnceExecuteOnce(
       RunOnce: PRTL_RUN_ONCE,
@@ -58280,6 +60645,7 @@ extern "C" {
       ExtendedInformationLength: SIZE_T,
       Reserved: ULONG64,
    ) -> NTSTATUS;
+   pub fn RtlGetCurrentThreadPrimaryGroup() -> USHORT;
    pub fn NtCreateToken(
       TokenHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -58919,6 +61285,8 @@ extern "C" {
    ) -> NTSTATUS;
    pub fn TpReleaseAlpcCompletion(Alpc: PTP_ALPC);
    pub fn TpWaitForAlpcCompletion(Alpc: PTP_ALPC);
+   pub fn TpAlpcRegisterCompletionList(Alpc: PTP_ALPC);
+   pub fn TpAlpcUnregisterCompletionList(Alpc: PTP_ALPC);
    pub fn TpCaptureCaller(Type: TP_TRACE_TYPE);
    pub fn TpCheckTerminateWorker(Thread: HANDLE);
    pub fn RtlDispatchException(
@@ -59242,12 +61610,82 @@ extern "C" {
       OperationOut: *mut PSAM_GENERIC_OPERATION_OUTPUT,
    ) -> NTSTATUS;
    pub fn NtVdmControl(Service: VDMSERVICECLASS, ServiceData: PVOID) -> NTSTATUS;
+   pub fn ApiSetQueryApiSetPresence(Namespace: PCUNICODE_STRING, Present: PBOOLEAN) -> BOOL;
+   pub fn ApiSetQueryApiSetPresenceEx(
+      Namespace: PCUNICODE_STRING,
+      IsInSchema: PBOOLEAN,
+      Present: PBOOLEAN,
+   ) -> BOOL;
+   pub fn NtQuerySecurityPolicy(
+      Policy: PCUNICODE_STRING,
+      KeyName: PCUNICODE_STRING,
+      ValueName: PCUNICODE_STRING,
+      ValueType: SECURE_SETTING_VALUE_TYPE,
+      Value: PVOID,
+      ValueSize: PULONG,
+   ) -> NTSTATUS;
+   pub fn NtCreateCrossVmEvent(
+      CrossVmEvent: PHANDLE,
+      DesiredAccess: ACCESS_MASK,
+      ObjectAttributes: POBJECT_ATTRIBUTES,
+      CrossVmEventFlags: ULONG,
+      VMID: LPCGUID,
+      ServiceID: LPCGUID,
+   ) -> NTSTATUS;
+   pub fn NtCreateCrossVmMutant(
+      EventHandle: PHANDLE,
+      DesiredAccess: ACCESS_MASK,
+      ObjectAttributes: POBJECT_ATTRIBUTES,
+      CrossVmEventFlags: ULONG,
+      VMID: LPCGUID,
+      ServiceID: LPCGUID,
+   ) -> NTSTATUS;
+   pub fn NtAcquireCrossVmMutant(CrossVmMutant: HANDLE, Timeout: PLARGE_INTEGER) -> NTSTATUS;
+   pub fn NtDirectGraphicsCall(
+      InputBufferLength: ULONG,
+      InputBuffer: PVOID,
+      OutputBufferLength: ULONG,
+      OutputBuffer: PVOID,
+      ReturnLength: PULONG,
+   ) -> NTSTATUS;
+   pub fn NtOpenCpuPartition(
+      CpuPartitionHandle: PHANDLE,
+      DesiredAccess: ACCESS_MASK,
+      ObjectAttributes: POBJECT_ATTRIBUTES,
+   ) -> NTSTATUS;
+   pub fn NtCreateCpuPartition(
+      CpuPartitionHandle: PHANDLE,
+      DesiredAccess: ACCESS_MASK,
+      ObjectAttributes: POBJECT_ATTRIBUTES,
+   ) -> NTSTATUS;
+   pub fn NtSetInformationCpuPartition(
+      CpuPartitionHandle: HANDLE,
+      CpuPartitionInformationClass: ULONG,
+      CpuPartitionInformation: PVOID,
+      CpuPartitionInformationLength: ULONG,
+      arg1: PVOID,
+      arg2: ULONG,
+      arg3: ULONG,
+   ) -> NTSTATUS;
+   pub fn NtAcquireProcessActivityReference(
+      ActivityReferenceHandle: PHANDLE,
+      ParentProcessHandle: HANDLE,
+      Reserved: PROCESS_ACTIVITY_TYPE,
+   ) -> NTSTATUS;
    pub fn PerfIsGroupOnInGroupMask(Group: ULONG, GroupMask: PPERFINFO_GROUPMASK) -> BOOLEAN;
    pub static EtwSecondaryDumpDataGuid: GUID;
    pub static CKCLGuid: GUID;
    pub static AuditLoggerGuid: GUID;
    pub static SecurityProviderGuid: GUID;
    pub static PrivateLoggerSecurityGuid: GUID;
+   pub static GlobalLoggerGuid: GUID;
+   pub static GenericMessageGuid: GUID;
+   pub static TraceErrorGuid: GUID;
+   pub static HardFaultGuid: GUID;
+   pub static WmiEventLoggerGuid: GUID;
+   pub static DbgPrintGuid: GUID;
+   pub static DriverVerifierGuid: GUID;
+   pub static ApplicationVerifierGuid: GUID;
    pub static JobGuid: GUID;
    pub static EventTraceSpare1: GUID;
    pub static WnfGuid: GUID;
@@ -59264,6 +61702,7 @@ extern "C" {
    pub static ALPCGuid: GUID;
    pub static RTLostEventsGuid: GUID;
    pub static NtdllTraceGuid: GUID;
+   pub static UserLoaderGuid: GUID;
    pub static LoadMUIDllGuid: GUID;
    pub static ObjectGuid: GUID;
    pub static ModBoundGuid: GUID;
@@ -59282,6 +61721,8 @@ extern "C" {
    pub static SessionNotificationGuid: GUID;
    pub static CcGuid: GUID;
    pub static NullGuid: GUID;
+   pub static UserDiagnosticGuid: GUID;
+   pub static WerSvcTriggerGuid: GUID;
    pub static FileIoGuid: GUID;
    pub static ImageLoadGuid: GUID;
    pub static PageFaultGuid: GUID;
@@ -59413,6 +61854,166 @@ extern "C" {
       Fields: PVOID,
    ) -> NTSTATUS;
    pub fn EtwCheckCoverage(CoveragePoint: PTELEMETRY_COVERAGE_POINT) -> BOOLEAN;
+   pub fn WmiOpenBlock(
+      Guid: LPCGUID,
+      DesiredAccess: ACCESS_MASK,
+      DataBlockHandle: PHANDLE,
+   ) -> ULONG;
+   pub fn WmiCloseBlock(DataBlockHandle: HANDLE) -> ULONG;
+   pub fn WmiQueryAllDataA(DataBlockHandle: HANDLE, BufferLength: PULONG, Buffer: PVOID) -> ULONG;
+   pub fn WmiQueryAllDataW(DataBlockHandle: HANDLE, BufferLength: PULONG, Buffer: PVOID) -> ULONG;
+   pub fn WmiQueryAllDataMultipleA(
+      HandleList: PHANDLE,
+      HandleCount: ULONG,
+      InOutBufferSize: PULONG,
+      OutBuffer: PVOID,
+   ) -> ULONG;
+   pub fn WmiQueryAllDataMultipleW(
+      HandleList: PHANDLE,
+      HandleCount: ULONG,
+      InOutBufferSize: PULONG,
+      OutBuffer: PVOID,
+   ) -> ULONG;
+   pub fn WmiQuerySingleInstanceA(
+      DataBlockHandle: HANDLE,
+      InstanceName: PCSTR,
+      BufferSize: PULONG,
+      Buffer: PVOID,
+   ) -> ULONG;
+   pub fn WmiQuerySingleInstanceW(
+      DataBlockHandle: HANDLE,
+      InstanceName: PCWSTR,
+      BufferSize: PULONG,
+      Buffer: PVOID,
+   ) -> ULONG;
+   pub fn WmiQuerySingleInstanceMultipleW(
+      HandleList: PHANDLE,
+      InstanceNames: *mut PCWSTR,
+      HandleCount: ULONG,
+      InOutBufferSize: PULONG,
+      OutBuffer: PVOID,
+   ) -> ULONG;
+   pub fn WmiQuerySingleInstanceMultipleA(
+      HandleList: PHANDLE,
+      InstanceNames: *mut PCSTR,
+      HandleCount: ULONG,
+      InOutBufferSize: PULONG,
+      OutBuffer: PVOID,
+   ) -> ULONG;
+   pub fn WmiSetSingleInstanceA(
+      DataBlockHandle: HANDLE,
+      InstanceName: PCSTR,
+      Reserved: ULONG,
+      ValueBufferSize: ULONG,
+      ValueBuffer: PVOID,
+   ) -> ULONG;
+   pub fn WmiSetSingleInstanceW(
+      DataBlockHandle: HANDLE,
+      InstanceName: PCWSTR,
+      Reserved: ULONG,
+      ValueBufferSize: ULONG,
+      ValueBuffer: PVOID,
+   ) -> ULONG;
+   pub fn WmiSetSingleItemA(
+      DataBlockHandle: HANDLE,
+      InstanceName: PCSTR,
+      DataItemId: ULONG,
+      Reserved: ULONG,
+      ValueBufferSize: ULONG,
+      ValueBuffer: PVOID,
+   ) -> ULONG;
+   pub fn WmiSetSingleItemW(
+      DataBlockHandle: HANDLE,
+      InstanceName: PCWSTR,
+      DataItemId: ULONG,
+      Reserved: ULONG,
+      ValueBufferSize: ULONG,
+      ValueBuffer: PVOID,
+   ) -> ULONG;
+   pub fn WmiExecuteMethodA(
+      MethodDataBlockHandle: HANDLE,
+      MethodInstanceName: PCSTR,
+      MethodId: ULONG,
+      InputBufferSize: ULONG,
+      InputBuffer: PVOID,
+      OutputBufferSize: PULONG,
+      OutputBuffer: PVOID,
+   ) -> ULONG;
+   pub fn WmiExecuteMethodW(
+      MethodDataBlockHandle: HANDLE,
+      MethodInstanceName: PCWSTR,
+      MethodId: ULONG,
+      InputBufferSize: ULONG,
+      InputBuffer: PVOID,
+      OutputBufferSize: PULONG,
+      OutputBuffer: PVOID,
+   ) -> ULONG;
+   pub static GUID_REGISTRATION_CHANGE_NOTIFICATION: GUID;
+   pub static GUID_MOF_RESOURCE_ADDED_NOTIFICATION: GUID;
+   pub static GUID_MOF_RESOURCE_REMOVED_NOTIFICATION: GUID;
+   pub fn WmiNotificationRegistrationA(
+      Guid: PCGUID,
+      Enable: BOOLEAN,
+      DeliveryInfo: PVOID,
+      DeliveryContext: ULONG_PTR,
+      Flags: ULONG,
+   ) -> ULONG;
+   pub fn WmiNotificationRegistrationW(
+      Guid: PCGUID,
+      Enable: BOOLEAN,
+      DeliveryInfo: PVOID,
+      DeliveryContext: ULONG_PTR,
+      Flags: ULONG,
+   ) -> ULONG;
+   pub fn WmiEnumerateGuids(GuidList: PGUID, GuidCount: PULONG) -> ULONG;
+   pub fn WmiMofEnumerateResourcesW(
+      MofResourceHandle: HANDLE,
+      MofResourceCount: PULONG,
+      MofResourceInfo: *mut PMOFRESOURCEINFOW,
+   ) -> ULONG;
+   pub fn WmiMofEnumerateResourcesA(
+      MofResourceHandle: HANDLE,
+      MofResourceCount: PULONG,
+      MofResourceInfo: *mut PMOFRESOURCEINFOA,
+   ) -> ULONG;
+   pub fn WmiFileHandleToInstanceNameA(
+      DataBlockHandle: HANDLE,
+      FileHandle: HANDLE,
+      NumberCharacters: PULONG,
+      InstanceNames: *mut CHAR,
+   ) -> ULONG;
+   pub fn WmiFileHandleToInstanceNameW(
+      DataBlockHandle: HANDLE,
+      FileHandle: HANDLE,
+      NumberCharacters: PULONG,
+      InstanceNames: *mut WCHAR,
+   ) -> ULONG;
+   pub fn WmiDevInstToInstanceNameA(
+      InstanceName: PSTR,
+      InstanceNameLength: ULONG,
+      DevInst: PCSTR,
+      InstanceIndex: ULONG,
+   ) -> ULONG;
+   pub fn WmiDevInstToInstanceNameW(
+      InstanceName: PWSTR,
+      InstanceNameLength: ULONG,
+      DevInst: PCWSTR,
+      InstanceIndex: ULONG,
+   ) -> ULONG;
+   pub fn WmiQueryGuidInformation(GuidHandle: HANDLE, GuidInfo: PWMIGUIDINFORMATION) -> ULONG;
+   pub fn WmiReceiveNotificationsW(
+      HandleCount: ULONG,
+      HandleList: PHANDLE,
+      Callback: ::core::option::Option<unsafe extern "C" fn(arg1: PWNODE_HEADER, arg2: ULONG_PTR)>,
+      DeliveryContext: ULONG_PTR,
+   ) -> ULONG;
+   pub fn WmiReceiveNotificationsA(
+      HandleCount: ULONG,
+      HandleList: PHANDLE,
+      Callback: ::core::option::Option<unsafe extern "C" fn(arg1: PWNODE_HEADER, arg2: ULONG_PTR)>,
+      DeliveryContext: ULONG_PTR,
+   ) -> ULONG;
+   pub fn WmiFreeBuffer(Buffer: PVOID);
    pub fn ZwAcceptConnectPort(
       PortHandle: PHANDLE,
       PortContext: PVOID,
@@ -59530,8 +62131,14 @@ extern "C" {
       tokenTaken: PBOOLEAN,
       replaceExisting: BOOLEAN,
    ) -> NTSTATUS;
-   pub fn ZwAddAtom(AtomName: PWSTR, Length: ULONG, Atom: PRTL_ATOM) -> NTSTATUS;
-   pub fn ZwAddAtomEx(AtomName: PWSTR, Length: ULONG, Atom: PRTL_ATOM, Flags: ULONG) -> NTSTATUS;
+   pub fn ZwAcquireCrossVmMutant(CrossVmMutant: HANDLE, Timeout: PLARGE_INTEGER) -> NTSTATUS;
+   pub fn ZwAcquireProcessActivityReference(
+      ActivityReferenceHandle: PHANDLE,
+      ParentProcessHandle: HANDLE,
+      Reserved: PROCESS_ACTIVITY_TYPE,
+   ) -> NTSTATUS;
+   pub fn ZwAddAtom(AtomName: PCWSTR, Length: ULONG, Atom: PRTL_ATOM) -> NTSTATUS;
+   pub fn ZwAddAtomEx(AtomName: PCWSTR, Length: ULONG, Atom: PRTL_ATOM, Flags: ULONG) -> NTSTATUS;
    pub fn ZwAddBootEntry(BootEntry: PBOOT_ENTRY, Id: PULONG) -> NTSTATUS;
    pub fn ZwAddDriverEntry(DriverEntry: PEFI_DRIVER_ENTRY, Id: PULONG) -> NTSTATUS;
    pub fn ZwAdjustGroupsToken(
@@ -59568,18 +62175,25 @@ extern "C" {
       DeviceReturnLength: PULONG,
       DeviceGroupsReturnBufferLength: PULONG,
    ) -> NTSTATUS;
+   pub fn ZwAlertMultipleThreadByThreadId(
+      MultipleThreadId: PHANDLE,
+      Count: ULONG,
+      Boost: PVOID,
+      BoostCount: ULONG,
+   ) -> NTSTATUS;
    pub fn ZwAlertResumeThread(ThreadHandle: HANDLE, PreviousSuspendCount: PULONG) -> NTSTATUS;
    pub fn ZwAlertThread(ThreadHandle: HANDLE) -> NTSTATUS;
    pub fn ZwAlertThreadByThreadId(ThreadId: HANDLE) -> NTSTATUS;
+   pub fn ZwAlertThreadByThreadIdEx(ThreadId: HANDLE, Lock: PRTL_SRWLOCK) -> NTSTATUS;
    pub fn ZwAllocateLocallyUniqueId(Luid: PLUID) -> NTSTATUS;
    pub fn ZwAllocateReserveObject(
       MemoryReserveHandle: PHANDLE,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       Type: MEMORY_RESERVE_TYPE,
    ) -> NTSTATUS;
    pub fn ZwAllocateUserPhysicalPages(
       ProcessHandle: HANDLE,
-      NumberOfPages: PULONG_PTR,
+      NumberOfPages: PSIZE_T,
       UserPfnArray: PULONG_PTR,
    ) -> NTSTATUS;
    pub fn ZwAllocateUserPhysicalPagesEx(
@@ -59749,7 +62363,7 @@ extern "C" {
    pub fn ZwAlpcSendWaitReceivePort(
       PortHandle: HANDLE,
       Flags: ULONG,
-      SendMessageA: PPORT_MESSAGE,
+      SendMessageW: PPORT_MESSAGE,
       SendMessageAttributes: PALPC_MESSAGE_ATTRIBUTES,
       ReceiveMessage: PPORT_MESSAGE,
       BufferLength: PSIZE_T,
@@ -59854,9 +62468,9 @@ extern "C" {
    pub fn ZwContinueEx(ContextRecord: PCONTEXT, ContinueArgument: PVOID) -> NTSTATUS;
    pub fn ZwConvertBetweenAuxiliaryCounterAndPerformanceCounter(
       ConvertAuxiliaryToPerformanceCounter: BOOLEAN,
-      PerformanceOrAuxiliaryCounterValue: PLARGE_INTEGER,
-      ConvertedValue: PLARGE_INTEGER,
-      ConversionError: PLARGE_INTEGER,
+      PerformanceOrAuxiliaryCounterValue: PULONG64,
+      ConvertedValue: PULONG64,
+      ConversionError: PULONG64,
    ) -> NTSTATUS;
    pub fn ZwCopyFileChunk(
       SourceHandle: HANDLE,
@@ -59869,6 +62483,27 @@ extern "C" {
       SourceKey: PULONG,
       DestKey: PULONG,
       Flags: ULONG,
+   ) -> NTSTATUS;
+   pub fn ZwCreateCpuPartition(
+      CpuPartitionHandle: PHANDLE,
+      DesiredAccess: ACCESS_MASK,
+      ObjectAttributes: POBJECT_ATTRIBUTES,
+   ) -> NTSTATUS;
+   pub fn ZwCreateCrossVmEvent(
+      CrossVmEvent: PHANDLE,
+      DesiredAccess: ACCESS_MASK,
+      ObjectAttributes: POBJECT_ATTRIBUTES,
+      CrossVmEventFlags: ULONG,
+      VMID: LPCGUID,
+      ServiceID: LPCGUID,
+   ) -> NTSTATUS;
+   pub fn ZwCreateCrossVmMutant(
+      EventHandle: PHANDLE,
+      DesiredAccess: ACCESS_MASK,
+      ObjectAttributes: POBJECT_ATTRIBUTES,
+      CrossVmEventFlags: ULONG,
+      VMID: LPCGUID,
+      ServiceID: LPCGUID,
    ) -> NTSTATUS;
    pub fn ZwCreateDebugObject(
       DebugObjectHandle: PHANDLE,
@@ -59919,7 +62554,7 @@ extern "C" {
    pub fn ZwCreateEventPair(
       EventPairHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn ZwCreateFile(
       FileHandle: PHANDLE,
@@ -59955,7 +62590,7 @@ extern "C" {
    pub fn ZwCreateJobObject(
       JobHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn ZwCreateJobSet(NumJob: ULONG, UserJobSet: PJOB_SET_ARRAY, Flags: ULONG) -> NTSTATUS;
    pub fn ZwCreateKey(
@@ -59970,7 +62605,7 @@ extern "C" {
    pub fn ZwCreateKeyedEvent(
       KeyedEventHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       Flags: ULONG,
    ) -> NTSTATUS;
    pub fn ZwCreateKeyTransacted(
@@ -59996,7 +62631,7 @@ extern "C" {
    ) -> NTSTATUS;
    pub fn ZwCreateMailslotFile(
       FileHandle: PHANDLE,
-      DesiredAccess: ULONG,
+      DesiredAccess: ACCESS_MASK,
       ObjectAttributes: POBJECT_ATTRIBUTES,
       IoStatusBlock: PIO_STATUS_BLOCK,
       CreateOptions: ULONG,
@@ -60007,12 +62642,12 @@ extern "C" {
    pub fn ZwCreateMutant(
       MutantHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       InitialOwner: BOOLEAN,
    ) -> NTSTATUS;
    pub fn ZwCreateNamedPipeFile(
       FileHandle: PHANDLE,
-      DesiredAccess: ULONG,
+      DesiredAccess: ACCESS_MASK,
       ObjectAttributes: POBJECT_ATTRIBUTES,
       IoStatusBlock: PIO_STATUS_BLOCK,
       ShareAccess: ULONG,
@@ -60036,7 +62671,7 @@ extern "C" {
       ParentPartitionHandle: HANDLE,
       PartitionHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       PreferredNode: ULONG,
    ) -> NTSTATUS;
    pub fn ZwCreatePort(
@@ -60055,7 +62690,7 @@ extern "C" {
    pub fn ZwCreateProcess(
       ProcessHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ParentProcess: HANDLE,
       InheritObjectTable: BOOLEAN,
       SectionHandle: HANDLE,
@@ -60065,7 +62700,7 @@ extern "C" {
    pub fn ZwCreateProcessEx(
       ProcessHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ParentProcess: HANDLE,
       Flags: ULONG,
       SectionHandle: HANDLE,
@@ -60076,7 +62711,7 @@ extern "C" {
    pub fn ZwCreateProcessStateChange(
       ProcessStateChangeHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ProcessHandle: HANDLE,
       Reserved: ULONG64,
    ) -> NTSTATUS;
@@ -60115,7 +62750,7 @@ extern "C" {
    pub fn ZwCreateSection(
       SectionHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       MaximumSize: PLARGE_INTEGER,
       SectionPageProtection: ULONG,
       AllocationAttributes: ULONG,
@@ -60124,7 +62759,7 @@ extern "C" {
    pub fn ZwCreateSectionEx(
       SectionHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       MaximumSize: PLARGE_INTEGER,
       SectionPageProtection: ULONG,
       AllocationAttributes: ULONG,
@@ -60135,7 +62770,7 @@ extern "C" {
    pub fn ZwCreateSemaphore(
       SemaphoreHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       InitialCount: LONG,
       MaximumCount: LONG,
    ) -> NTSTATUS;
@@ -60148,7 +62783,7 @@ extern "C" {
    pub fn ZwCreateThread(
       ThreadHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ProcessHandle: HANDLE,
       ClientId: PCLIENT_ID,
       ThreadContext: PCONTEXT,
@@ -60158,7 +62793,7 @@ extern "C" {
    pub fn ZwCreateThreadEx(
       ThreadHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ProcessHandle: HANDLE,
       StartRoutine: PUSER_THREAD_START_ROUTINE,
       Argument: PVOID,
@@ -60171,20 +62806,20 @@ extern "C" {
    pub fn ZwCreateThreadStateChange(
       ThreadStateChangeHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ThreadHandle: HANDLE,
       Reserved: ULONG64,
    ) -> NTSTATUS;
    pub fn ZwCreateTimer(
       TimerHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       TimerType: TIMER_TYPE,
    ) -> NTSTATUS;
    pub fn ZwCreateTimer2(
       TimerHandle: PHANDLE,
       Reserved1: PVOID,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       Attributes: ULONG,
       DesiredAccess: ACCESS_MASK,
    ) -> NTSTATUS;
@@ -60247,11 +62882,11 @@ extern "C" {
       ThreadHandle: PHANDLE,
       ProcessDesiredAccess: ACCESS_MASK,
       ThreadDesiredAccess: ACCESS_MASK,
-      ProcessObjectAttributes: POBJECT_ATTRIBUTES,
-      ThreadObjectAttributes: POBJECT_ATTRIBUTES,
+      ProcessObjectAttributes: PCOBJECT_ATTRIBUTES,
+      ThreadObjectAttributes: PCOBJECT_ATTRIBUTES,
       ProcessFlags: ULONG,
       ThreadFlags: ULONG,
-      ProcessParameters: PVOID,
+      ProcessParameters: PRTL_USER_PROCESS_PARAMETERS,
       CreateInfo: PPS_CREATE_INFO,
       AttributeList: PPS_ATTRIBUTE_LIST,
    ) -> NTSTATUS;
@@ -60279,7 +62914,7 @@ extern "C" {
    pub fn ZwCreateWorkerFactory(
       WorkerFactoryHandleReturn: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       CompletionPortHandle: HANDLE,
       WorkerProcessHandle: HANDLE,
       StartRoutine: PVOID,
@@ -60323,6 +62958,13 @@ extern "C" {
       InputBufferLength: ULONG,
       OutputBuffer: PVOID,
       OutputBufferLength: ULONG,
+   ) -> NTSTATUS;
+   pub fn ZwDirectGraphicsCall(
+      InputBufferLength: ULONG,
+      InputBuffer: PVOID,
+      OutputBufferLength: ULONG,
+      OutputBuffer: PVOID,
+      ReturnLength: PULONG,
    ) -> NTSTATUS;
    pub fn ZwDisableLastKnownGood() -> NTSTATUS;
    pub fn ZwDisplayString(String: PUNICODE_STRING) -> NTSTATUS;
@@ -60407,7 +63049,7 @@ extern "C" {
       RestrictedDeviceGroups: PTOKEN_GROUPS,
       NewTokenHandle: PHANDLE,
    ) -> NTSTATUS;
-   pub fn ZwFindAtom(AtomName: PWSTR, Length: ULONG, Atom: PRTL_ATOM) -> NTSTATUS;
+   pub fn ZwFindAtom(AtomName: PCWSTR, Length: ULONG, Atom: PRTL_ATOM) -> NTSTATUS;
    pub fn ZwFlushBuffersFile(FileHandle: HANDLE, IoStatusBlock: PIO_STATUS_BLOCK) -> NTSTATUS;
    pub fn ZwFlushBuffersFileEx(
       FileHandle: HANDLE,
@@ -60634,12 +63276,12 @@ extern "C" {
    ) -> NTSTATUS;
    pub fn ZwMapUserPhysicalPages(
       VirtualAddress: PVOID,
-      NumberOfPages: ULONG_PTR,
+      NumberOfPages: SIZE_T,
       UserPfnArray: PULONG_PTR,
    ) -> NTSTATUS;
    pub fn ZwMapUserPhysicalPagesScatter(
       VirtualAddresses: *mut PVOID,
-      NumberOfPages: ULONG_PTR,
+      NumberOfPages: SIZE_T,
       UserPfnArray: PULONG_PTR,
    ) -> NTSTATUS;
    pub fn ZwMapViewOfSection(
@@ -60726,6 +63368,11 @@ extern "C" {
       Payload: PVOID,
       PayloadSize: ULONG,
    ) -> NTSTATUS;
+   pub fn ZwOpenCpuPartition(
+      CpuPartitionHandle: PHANDLE,
+      DesiredAccess: ACCESS_MASK,
+      ObjectAttributes: POBJECT_ATTRIBUTES,
+   ) -> NTSTATUS;
    pub fn ZwOpenDirectoryObject(
       DirectoryHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -60746,7 +63393,7 @@ extern "C" {
    pub fn ZwOpenEventPair(
       EventPairHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn ZwOpenFile(
       FileHandle: PHANDLE,
@@ -60764,7 +63411,7 @@ extern "C" {
    pub fn ZwOpenJobObject(
       JobHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn ZwOpenKey(
       KeyHandle: PHANDLE,
@@ -60774,7 +63421,7 @@ extern "C" {
    pub fn ZwOpenKeyedEvent(
       KeyedEventHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn ZwOpenKeyEx(
       KeyHandle: PHANDLE,
@@ -60798,7 +63445,7 @@ extern "C" {
    pub fn ZwOpenMutant(
       MutantHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn ZwOpenObjectAuditAlarm(
       SubsystemName: PUNICODE_STRING,
@@ -60817,7 +63464,7 @@ extern "C" {
    pub fn ZwOpenPartition(
       PartitionHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn ZwOpenPrivateNamespace(
       NamespaceHandle: PHANDLE,
@@ -60828,7 +63475,7 @@ extern "C" {
    pub fn ZwOpenProcess(
       ProcessHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ClientId: PCLIENT_ID,
    ) -> NTSTATUS;
    pub fn ZwOpenProcessToken(
@@ -60852,12 +63499,12 @@ extern "C" {
    pub fn ZwOpenSection(
       SectionHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn ZwOpenSemaphore(
       SemaphoreHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn ZwOpenSession(
       SessionHandle: PHANDLE,
@@ -60872,7 +63519,7 @@ extern "C" {
    pub fn ZwOpenThread(
       ThreadHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ClientId: PCLIENT_ID,
    ) -> NTSTATUS;
    pub fn ZwOpenThreadToken(
@@ -60891,7 +63538,7 @@ extern "C" {
    pub fn ZwOpenTimer(
       TimerHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
-      ObjectAttributes: POBJECT_ATTRIBUTES,
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
    pub fn ZwOpenTransaction(
       TransactionHandle: PHANDLE,
@@ -60981,7 +63628,7 @@ extern "C" {
       ObjectAttributes: POBJECT_ATTRIBUTES,
       FileInformation: PFILE_BASIC_INFORMATION,
    ) -> NTSTATUS;
-   pub fn ZwQueryAuxiliaryCounterFrequency(AuxiliaryCounterFrequency: PLARGE_INTEGER) -> NTSTATUS;
+   pub fn ZwQueryAuxiliaryCounterFrequency(AuxiliaryCounterFrequency: PULONG64) -> NTSTATUS;
    pub fn ZwQueryBootEntryOrder(Ids: PULONG, Count: PULONG) -> NTSTATUS;
    pub fn ZwQueryBootOptions(BootOptions: PBOOT_OPTIONS, BootOptionsLength: PULONG) -> NTSTATUS;
    pub fn ZwQueryDebugFilterState(ComponentId: ULONG, Level: ULONG) -> NTSTATUS;
@@ -61229,6 +63876,14 @@ extern "C" {
       Length: ULONG,
       LengthNeeded: PULONG,
    ) -> NTSTATUS;
+   pub fn ZwQuerySecurityPolicy(
+      Policy: PCUNICODE_STRING,
+      KeyName: PCUNICODE_STRING,
+      ValueName: PCUNICODE_STRING,
+      ValueType: SECURE_SETTING_VALUE_TYPE,
+      Value: PVOID,
+      ValueSize: PULONG,
+   ) -> NTSTATUS;
    pub fn ZwQuerySemaphore(
       SemaphoreHandle: HANDLE,
       SemaphoreInformationClass: SEMAPHORE_INFORMATION_CLASS,
@@ -61250,8 +63905,8 @@ extern "C" {
    pub fn ZwQuerySystemEnvironmentValueEx(
       VariableName: PUNICODE_STRING,
       VendorGuid: PCGUID,
-      Value: PVOID,
-      ValueLength: PULONG,
+      Buffer: PVOID,
+      BufferLength: PULONG,
       Attributes: PULONG,
    ) -> NTSTATUS;
    pub fn ZwQuerySystemInformation(
@@ -61553,8 +64208,18 @@ extern "C" {
    ) -> NTSTATUS;
    pub fn ZwSetEvent(EventHandle: HANDLE, PreviousState: PLONG) -> NTSTATUS;
    pub fn ZwSetEventBoostPriority(EventHandle: HANDLE) -> NTSTATUS;
+   pub fn ZwSetEventEx(ThreadId: HANDLE, Lock: PRTL_SRWLOCK) -> NTSTATUS;
    pub fn ZwSetHighEventPair(EventPairHandle: HANDLE) -> NTSTATUS;
    pub fn ZwSetHighWaitLowEventPair(EventPairHandle: HANDLE) -> NTSTATUS;
+   pub fn ZwSetInformationCpuPartition(
+      CpuPartitionHandle: HANDLE,
+      CpuPartitionInformationClass: ULONG,
+      CpuPartitionInformation: PVOID,
+      CpuPartitionInformationLength: ULONG,
+      arg1: PVOID,
+      arg2: ULONG,
+      arg3: ULONG,
+   ) -> NTSTATUS;
    pub fn ZwSetInformationDebugObject(
       DebugObjectHandle: HANDLE,
       DebugObjectInformationClass: DEBUGOBJECTINFOCLASS,
@@ -61644,7 +64309,7 @@ extern "C" {
    pub fn ZwSetInformationVirtualMemory(
       ProcessHandle: HANDLE,
       VmInformationClass: VIRTUAL_MEMORY_INFORMATION_CLASS,
-      NumberOfEntries: ULONG_PTR,
+      NumberOfEntries: SIZE_T,
       VirtualAddresses: PMEMORY_RANGE_ENTRY,
       VmInformation: PVOID,
       VmInformationLength: ULONG,
@@ -61700,8 +64365,8 @@ extern "C" {
    pub fn ZwSetSystemEnvironmentValueEx(
       VariableName: PUNICODE_STRING,
       VendorGuid: PCGUID,
-      Value: PVOID,
-      ValueLength: ULONG,
+      Buffer: PVOID,
+      BufferLength: ULONG,
       Attributes: ULONG,
    ) -> NTSTATUS;
    pub fn ZwSetSystemInformation(
@@ -61903,6 +64568,36 @@ extern "C" {
    pub fn ZwWaitHighEventPair(EventPairHandle: HANDLE) -> NTSTATUS;
    pub fn ZwWaitLowEventPair(EventPairHandle: HANDLE) -> NTSTATUS;
    pub fn ZwWorkerFactoryWorkerReady(WorkerFactoryHandle: HANDLE) -> NTSTATUS;
+   pub fn ZwWow64QueryInformationProcess64(
+      ProcessHandle: HANDLE,
+      ProcessInformationClass: PROCESSINFOCLASS,
+      ProcessInformation: PVOID,
+      ProcessInformationLength: ULONG,
+      ReturnLength: PULONG,
+   ) -> NTSTATUS;
+   pub fn ZwWow64QueryVirtualMemory64(
+      ProcessHandle: HANDLE,
+      BaseAddress: PVOID,
+      MemoryInformationClass: MEMORY_INFORMATION_CLASS,
+      MemoryInformation: PVOID,
+      MemoryInformationLength: ULONGLONG,
+      ReturnLength: PULONGLONG,
+   ) -> NTSTATUS;
+   pub fn ZwWow64ReadVirtualMemory64(
+      ProcessHandle: HANDLE,
+      BaseAddress: PVOID,
+      Buffer: PVOID,
+      BufferSize: ULONGLONG,
+      NumberOfBytesRead: PULONGLONG,
+      Flags: ULONG,
+   ) -> NTSTATUS;
+   pub fn ZwWow64WriteVirtualMemory64(
+      ProcessHandle: HANDLE,
+      BaseAddress: PVOID,
+      Buffer: PVOID,
+      BufferSize: ULONGLONG,
+      NumberOfBytesWritten: PULONGLONG,
+   ) -> NTSTATUS;
    pub fn ZwWriteFile(
       FileHandle: HANDLE,
       Event: HANDLE,
@@ -61942,10 +64637,343 @@ extern "C" {
    ) -> NTSTATUS;
    pub fn ZwYieldExecution() -> NTSTATUS;
    pub fn NtUserQueryWindow(WindowHandle: HWND, WindowInfo: WINDOWINFOCLASS) -> ULONG_PTR;
-   #[doc = " Performs special kernel operations for console host applications.\n\n This includes reparenting the console window, allowing the console to pass foreground rights\n on to launched console subsystem applications and terminating attached processes.\n\n @param Command One of the CONSOLECONTROL values indicating which console control function should be executed.\n @param ConsoleInformation A pointer to one of the  structures specifying additional data for the requested console control function.\n @param ConsoleInformationLength The size of the structure pointed to by the ConsoleInformation parameter.\n @return Successful or errant status."]
+   pub fn NtUserTestForInteractiveUser(AuthenticationId: PLUID) -> NTSTATUS;
+   pub fn NtUserCheckAccessForIntegrityLevel(
+      ProcessIdFirst: ULONG,
+      ProcessIdSecond: ULONG,
+      GrantedAccess: PBOOLEAN,
+   ) -> NTSTATUS;
+   pub fn NtUserCheckProcessForClipboardAccess(ProcessId: ULONG, GrantedAccess: PULONG)
+      -> NTSTATUS;
+   pub fn NtUserInternalGetWindowText(
+      WindowHandle: HWND,
+      pString: LPWSTR,
+      cchMaxCount: ULONG,
+   ) -> ULONG;
+   pub fn NtUserInternalGetWindowIcon(WindowHandle: HWND, IconType: ULONG) -> HICON;
+   pub fn NtUserGetClassName(
+      WindowHandle: HWND,
+      Real: LONGLONG,
+      ClassName: PUNICODE_STRING,
+   ) -> ULONG;
+   #[doc = " Performs special kernel operations for console host applications. (win32u.dll)\n\n This includes reparenting the console window, allowing the console to pass foreground rights\n on to launched console subsystem applications and terminating attached processes.\n\n @param Command One of the CONSOLECONTROL values indicating which console control function should be executed.\n @param ConsoleInformation A pointer to one of the  structures specifying additional data for the requested console control function.\n @param ConsoleInformationLength The size of the structure pointed to by the ConsoleInformation parameter.\n @return Successful or errant status."]
    pub fn NtUserConsoleControl(
       Command: CONSOLECONTROL,
       ConsoleInformation: PVOID,
       ConsoleInformationLength: ULONG,
    ) -> NTSTATUS;
+   #[doc = " Performs special kernel operations for console host applications. (user32.dll)\n\n This includes reparenting the console window, allowing the console to pass foreground rights\n on to launched console subsystem applications and terminating attached processes.\n\n @param Command One of the CONSOLECONTROL values indicating which console control function should be executed.\n @param ConsoleInformation A pointer to one of the  structures specifying additional data for the requested console control function.\n @param ConsoleInformationLength The size of the structure pointed to by the ConsoleInformation parameter.\n @return Successful or errant status."]
+   pub fn ConsoleControl(
+      Command: CONSOLECONTROL,
+      ConsoleInformation: PVOID,
+      ConsoleInformationLength: ULONG,
+   ) -> NTSTATUS;
+   #[doc = " Opens the specified window station.\n\n @param ObjectAttributes The name of the window station to be opened. Window station names are case-insensitive. This window station must belong to the current session.\n @param DesiredAccess The access to the window station.\n @return Successful or errant status."]
+   pub fn NtUserOpenWindowStation(
+      ObjectAttributes: OBJECT_ATTRIBUTES,
+      DesiredAccess: ACCESS_MASK,
+   ) -> HWINSTA;
+   pub fn NtUserCreateWindowStation(
+      ObjectAttributes: OBJECT_ATTRIBUTES,
+      DesiredAccess: ACCESS_MASK,
+      KeyboardLayoutHandle: HANDLE,
+      KeyboardLayoutOffset: PVOID,
+      NlsTableOffset: PVOID,
+      KeyboardDescriptor: PVOID,
+      LanguageIdString: UNICODE_STRING,
+      KeyboardLocale: ULONG,
+   ) -> HWINSTA;
+   pub fn NtUserBuildHwndList(
+      DesktopHandle: HANDLE,
+      StartWindowHandle: HWND,
+      IncludeChildren: LOGICAL,
+      ExcludeImmersive: LOGICAL,
+      ThreadId: ULONG,
+      HwndListInformationLength: ULONG,
+      HwndListInformation: PVOID,
+      ReturnLength: PULONG,
+   ) -> NTSTATUS;
+   pub fn NtUserBuildNameList(
+      WindowStationHandle: HWINSTA,
+      NameListInformationLength: ULONG,
+      NameListInformation: PVOID,
+      ReturnLength: PULONG,
+   ) -> NTSTATUS;
+   pub fn NtUserBuildPropList(
+      WindowStationHandle: HWINSTA,
+      PropListInformationLength: ULONG,
+      PropListInformation: PVOID,
+      ReturnLength: PULONG,
+   ) -> NTSTATUS;
+   pub fn NtUserGetProcessWindowStation() -> HWND;
+   pub fn NtUserCloseWindowStation(WindowStationHandle: HWINSTA) -> LOGICAL;
+   pub fn NtUserSetProcessWindowStation(WindowStationHandle: HWINSTA) -> LOGICAL;
+   pub fn SetWindowStationUser(
+      WindowStationHandle: HWINSTA,
+      UserLogonId: PLUID,
+      UserSid: PSID,
+      UserSidLength: ULONG,
+   ) -> LOGICAL;
+   pub fn NtUserSetWindowStationUser(
+      WindowStationHandle: HWINSTA,
+      UserLogonId: PLUID,
+      UserSid: PSID,
+      UserSidLength: ULONG,
+   ) -> LOGICAL;
+   pub fn NtUserOpenDesktop(
+      ObjectAttributes: PCOBJECT_ATTRIBUTES,
+      Flags: ULONG,
+      DesiredAccess: ACCESS_MASK,
+   ) -> HANDLE;
+   pub fn NtUserSetThreadDesktop(DesktopHandle: HDESK) -> LOGICAL;
+   pub fn NtUserSwitchDesktop(DesktopHandle: HDESK, Flags: ULONG, FadeTime: ULONG) -> LOGICAL;
+   pub fn NtUserGetIconInfo(
+      IconOrCursorHandle: HICON,
+      Iconinfo: PICONINFO,
+      Name: PUNICODE_STRING,
+      ResourceId: PUNICODE_STRING,
+      ColorBits: PULONG,
+      IsCursorHandle: LOGICAL,
+   ) -> LOGICAL;
+   pub fn NtUserGetIconSize(
+      IconOrCursorHandle: HGDIOBJ,
+      IsCursorHandle: LOGICAL,
+      XX: PULONG,
+      YY: PULONG,
+   ) -> LOGICAL;
+   pub fn NtUserGetForegroundWindow() -> HWND;
+   pub fn NtUserSetActiveWindow(WindowHandle: HWND) -> HWND;
+   pub fn NtUserSetFocus(WindowHandle: HWND) -> HWND;
+   pub fn NtUserGetThreadState(UserThreadState: ULONG) -> ULONG_PTR;
+   pub fn NtUserSetWindowPlacement(WindowHandle: HWND, lpwndpl: *const WINDOWPLACEMENT) -> BOOL;
+   pub fn NtUserAttachThreadInput(IdAttach: ULONG, IdAttachTo: ULONG, Attach: BOOL) -> BOOL;
+   pub fn NtUserBeginPaint(WindowHandle: HWND, lpPaint: LPPAINTSTRUCT) -> HDC;
+   pub fn NtUserBlockInput(BlockInput: BOOL) -> BOOL;
+   pub fn tUserCalculatePopupWindowPosition(
+      anchorPoint: *const POINT,
+      windowSize: *const SIZE,
+      flags: ULONG,
+      excludeRect: *mut RECT,
+      popupWindowPosition: *mut RECT,
+   ) -> BOOL;
+   pub fn NtUserChangeWindowMessageFilterEx(
+      WindowHandle: HWND,
+      message: ULONG,
+      action: ULONG,
+      pChangeFilterStruct: PCHANGEFILTERSTRUCT,
+   ) -> BOOL;
+   pub fn NtUserChildWindowFromPointEx(WindowHandle: HWND, pt: POINT, flags: ULONG) -> HWND;
+   pub fn NtUserClipCursor(lpRect: *const RECT) -> BOOL;
+   pub fn NtUserCloseDesktop(hDesktop: HDESK) -> BOOL;
+   pub fn NtUserCopyAcceleratorTable(
+      hAccelSrc: HACCEL,
+      lpAccelDst: LPACCEL,
+      cAccelEntries: LONG,
+   ) -> LONG;
+   pub fn NtUserCreateAcceleratorTable(paccel: LPACCEL, cAccel: LONG) -> HACCEL;
+   pub fn NtUserDeleteMenu(hMenu: HMENU, uPosition: ULONG, uFlags: ULONG) -> BOOL;
+   pub fn NtUserDestroyMenu(hMenu: HMENU) -> BOOL;
+   pub fn NtUserDestroyWindow(WindowHandle: HWND) -> BOOL;
+   pub fn NtUserDragDetect(WindowHandle: HWND, pt: POINT) -> BOOL;
+   pub fn NtUserDragObject(
+      WindowHandleParent: HWND,
+      WindowHandleFrom: HWND,
+      fmt: ULONG,
+      data: ULONG_PTR,
+      hcur: HCURSOR,
+   ) -> ULONG;
+   pub fn NtUserDrawAnimatedRects(
+      WindowHandle: HWND,
+      idAni: cty::c_int,
+      lprcFrom: *const RECT,
+      lprcTo: *const RECT,
+   ) -> BOOL;
+   pub fn NtUserEndMenu() -> BOOL;
+   pub fn NtUserEndPaint(WindowHandle: HWND, lpPaint: *const PAINTSTRUCT) -> BOOL;
+   pub fn NtUserEnumDisplayMonitors(
+      hdc: HDC,
+      lprcClip: LPCRECT,
+      lpfnEnum: MONITORENUMPROC,
+      dwData: LPARAM,
+   ) -> BOOL;
+   pub fn NtUserExcludeUpdateRgn(hDC: HDC, WindowHandle: HWND) -> HRGN;
+   pub fn NtUserFlashWindowEx(pfwi: PFLASHWINFO) -> BOOL;
+   pub fn NtUserGetAncestor(WindowHandle: HWND, gaFlags: ULONG) -> HWND;
+   pub fn NtUserGetCaretBlinkTime() -> ULONG;
+   pub fn NtUserGetCaretPos(lpPoint: LPPOINT) -> BOOL;
+   pub fn NtUserGetClipCursor(lpRect: LPRECT) -> BOOL;
+   pub fn NtUserGetComboBoxInfo(WindowHandleCombo: HWND, pcbi: PCOMBOBOXINFO) -> BOOL;
+   pub fn NtUserGetCurrentInputMessageSource(InputMessageSource: *mut INPUT_MESSAGE_SOURCE)
+      -> BOOL;
+   pub fn NtUserGetCursor() -> HCURSOR;
+   pub fn NtUserGetCursorInfo(pci: PCURSORINFO) -> BOOL;
+   pub fn NtUserGetDCEx(WindowHandle: HWND, hrgnClip: HRGN, flags: ULONG) -> HDC;
+   pub fn NtUserGetDisplayAutoRotationPreferences(
+      pOrientation: *mut ORIENTATION_PREFERENCE,
+   ) -> BOOL;
+   pub fn NtUserGetDoubleClickTime() -> ULONG;
+   pub fn NtUserGetGUIThreadInfo(idThread: ULONG, pgui: PGUITHREADINFO) -> BOOL;
+   pub fn NtUserGetGuiResources(ProcessHandle: HANDLE, uiFlags: ULONG) -> ULONG;
+   pub fn NtUserGetLayeredWindowAttributes(
+      WindowHandle: HWND,
+      pcrKey: *mut COLORREF,
+      pbAlpha: *mut BYTE,
+      pdwFlags: ULONG,
+   ) -> BOOL;
+   pub fn NtUserGetListBoxInfo(WindowHandle: HWND) -> ULONG;
+   pub fn NtUserGetMenuBarInfo(
+      WindowHandle: HWND,
+      idObject: LONG,
+      idItem: LONG,
+      pmbi: PMENUBARINFO,
+   ) -> BOOL;
+   pub fn NtUserGetMenuItemRect(
+      WindowHandle: HWND,
+      hMenu: HMENU,
+      uItem: ULONG,
+      lprcItem: LPRECT,
+   ) -> BOOL;
+   pub fn NtUserGetMouseMovePointsEx(
+      cbSize: ULONG,
+      lppt: LPMOUSEMOVEPOINT,
+      lpptBuf: LPMOUSEMOVEPOINT,
+      nBufPoints: LONG,
+      resolution: ULONG,
+   ) -> LONG;
+   pub fn NtUserGetRawInputData(
+      hRawInput: HRAWINPUT,
+      uiCommand: ULONG,
+      pData: LPVOID,
+      pcbSize: PULONG,
+      cbSizeHeader: ULONG,
+   ) -> ULONG;
+   pub fn NtUserGetRawInputDeviceList(
+      pRawInputDeviceList: PRAWINPUTDEVICELIST,
+      puiNumDevices: PULONG,
+      cbSize: ULONG,
+   ) -> ULONG;
+   pub fn NtUserGetRegisteredRawInputDevices(
+      pRawInputDevices: PRAWINPUTDEVICE,
+      puiNumDevices: PULONG,
+      cbSize: ULONG,
+   ) -> ULONG;
+   pub fn NtUserGetSystemMenu(WindowHandle: HWND, bRevert: BOOL) -> HMENU;
+   pub fn NtUserGetThreadDesktop(ThreadId: ULONG) -> HDESK;
+   pub fn NtUserGetTitleBarInfo(WindowHandle: HWND, pti: PTITLEBARINFO) -> BOOL;
+   pub fn NtUserGetObjectInformation(
+      hObj: HANDLE,
+      Index: LONG,
+      vInfo: PVOID,
+      Length: ULONG,
+      LengthNeeded: PULONG,
+   ) -> BOOL;
+   pub fn NtUserGetWindowDC(WindowHandle: HWND) -> HDC;
+   pub fn NtUserGetWindowPlacement(WindowHandle: HWND, lpwndpl: *mut WINDOWPLACEMENT) -> BOOL;
+   pub fn NtUserHiliteMenuItem(
+      WindowHandle: HWND,
+      Menu: HMENU,
+      IDHiliteItem: ULONG,
+      Hilite: ULONG,
+   ) -> BOOL;
+   pub fn NtUserInvalidateRect(WindowHandle: HWND, Rect: *const RECT, Erase: BOOL) -> BOOL;
+   pub fn NtUserInvalidateRgn(WindowHandle: HWND, hRgn: HRGN, Erase: BOOL) -> BOOL;
+   pub fn NtUserIsTouchWindow(WindowHandle: HWND, Flags: PULONG) -> BOOL;
+   pub fn NtUserKillTimer(WindowHandle: HWND, IDEvent: ULONG_PTR) -> BOOL;
+   pub fn NtUserLockWorkStation() -> BOOL;
+   pub fn NtUserLogicalToPhysicalPoint(WindowHandle: HWND, lpPoint: LPPOINT) -> BOOL;
+   pub fn NtUserMenuItemFromPoint(WindowHandle: HWND, hMenu: HMENU, ptScreen: POINT) -> LONG;
+   pub fn NtUserMoveWindow(
+      WindowHandle: HWND,
+      X: LONG,
+      Y: LONG,
+      nWidth: LONG,
+      nHeight: LONG,
+      bRepaint: BOOL,
+   ) -> BOOL;
+   pub fn NtUserOpenInputDesktop(Flags: ULONG, Inherit: BOOL, DesiredAccess: ACCESS_MASK) -> HDESK;
+   pub fn NtUserPhysicalToLogicalPoint(WindowHandle: HWND, lpPoint: LPPOINT) -> BOOL;
+   pub fn NtUserPrintWindow(WindowHandle: HWND, hdcBlt: HDC, nFlags: ULONG) -> BOOL;
+   pub fn NtUserQueryInformationThread(
+      ThreadHandle: HANDLE,
+      ThreadInformationClass: USERTHREADINFOCLASS,
+      ThreadInformation: PVOID,
+      ThreadInformationLength: ULONG,
+      ReturnLength: PULONG,
+   ) -> NTSTATUS;
+   pub fn NtUserSetInformationThread(
+      ThreadHandle: HANDLE,
+      ThreadInformationClass: USERTHREADINFOCLASS,
+      ThreadInformation: PVOID,
+      ThreadInformationLength: ULONG,
+   ) -> NTSTATUS;
+   pub fn QuerySendMessage(pMsg: *mut MSG) -> BOOL;
+   pub fn NtUserRedrawWindow(
+      WindowHandle: HWND,
+      lprcUpdate: PRECT,
+      hrgnUpdate: HRGN,
+      flags: ULONG,
+   ) -> BOOL;
+   pub fn NtUserRealChildWindowFromPoint(
+      WindowHandleParent: HWND,
+      ptParentClientCoords: POINT,
+   ) -> HWND;
+   pub fn NtUserRegisterHotKey(WindowHandle: HWND, id: LONG, fsModifiers: ULONG, vk: ULONG)
+      -> BOOL;
+   pub fn NtUserRemoveMenu(hMenu: HMENU, uPosition: ULONG, uFlags: ULONG) -> BOOL;
+   pub fn NtUserSendInput(cInputs: ULONG, pInputs: LPINPUT, cbSize: LONG) -> ULONG;
+   pub fn NtUserSetCapture(WindowHandle: HWND) -> HWND;
+   pub fn NtUserSetTimer(
+      WindowHandle: HWND,
+      nIDEvent: ULONG_PTR,
+      uElapse: ULONG,
+      lpTimerFunc: TIMERPROC,
+      uToleranceDelay: ULONG,
+   ) -> ULONG_PTR;
+   pub fn NtUserSetClassWord(WindowHandle: HWND, nIndex: LONG, wNewWord: WORD) -> WORD;
+   pub fn NtUserSetCursorPos(X: LONG, Y: LONG) -> BOOL;
+   pub fn NtUserSetLayeredWindowAttributes(
+      WindowHandle: HWND,
+      crKey: COLORREF,
+      bAlpha: BYTE,
+      dwFlags: DWORD,
+   ) -> BOOL;
+   pub fn NtUserSetProcessRestrictionExemption(EnableExemption: BOOL) -> BOOL;
+   pub fn NtUserSetWindowPos(
+      WindowHandle: HWND,
+      WindowHandleInsertAfter: HWND,
+      X: LONG,
+      Y: LONG,
+      cx: LONG,
+      cy: LONG,
+      uFlags: ULONG,
+   ) -> BOOL;
+   pub fn NtUserSetWindowWord(WindowHandle: HWND, nIndex: LONG, wNewWord: WORD) -> WORD;
+   pub fn NtUserShellForegroundBoostProcess(ProcessHandle: HANDLE, WindowHandle: HWND) -> HWND;
+   pub fn NtUserSetAdditionalForegroundBoostProcesses(WindowHandle: HWND) -> ULONG;
+   pub fn NtUserSetAdditionalPowerThrottlingProcess(WindowHandle: HWND) -> ULONG;
+   pub fn NtUserShowCursor(bShow: BOOL) -> LONG;
+   pub fn NtUserShowWindow(WindowHandle: HWND, nCmdShow: LONG) -> BOOL;
+   pub fn NtUserShowWindowAsync(WindowHandle: HWND, nCmdShow: LONG) -> BOOL;
+   pub fn NtUserShutdownBlockReasonQuery(
+      WindowHandle: HWND,
+      pwszBuff: LPWSTR,
+      pcchBuff: PULONG,
+   ) -> BOOL;
+   pub fn NtUserShutdownReasonDestroy(WindowHandle: HWND) -> BOOL;
+   pub fn NtUserTrackMouseEvent(lpEventTrack: LPTRACKMOUSEEVENT) -> BOOL;
+   pub fn NtUserTrackPopupMenuEx(
+      hMenu: HMENU,
+      uFlags: ULONG,
+      x: LONG,
+      y: LONG,
+      WindowHandle: HWND,
+      lptpm: LPTPMPARAMS,
+   ) -> BOOL;
+   pub fn NtUserUnhookWinEvent(hWinEventHook: HWINEVENTHOOK) -> BOOL;
+   pub fn NtUserUnregisterHotKey(WindowHandle: HWND, id: LONG) -> BOOL;
+   pub fn NtUserUserHandleGrantAccess(UserHandle: HANDLE, Job: HANDLE, Grant: BOOL) -> BOOL;
+   pub fn NtUserValidateRect(WindowHandle: HWND, Rect: *const RECT) -> BOOL;
+   pub fn NtUserWindowFromDC(hDC: HDC) -> HWND;
+   pub fn NtUserWindowFromPhysicalPoint(Point: POINT) -> HWND;
+   pub fn NtUserWindowFromPoint(Point: POINT) -> HWND;
 }

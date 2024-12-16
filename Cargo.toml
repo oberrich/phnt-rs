@@ -1,6 +1,6 @@
 [package]
 name = "phnt"
-version = "0.0.31"
+version = "0.0.32"
 license = "MIT"
 authors = ["oberrich <oberrich.llvm@proton.me>"]
 repository = "https://github.com/oberrich/phnt-rs"
@@ -19,9 +19,9 @@ rustdoc-args = ["--cfg", "docsrs"]
 rustc-args = ["--cfg", "docsrs"]
 
 [build-dependencies] # optional
-regex   = { version = "1.10.6", optional = true }
-bindgen = { version = "0.70.1", optional = true }
-chrono  = { version = "0.4.37", optional = true }
+regex   = { version = "1.11.1", optional = true }
+bindgen = { version = "0.71.1", optional = true }
+chrono  = { version = "0.4.39", optional = true }
 
 [dependencies.windows-sys]
 version = "0.59.0"

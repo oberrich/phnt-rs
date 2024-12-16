@@ -82,12 +82,10 @@ mod regen {
       }
 
       pub fn generate_bindings(&self) -> Result<bindgen::Bindings, bindgen::BindgenError> {
-         let allowlist_regexpr = Regex::new(
-            &format!(
-               r"({}\\deps\\phnt-nightly\\.*\.h)|winnt\.h|ntstatus\.h",
-               regex::escape(env!("CARGO_MANIFEST_DIR"))
-            ),
-         )
+         let allowlist_regexpr = Regex::new(&format!(
+            r"({}\\deps\\phnt-nightly\\.*\.h)|winnt\.h|ntstatus\.h",
+            regex::escape(env!("CARGO_MANIFEST_DIR"))
+         ))
          .unwrap();
 
          let blocklist_regexpr =
@@ -114,7 +112,7 @@ mod regen {
             if let Ok(str) = env::var(name) {
                clang_args.push(format!("-D{}={}", name, str));
 
-               let value = if let Ok(_) = str.parse::<u32>() {
+               let value = if str.parse::<u32>().is_ok() {
                   str
                } else {
                   format!("self::{}", str)
