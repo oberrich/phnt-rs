@@ -1,14 +1,14 @@
-// Generated at 2024-12-16 04:57:47.923929 +01:00
+// Generated at 2024-12-29 05:00:43.589487 +00:00
+#[cfg(not(target_arch = "x86"))]
+compile_error!("These bindings can only be used on `x86_64` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.");
 
 use cty;
-pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
 pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
-pub use windows_sys::Win32::Foundation::BOOL;
-pub use windows_sys::Win32::Foundation::BOOLEAN;
-pub use windows_sys::Win32::Foundation::NTSTATUS;
+pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
+pub use windows_sys::Win32::Foundation::BOOLEAN as BOOLEAN;
+pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
+pub use windows_sys::Win32::Foundation::BOOL as BOOL;
 
-pub const PHNT_VERSION: u32 = self::PHNT_WIN11_24H2;
-pub const PHNT_MODE: u32 = self::PHNT_MODE_USER;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -26,10 +26,7 @@ where
    Storage: AsRef<[u8]> + AsMut<[u8]>,
 {
    #[inline]
-   pub fn get_bit(&self, index: usize) -> bool {
-      debug_assert!(index / 8 < self.storage.as_ref().len());
-      let byte_index = index / 8;
-      let byte = self.storage.as_ref()[byte_index];
+   fn extract_bit(byte: u8, index: usize) -> bool {
       let bit_index = if cfg!(target_endian = "big") {
          7 - (index % 8)
       } else {
@@ -39,10 +36,21 @@ where
       byte & mask == mask
    }
    #[inline]
-   pub fn set_bit(&mut self, index: usize, val: bool) {
+   pub fn get_bit(&self, index: usize) -> bool {
       debug_assert!(index / 8 < self.storage.as_ref().len());
       let byte_index = index / 8;
-      let byte = &mut self.storage.as_mut()[byte_index];
+      let byte = self.storage.as_ref()[byte_index];
+      Self::extract_bit(byte, index)
+   }
+   #[inline]
+   pub unsafe fn raw_get_bit(this: *const Self, index: usize) -> bool {
+      debug_assert!(index / 8 < core::mem::size_of::<Storage>());
+      let byte_index = index / 8;
+      let byte = *(core::ptr::addr_of!((*this).storage) as *const u8).offset(byte_index as isize);
+      Self::extract_bit(byte, index)
+   }
+   #[inline]
+   fn change_bit(byte: u8, index: usize, val: bool) -> u8 {
       let bit_index = if cfg!(target_endian = "big") {
          7 - (index % 8)
       } else {
@@ -50,10 +58,24 @@ where
       };
       let mask = 1 << bit_index;
       if val {
-         *byte |= mask;
+         byte | mask
       } else {
-         *byte &= !mask;
+         byte & !mask
       }
+   }
+   #[inline]
+   pub fn set_bit(&mut self, index: usize, val: bool) {
+      debug_assert!(index / 8 < self.storage.as_ref().len());
+      let byte_index = index / 8;
+      let byte = &mut self.storage.as_mut()[byte_index];
+      *byte = Self::change_bit(*byte, index, val);
+   }
+   #[inline]
+   pub unsafe fn raw_set_bit(this: *mut Self, index: usize, val: bool) {
+      debug_assert!(index / 8 < core::mem::size_of::<Storage>());
+      let byte_index = index / 8;
+      let byte = (core::ptr::addr_of_mut!((*this).storage) as *mut u8).offset(byte_index as isize);
+      *byte = Self::change_bit(*byte, index, val);
    }
    #[inline]
    pub fn get(&self, bit_offset: usize, bit_width: u8) -> u64 {
@@ -63,6 +85,24 @@ where
       let mut val = 0;
       for i in 0..(bit_width as usize) {
          if self.get_bit(i + bit_offset) {
+            let index = if cfg!(target_endian = "big") {
+               bit_width as usize - 1 - i
+            } else {
+               i
+            };
+            val |= 1 << index;
+         }
+      }
+      val
+   }
+   #[inline]
+   pub unsafe fn raw_get(this: *const Self, bit_offset: usize, bit_width: u8) -> u64 {
+      debug_assert!(bit_width <= 64);
+      debug_assert!(bit_offset / 8 < core::mem::size_of::<Storage>());
+      debug_assert!((bit_offset + (bit_width as usize)) / 8 <= core::mem::size_of::<Storage>());
+      let mut val = 0;
+      for i in 0..(bit_width as usize) {
+         if Self::raw_get_bit(this, i + bit_offset) {
             let index = if cfg!(target_endian = "big") {
                bit_width as usize - 1 - i
             } else {
@@ -89,8 +129,25 @@ where
          self.set_bit(index + bit_offset, val_bit_is_set);
       }
    }
+   #[inline]
+   pub unsafe fn raw_set(this: *mut Self, bit_offset: usize, bit_width: u8, val: u64) {
+      debug_assert!(bit_width <= 64);
+      debug_assert!(bit_offset / 8 < core::mem::size_of::<Storage>());
+      debug_assert!((bit_offset + (bit_width as usize)) / 8 <= core::mem::size_of::<Storage>());
+      for i in 0..(bit_width as usize) {
+         let mask = 1 << i;
+         let val_bit_is_set = val & mask == mask;
+         let index = if cfg!(target_endian = "big") {
+            bit_width as usize - 1 - i
+         } else {
+            i
+         };
+         Self::raw_set_bit(this, index + bit_offset, val_bit_is_set);
+      }
+   }
 }
 pub const INT_ERROR: i32 = -1;
+pub const SIZE_T_MAX: u32 = 4294967295;
 pub const MAXLONGLONG: u64 = 9223372036854775807;
 pub const MICROSOFT_WINDOWS_WINBASE_H_DEFINE_INTERLOCKED_CPLUSPLUS_OVERLOADS: u32 = 0;
 pub const DESKTOP_ALL_ACCESS: u32 = 983551;
@@ -130,6 +187,8 @@ pub const PHNT_WIN11: u32 = 114;
 pub const PHNT_WIN11_22H2: u32 = 115;
 pub const PHNT_WIN11_23H2: u32 = 116;
 pub const PHNT_WIN11_24H2: u32 = 117;
+pub const PHNT_MODE: u32 = 1;
+pub const PHNT_VERSION: u32 = 117;
 pub const MAXUCHAR: u32 = 255;
 pub const MAXUSHORT: u32 = 65535;
 pub const MAXULONG: u32 = 4294967295;
@@ -193,8 +252,6 @@ pub const LDR_LOCK_LOADER_LOCK_DISPOSITION_LOCK_NOT_ACQUIRED: u32 = 2;
 pub const LDR_UNLOCK_LOADER_LOCK_FLAG_RAISE_ON_ERRORS: u32 = 1;
 pub const LDR_DLL_NOTIFICATION_REASON_LOADED: u32 = 1;
 pub const LDR_DLL_NOTIFICATION_REASON_UNLOADED: u32 = 2;
-pub const PS_SYSTEM_DLL_INIT_BLOCK_V1: u32 = 240;
-pub const PS_SYSTEM_DLL_INIT_BLOCK_V2: u32 = 296;
 pub const RESOURCE_TYPE_LEVEL: u32 = 0;
 pub const RESOURCE_NAME_LEVEL: u32 = 1;
 pub const RESOURCE_LANGUAGE_LEVEL: u32 = 2;
@@ -253,7 +310,7 @@ pub const MM_WORKING_SET_MIN_HARD_DISABLE: u32 = 8;
 pub const ETW_MAX_PROFILING_SOURCES: u32 = 4;
 pub const ETW_MAX_PMC_EVENTS: u32 = 4;
 pub const ETW_MAX_PMC_COUNTERS: u32 = 4;
-pub const MAXIMUM_NODE_COUNT: u32 = 64;
+pub const MAXIMUM_NODE_COUNT: u32 = 16;
 pub const CODEINTEGRITY_OPTION_ENABLED: u32 = 1;
 pub const CODEINTEGRITY_OPTION_TESTSIGN: u32 = 2;
 pub const CODEINTEGRITY_OPTION_UMCI_ENABLED: u32 = 4;
@@ -462,7 +519,6 @@ pub const MEM_EXECUTE_OPTION_EXECUTE_DISPATCH_ENABLE: u32 = 16;
 pub const MEM_EXECUTE_OPTION_IMAGE_DISPATCH_ENABLE: u32 = 32;
 pub const MEM_EXECUTE_OPTION_DISABLE_EXCEPTION_CHAIN_VALIDATION: u32 = 64;
 pub const MEM_EXECUTE_OPTION_VALID_FLAGS: u32 = 127;
-pub const VM_PREFETCH_TO_WORKING_SET: u32 = 1;
 pub const MAP_PROCESS: u32 = 1;
 pub const MAP_SYSTEM: u32 = 2;
 pub const TERMINATE_ENCLAVE_VALID_FLAGS: u32 = 5;
@@ -586,7 +642,7 @@ pub const KACF_ALLOWMAXIMIZEDWINDOWGAMMA: u32 = 16777216;
 pub const KACF_DONOTADDTOCACHE: u32 = 2147483648;
 pub const GDI_HANDLE_BUFFER_SIZE32: u32 = 34;
 pub const GDI_HANDLE_BUFFER_SIZE64: u32 = 60;
-pub const GDI_HANDLE_BUFFER_SIZE: u32 = 60;
+pub const GDI_HANDLE_BUFFER_SIZE: u32 = 34;
 pub const TLS_EXPANSION_SLOTS: u32 = 1024;
 pub const GDI_BATCH_BUFFER_SIZE: u32 = 310;
 pub const TEB_ACTIVE_FRAME_CONTEXT_FLAG_EXTENDED: u32 = 1;
@@ -912,11 +968,6 @@ pub const FILE_RENAME_FORCE_RESIZE_SOURCE_SR: u32 = 256;
 pub const FILE_RENAME_FORCE_RESIZE_SR: u32 = 384;
 pub const FILE_SKIP_SET_USER_EVENT_ON_FAST_IO: u32 = 4;
 pub const CHECKSUM_ENFORCEMENT_OFF: u32 = 1;
-pub const LX_FILE_METADATA_HAS_UID: u32 = 1;
-pub const LX_FILE_METADATA_HAS_GID: u32 = 2;
-pub const LX_FILE_METADATA_HAS_MODE: u32 = 4;
-pub const LX_FILE_METADATA_HAS_DEVICE_ID: u32 = 8;
-pub const LX_FILE_CASE_SENSITIVE_DIR: u32 = 16;
 pub const FILE_ID_GLOBAL_TX_DIR_INFO_FLAG_WRITELOCKED: u32 = 1;
 pub const FILE_ID_GLOBAL_TX_DIR_INFO_FLAG_VISIBLE_TO_TX: u32 = 2;
 pub const FILE_ID_GLOBAL_TX_DIR_INFO_FLAG_VISIBLE_OUTSIDE_TX: u32 = 4;
@@ -938,7 +989,6 @@ pub const SSINFO_FLAGS_NO_SEEK_PENALTY: u32 = 4;
 pub const SSINFO_FLAGS_TRIM_ENABLED: u32 = 8;
 pub const SSINFO_FLAGS_BYTE_ADDRESSABLE: u32 = 16;
 pub const SSINFO_OFFSET_UNKNOWN: u32 = 4294967295;
-pub const FLUSH_FLAGS_FLUSH_AND_PURGE: u32 = 8;
 pub const FILE_QUERY_RESTART_SCAN: u32 = 1;
 pub const FILE_QUERY_RETURN_SINGLE_ENTRY: u32 = 2;
 pub const FILE_QUERY_INDEX_SPECIFIED: u32 = 4;
@@ -1186,7 +1236,7 @@ pub const LPC_CONTINUATION_REQUIRED: u32 = 8192;
 pub const LPC_NO_IMPERSONATE: u32 = 16384;
 pub const LPC_KERNELMODE_MESSAGE: u32 = 32768;
 pub const PORT_VALID_OBJECT_ATTRIBUTES: u32 = 64;
-pub const PORT_MAXIMUM_MESSAGE_LENGTH: u32 = 512;
+pub const PORT_MAXIMUM_MESSAGE_LENGTH: u32 = 256;
 pub const ALPC_PORFLG_LPC_MODE: u32 = 4096;
 pub const ALPC_PORFLG_ALLOW_IMPERSONATION: u32 = 65536;
 pub const ALPC_PORFLG_ALLOW_LPC_REQUESTS: u32 = 131072;
@@ -1408,9 +1458,6 @@ pub const HASH_STRING_ALGORITHM_INVALID: u32 = 4294967295;
 pub const RTL_FIND_CHAR_IN_UNICODE_STRING_START_AT_END: u32 = 1;
 pub const RTL_FIND_CHAR_IN_UNICODE_STRING_COMPLEMENT_CHAR_SET: u32 = 2;
 pub const RTL_FIND_CHAR_IN_UNICODE_STRING_CASE_INSENSITIVE: u32 = 4;
-pub const COMPRESSION_FORMAT_LZ4: u32 = 6;
-pub const COMPRESSION_FORMAT_DEFLATE: u32 = 7;
-pub const COMPRESSION_FORMAT_ZLIB: u32 = 8;
 pub const COMPRESSION_FORMAT_MAX: u32 = 8;
 pub const COMPRESSION_ENGINE_MAX: u32 = 512;
 pub const COMPRESSION_FORMAT_MASK: u32 = 255;
@@ -1444,9 +1491,9 @@ pub const RTL_PROCESS_REFLECTION_FLAGS_INHERIT_HANDLES: u32 = 2;
 pub const RTL_PROCESS_REFLECTION_FLAGS_NO_SUSPEND: u32 = 4;
 pub const RTL_PROCESS_REFLECTION_FLAGS_NO_SYNCHRONIZE: u32 = 8;
 pub const RTL_PROCESS_REFLECTION_FLAGS_NO_CLOSE_EVENT: u32 = 16;
-pub const CONTEXT_ALIGN: u32 = 16;
-pub const CONTEXT_FRAME_LENGTH: u32 = 1232;
-pub const CONTEXT_EX_PADDING: u32 = 16;
+pub const CONTEXT_ALIGN: u32 = 8;
+pub const CONTEXT_FRAME_LENGTH: u32 = 716;
+pub const CONTEXT_EX_PADDING: u32 = 4;
 pub const RTL_ACTIVATE_ACTIVATION_CONTEXT_EX_FLAG_RELEASE_ON_STACK_DEALLOCATION: u32 = 1;
 pub const RTL_DEACTIVATE_ACTIVATION_CONTEXT_FLAG_FORCE_EARLY_DEACTIVATION: u32 = 1;
 pub const FIND_ACTIVATION_CONTEXT_SECTION_KEY_RETURN_ACTIVATION_CONTEXT: u32 = 1;
@@ -1620,8 +1667,6 @@ pub const IMAGE_DVRT_ARM64X_FIXUP_SIZE_4BYTES: u32 = 2;
 pub const IMAGE_DVRT_ARM64X_FIXUP_SIZE_8BYTES: u32 = 3;
 pub const IMAGE_DYNAMIC_RELOCATION_ARM64X: u32 = 6;
 pub const IMAGE_DYNAMIC_RELOCATION_MM_SHARED_USER_DATA_VA: u32 = 2147352576;
-pub const IMAGE_DLLCHARACTERISTICS_EX_FORWARD_CFI_COMPAT: u32 = 64;
-pub const IMAGE_DLLCHARACTERISTICS_EX_HOTPATCH_COMPATIBLE: u32 = 128;
 pub const SE_MIN_WELL_KNOWN_PRIVILEGE: u32 = 2;
 pub const SE_CREATE_TOKEN_PRIVILEGE: u32 = 2;
 pub const SE_ASSIGNPRIMARYTOKEN_PRIVILEGE: u32 = 3;
@@ -2001,9 +2046,9 @@ pub const TRACE_HEADER_SPARE_FLAG4: u32 = 2048;
 pub const TRACE_HEADER_PMC_COUNTERS_MASK: u32 = 1792;
 pub const TRACE_HEADER_PMC_COUNTERS_SHIFT: u32 = 8;
 pub const TRACE_HEADER_EXT_ITEMS_MASK: u32 = 34560;
-pub const SYSTEM_TRACE_MARKER: u32 = 3221356544;
-pub const COMPACT_TRACE_MARKER: u32 = 3221487616;
-pub const PERFINFO_TRACE_MARKER: u32 = 3222339584;
+pub const SYSTEM_TRACE_MARKER: u32 = 3221291008;
+pub const COMPACT_TRACE_MARKER: u32 = 3221422080;
+pub const PERFINFO_TRACE_MARKER: u32 = 3222274048;
 pub const MAXLOGGERS: u32 = 64;
 pub const EVENT_TRACE_CLOCK_RAW: u32 = 0;
 pub const EVENT_TRACE_CLOCK_PERFCOUNTER: u32 = 1;
@@ -2938,8 +2983,8 @@ pub const TRACE_HEADER_FULL32: u32 = 3221880832;
 pub const TRACE_HEADER_FULL64: u32 = 3222536192;
 pub const TRACE_HEADER_INSTANCE32: u32 = 3221946368;
 pub const TRACE_HEADER_INSTANCE64: u32 = 3222601728;
-pub const TRACE_HEADER_FULL: u32 = 3222536192;
-pub const TRACE_HEADER_INSTANCE: u32 = 3222601728;
+pub const TRACE_HEADER_FULL: u32 = 3221880832;
+pub const TRACE_HEADER_INSTANCE: u32 = 3221946368;
 pub const EVENT_TRACE_USE_RAWTIMESTAMP: u32 = 2;
 pub const EVENT_TRACE_GET_RAWEVENT: u32 = 256;
 pub const EVENT_TRACE_READ_BEHIND: u32 = 512;
@@ -2981,10 +3026,10 @@ pub type PDWORD = *mut DWORD;
 pub type LPVOID = *mut cty::c_void;
 pub type UINT = cty::c_uint;
 pub type ULONG32 = cty::c_uint;
-pub type UINT_PTR = cty::c_ulonglong;
-pub type LONG_PTR = cty::c_longlong;
-pub type ULONG_PTR = cty::c_ulonglong;
-pub type PULONG_PTR = *mut cty::c_ulonglong;
+pub type UINT_PTR = cty::c_uint;
+pub type LONG_PTR = cty::c_long;
+pub type ULONG_PTR = cty::c_ulong;
+pub type PULONG_PTR = *mut cty::c_ulong;
 pub type SIZE_T = ULONG_PTR;
 pub type PSIZE_T = *mut ULONG_PTR;
 pub type LONG64 = cty::c_longlong;
@@ -3163,7 +3208,7 @@ pub type GUID = _GUID;
 pub type LPGUID = *mut GUID;
 pub type LPCGUID = *const GUID;
 pub type PEXCEPTION_ROUTINE = ::core::option::Option<
-   unsafe extern "C" fn(
+   unsafe extern "stdcall" fn(
       arg1: *mut _EXCEPTION_RECORD,
       arg2: PVOID,
       arg3: *mut _CONTEXT,
@@ -3172,45 +3217,6 @@ pub type PEXCEPTION_ROUTINE = ::core::option::Option<
 >;
 pub type __C_ASSERT__ = [cty::c_char; 1usize];
 #[repr(C)]
-#[repr(align(16))]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct _M128A {
-   pub Low: ULONGLONG,
-   pub High: LONGLONG,
-}
-pub type M128A = _M128A;
-#[repr(C)]
-#[repr(align(16))]
-#[derive(Debug, Copy, Clone)]
-pub struct _XSAVE_FORMAT {
-   pub ControlWord: WORD,
-   pub StatusWord: WORD,
-   pub TagWord: BYTE,
-   pub Reserved1: BYTE,
-   pub ErrorOpcode: WORD,
-   pub ErrorOffset: DWORD,
-   pub ErrorSelector: WORD,
-   pub Reserved2: WORD,
-   pub DataOffset: DWORD,
-   pub DataSelector: WORD,
-   pub Reserved3: WORD,
-   pub MxCsr: DWORD,
-   pub MxCsr_Mask: DWORD,
-   pub FloatRegisters: [M128A; 8usize],
-   pub XmmRegisters: [M128A; 16usize],
-   pub Reserved4: [BYTE; 96usize],
-}
-impl Default for _XSAVE_FORMAT {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type XSAVE_FORMAT = _XSAVE_FORMAT;
-#[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _XSAVE_AREA_HEADER {
    pub Mask: DWORD64,
@@ -3218,89 +3224,20 @@ pub struct _XSAVE_AREA_HEADER {
    pub Reserved2: [DWORD64; 6usize],
 }
 pub type PXSAVE_AREA_HEADER = *mut _XSAVE_AREA_HEADER;
-pub type XMM_SAVE_AREA32 = XSAVE_FORMAT;
 #[repr(C)]
-#[repr(align(16))]
-#[derive(Copy, Clone)]
-pub struct _CONTEXT {
-   pub P1Home: DWORD64,
-   pub P2Home: DWORD64,
-   pub P3Home: DWORD64,
-   pub P4Home: DWORD64,
-   pub P5Home: DWORD64,
-   pub P6Home: DWORD64,
-   pub ContextFlags: DWORD,
-   pub MxCsr: DWORD,
-   pub SegCs: WORD,
-   pub SegDs: WORD,
-   pub SegEs: WORD,
-   pub SegFs: WORD,
-   pub SegGs: WORD,
-   pub SegSs: WORD,
-   pub EFlags: DWORD,
-   pub Dr0: DWORD64,
-   pub Dr1: DWORD64,
-   pub Dr2: DWORD64,
-   pub Dr3: DWORD64,
-   pub Dr6: DWORD64,
-   pub Dr7: DWORD64,
-   pub Rax: DWORD64,
-   pub Rcx: DWORD64,
-   pub Rdx: DWORD64,
-   pub Rbx: DWORD64,
-   pub Rsp: DWORD64,
-   pub Rbp: DWORD64,
-   pub Rsi: DWORD64,
-   pub Rdi: DWORD64,
-   pub R8: DWORD64,
-   pub R9: DWORD64,
-   pub R10: DWORD64,
-   pub R11: DWORD64,
-   pub R12: DWORD64,
-   pub R13: DWORD64,
-   pub R14: DWORD64,
-   pub R15: DWORD64,
-   pub Rip: DWORD64,
-   pub __bindgen_anon_1: _CONTEXT__bindgen_ty_1,
-   pub VectorRegister: [M128A; 26usize],
-   pub VectorControl: DWORD64,
-   pub DebugControl: DWORD64,
-   pub LastBranchToRip: DWORD64,
-   pub LastBranchFromRip: DWORD64,
-   pub LastExceptionToRip: DWORD64,
-   pub LastExceptionFromRip: DWORD64,
+#[derive(Debug, Copy, Clone)]
+pub struct _FLOATING_SAVE_AREA {
+   pub ControlWord: DWORD,
+   pub StatusWord: DWORD,
+   pub TagWord: DWORD,
+   pub ErrorOffset: DWORD,
+   pub ErrorSelector: DWORD,
+   pub DataOffset: DWORD,
+   pub DataSelector: DWORD,
+   pub RegisterArea: [BYTE; 80usize],
+   pub Spare0: DWORD,
 }
-#[repr(C)]
-#[repr(align(16))]
-#[derive(Copy, Clone)]
-pub union _CONTEXT__bindgen_ty_1 {
-   pub FltSave: XMM_SAVE_AREA32,
-   pub __bindgen_anon_1: _CONTEXT__bindgen_ty_1__bindgen_ty_1,
-}
-#[repr(C)]
-#[repr(align(16))]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct _CONTEXT__bindgen_ty_1__bindgen_ty_1 {
-   pub Header: [M128A; 2usize],
-   pub Legacy: [M128A; 8usize],
-   pub Xmm0: M128A,
-   pub Xmm1: M128A,
-   pub Xmm2: M128A,
-   pub Xmm3: M128A,
-   pub Xmm4: M128A,
-   pub Xmm5: M128A,
-   pub Xmm6: M128A,
-   pub Xmm7: M128A,
-   pub Xmm8: M128A,
-   pub Xmm9: M128A,
-   pub Xmm10: M128A,
-   pub Xmm11: M128A,
-   pub Xmm12: M128A,
-   pub Xmm13: M128A,
-   pub Xmm14: M128A,
-   pub Xmm15: M128A,
-}
-impl Default for _CONTEXT__bindgen_ty_1 {
+impl Default for _FLOATING_SAVE_AREA {
    fn default() -> Self {
       let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
       unsafe {
@@ -3308,6 +3245,36 @@ impl Default for _CONTEXT__bindgen_ty_1 {
          s.assume_init()
       }
    }
+}
+pub type FLOATING_SAVE_AREA = _FLOATING_SAVE_AREA;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _CONTEXT {
+   pub ContextFlags: DWORD,
+   pub Dr0: DWORD,
+   pub Dr1: DWORD,
+   pub Dr2: DWORD,
+   pub Dr3: DWORD,
+   pub Dr6: DWORD,
+   pub Dr7: DWORD,
+   pub FloatSave: FLOATING_SAVE_AREA,
+   pub SegGs: DWORD,
+   pub SegFs: DWORD,
+   pub SegEs: DWORD,
+   pub SegDs: DWORD,
+   pub Edi: DWORD,
+   pub Esi: DWORD,
+   pub Ebx: DWORD,
+   pub Edx: DWORD,
+   pub Ecx: DWORD,
+   pub Eax: DWORD,
+   pub Ebp: DWORD,
+   pub Eip: DWORD,
+   pub SegCs: DWORD,
+   pub EFlags: DWORD,
+   pub Esp: DWORD,
+   pub SegSs: DWORD,
+   pub ExtendedRegisters: [BYTE; 512usize],
 }
 impl Default for _CONTEXT {
    fn default() -> Self {
@@ -3319,12 +3286,7 @@ impl Default for _CONTEXT {
    }
 }
 pub type CONTEXT = _CONTEXT;
-pub type PCONTEXT = *mut _CONTEXT;
-pub type PRUNTIME_FUNCTION = *mut _IMAGE_RUNTIME_FUNCTION_ENTRY;
-pub type GET_RUNTIME_FUNCTION_CALLBACK = ::core::option::Option<
-   unsafe extern "C" fn(ControlPc: DWORD64, Context: PVOID) -> PRUNTIME_FUNCTION,
->;
-pub type PGET_RUNTIME_FUNCTION_CALLBACK = GET_RUNTIME_FUNCTION_CALLBACK;
+pub type PCONTEXT = *mut CONTEXT;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _LDT_ENTRY {
@@ -3366,6 +3328,28 @@ impl _LDT_ENTRY__bindgen_ty_1__bindgen_ty_2 {
       }
    }
    #[inline]
+   pub unsafe fn BaseMid_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BaseMid_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Type(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 5u8) as u32) }
    }
@@ -3374,6 +3358,28 @@ impl _LDT_ENTRY__bindgen_ty_1__bindgen_ty_2 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 5u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Type_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            5u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Type_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            5u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -3388,6 +3394,28 @@ impl _LDT_ENTRY__bindgen_ty_1__bindgen_ty_2 {
       }
    }
    #[inline]
+   pub unsafe fn Dpl_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            13usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Dpl_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            13usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Pres(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(15usize, 1u8) as u32) }
    }
@@ -3396,6 +3424,28 @@ impl _LDT_ENTRY__bindgen_ty_1__bindgen_ty_2 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(15usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Pres_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            15usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Pres_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            15usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -3410,6 +3460,28 @@ impl _LDT_ENTRY__bindgen_ty_1__bindgen_ty_2 {
       }
    }
    #[inline]
+   pub unsafe fn LimitHi_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_LimitHi_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Sys(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(20usize, 1u8) as u32) }
    }
@@ -3418,6 +3490,28 @@ impl _LDT_ENTRY__bindgen_ty_1__bindgen_ty_2 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(20usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Sys_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            20usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Sys_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            20usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -3432,6 +3526,28 @@ impl _LDT_ENTRY__bindgen_ty_1__bindgen_ty_2 {
       }
    }
    #[inline]
+   pub unsafe fn Reserved_0_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            21usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_0_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            21usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Default_Big(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(22usize, 1u8) as u32) }
    }
@@ -3440,6 +3556,28 @@ impl _LDT_ENTRY__bindgen_ty_1__bindgen_ty_2 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(22usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Default_Big_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            22usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Default_Big_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            22usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -3454,6 +3592,28 @@ impl _LDT_ENTRY__bindgen_ty_1__bindgen_ty_2 {
       }
    }
    #[inline]
+   pub unsafe fn Granularity_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            23usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Granularity_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            23usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn BaseHi(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(24usize, 8u8) as u32) }
    }
@@ -3462,6 +3622,28 @@ impl _LDT_ENTRY__bindgen_ty_1__bindgen_ty_2 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(24usize, 8u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn BaseHi_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            24usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BaseHi_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            24usize,
+            8u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -3540,69 +3722,6 @@ impl Default for _LDT_ENTRY {
    }
 }
 pub type LDT_ENTRY = _LDT_ENTRY;
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct _WOW64_FLOATING_SAVE_AREA {
-   pub ControlWord: DWORD,
-   pub StatusWord: DWORD,
-   pub TagWord: DWORD,
-   pub ErrorOffset: DWORD,
-   pub ErrorSelector: DWORD,
-   pub DataOffset: DWORD,
-   pub DataSelector: DWORD,
-   pub RegisterArea: [BYTE; 80usize],
-   pub Cr0NpxState: DWORD,
-}
-impl Default for _WOW64_FLOATING_SAVE_AREA {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type WOW64_FLOATING_SAVE_AREA = _WOW64_FLOATING_SAVE_AREA;
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct _WOW64_CONTEXT {
-   pub ContextFlags: DWORD,
-   pub Dr0: DWORD,
-   pub Dr1: DWORD,
-   pub Dr2: DWORD,
-   pub Dr3: DWORD,
-   pub Dr6: DWORD,
-   pub Dr7: DWORD,
-   pub FloatSave: WOW64_FLOATING_SAVE_AREA,
-   pub SegGs: DWORD,
-   pub SegFs: DWORD,
-   pub SegEs: DWORD,
-   pub SegDs: DWORD,
-   pub Edi: DWORD,
-   pub Esi: DWORD,
-   pub Ebx: DWORD,
-   pub Edx: DWORD,
-   pub Ecx: DWORD,
-   pub Eax: DWORD,
-   pub Ebp: DWORD,
-   pub Eip: DWORD,
-   pub SegCs: DWORD,
-   pub EFlags: DWORD,
-   pub Esp: DWORD,
-   pub SegSs: DWORD,
-   pub ExtendedRegisters: [BYTE; 512usize],
-}
-impl Default for _WOW64_CONTEXT {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type WOW64_CONTEXT = _WOW64_CONTEXT;
-pub type PWOW64_CONTEXT = *mut WOW64_CONTEXT;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _EXCEPTION_RECORD {
@@ -4050,7 +4169,7 @@ impl Default for _JOB_SET_ARRAY {
 }
 pub type PJOB_SET_ARRAY = *mut _JOB_SET_ARRAY;
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct _EXCEPTION_REGISTRATION_RECORD {
    pub Next: *mut _EXCEPTION_REGISTRATION_RECORD,
    pub Handler: PEXCEPTION_ROUTINE,
@@ -4211,6 +4330,28 @@ impl _PROCESS_MITIGATION_ASLR_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnableBottomUpRandomization_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableBottomUpRandomization_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn EnableForceRelocateImages(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -4219,6 +4360,28 @@ impl _PROCESS_MITIGATION_ASLR_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn EnableForceRelocateImages_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableForceRelocateImages_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -4233,6 +4396,28 @@ impl _PROCESS_MITIGATION_ASLR_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnableHighEntropy_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableHighEntropy_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DisallowStrippedImages(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -4244,6 +4429,28 @@ impl _PROCESS_MITIGATION_ASLR_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DisallowStrippedImages_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DisallowStrippedImages_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 28u8) as u32) }
    }
@@ -4252,6 +4459,28 @@ impl _PROCESS_MITIGATION_ASLR_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 28u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            28u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            28u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -4338,6 +4567,28 @@ impl _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnableSehop_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableSehop_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -4346,6 +4597,28 @@ impl _PROCESS_MITIGATION_SEHOP_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -4414,6 +4687,28 @@ impl _PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY__bindgen_ty_1__bindgen_ty_1 
       }
    }
    #[inline]
+   pub unsafe fn RaiseExceptionOnInvalidHandleReference_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_RaiseExceptionOnInvalidHandleReference_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn HandleExceptionsPermanentlyEnabled(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -4425,6 +4720,28 @@ impl _PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY__bindgen_ty_1__bindgen_ty_1 
       }
    }
    #[inline]
+   pub unsafe fn HandleExceptionsPermanentlyEnabled_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HandleExceptionsPermanentlyEnabled_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
    }
@@ -4433,6 +4750,28 @@ impl _PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY__bindgen_ty_1__bindgen_ty_1 
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 30u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            30u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            30u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -4509,6 +4848,28 @@ impl _PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY__bindgen_ty_1__bindgen_ty_1 
       }
    }
    #[inline]
+   pub unsafe fn DisallowWin32kSystemCalls_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DisallowWin32kSystemCalls_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditDisallowWin32kSystemCalls(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -4520,20 +4881,132 @@ impl _PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY__bindgen_ty_1__bindgen_ty_1 
       }
    }
    #[inline]
+   pub unsafe fn AuditDisallowWin32kSystemCalls_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditDisallowWin32kSystemCalls_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
+   pub fn DisallowFsctlSystemCalls(&self) -> DWORD {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_DisallowFsctlSystemCalls(&mut self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(2usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DisallowFsctlSystemCalls_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DisallowFsctlSystemCalls_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
+   pub fn AuditDisallowFsctlSystemCalls(&self) -> DWORD {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_AuditDisallowFsctlSystemCalls(&mut self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AuditDisallowFsctlSystemCalls_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditDisallowFsctlSystemCalls_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 28u8) as u32) }
    }
    #[inline]
    pub fn set_ReservedFlags(&mut self, val: DWORD) {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(2usize, 30u8, val as u64)
+         self._bitfield_1.set(4usize, 28u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            28u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            28u8,
+            val as u64,
+         )
       }
    }
    #[inline]
    pub fn new_bitfield_1(
       DisallowWin32kSystemCalls: DWORD,
       AuditDisallowWin32kSystemCalls: DWORD,
+      DisallowFsctlSystemCalls: DWORD,
+      AuditDisallowFsctlSystemCalls: DWORD,
       ReservedFlags: DWORD,
    ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
       let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
@@ -4547,7 +5020,17 @@ impl _PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY__bindgen_ty_1__bindgen_ty_1 
             unsafe { ::core::mem::transmute(AuditDisallowWin32kSystemCalls) };
          AuditDisallowWin32kSystemCalls as u64
       });
-      __bindgen_bitfield_unit.set(2usize, 30u8, {
+      __bindgen_bitfield_unit.set(2usize, 1u8, {
+         let DisallowFsctlSystemCalls: u32 =
+            unsafe { ::core::mem::transmute(DisallowFsctlSystemCalls) };
+         DisallowFsctlSystemCalls as u64
+      });
+      __bindgen_bitfield_unit.set(3usize, 1u8, {
+         let AuditDisallowFsctlSystemCalls: u32 =
+            unsafe { ::core::mem::transmute(AuditDisallowFsctlSystemCalls) };
+         AuditDisallowFsctlSystemCalls as u64
+      });
+      __bindgen_bitfield_unit.set(4usize, 28u8, {
          let ReservedFlags: u32 = unsafe { ::core::mem::transmute(ReservedFlags) };
          ReservedFlags as u64
       });
@@ -4605,6 +5088,28 @@ impl _PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY__bindgen_ty_1__bindgen_t
       }
    }
    #[inline]
+   pub unsafe fn DisableExtensionPoints_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DisableExtensionPoints_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -4613,6 +5118,28 @@ impl _PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY__bindgen_ty_1__bindgen_t
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -4683,6 +5210,28 @@ impl _PROCESS_MITIGATION_DYNAMIC_CODE_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ProhibitDynamicCode_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProhibitDynamicCode_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AllowThreadOptOut(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -4691,6 +5240,28 @@ impl _PROCESS_MITIGATION_DYNAMIC_CODE_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AllowThreadOptOut_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AllowThreadOptOut_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -4705,6 +5276,28 @@ impl _PROCESS_MITIGATION_DYNAMIC_CODE_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn AllowRemoteDowngrade_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AllowRemoteDowngrade_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditProhibitDynamicCode(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -4716,6 +5309,28 @@ impl _PROCESS_MITIGATION_DYNAMIC_CODE_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn AuditProhibitDynamicCode_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditProhibitDynamicCode_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 28u8) as u32) }
    }
@@ -4724,6 +5339,28 @@ impl _PROCESS_MITIGATION_DYNAMIC_CODE_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 28u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            28u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            28u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -4808,6 +5445,28 @@ impl _PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnableControlFlowGuard_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableControlFlowGuard_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn EnableExportSuppression(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -4816,6 +5475,28 @@ impl _PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn EnableExportSuppression_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableExportSuppression_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -4830,6 +5511,28 @@ impl _PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn StrictMode_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_StrictMode_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn EnableXfg(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -4838,6 +5541,28 @@ impl _PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn EnableXfg_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableXfg_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -4852,6 +5577,28 @@ impl _PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnableXfgAuditMode_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableXfgAuditMode_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 27u8) as u32) }
    }
@@ -4860,6 +5607,28 @@ impl _PROCESS_MITIGATION_CONTROL_FLOW_GUARD_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 27u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            27u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            27u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -4951,6 +5720,28 @@ impl _PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn MicrosoftSignedOnly_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_MicrosoftSignedOnly_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn StoreSignedOnly(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -4959,6 +5750,28 @@ impl _PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn StoreSignedOnly_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_StoreSignedOnly_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -4973,6 +5786,28 @@ impl _PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn MitigationOptIn_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_MitigationOptIn_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditMicrosoftSignedOnly(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -4981,6 +5816,28 @@ impl _PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AuditMicrosoftSignedOnly_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditMicrosoftSignedOnly_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -4995,6 +5852,28 @@ impl _PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn AuditStoreSignedOnly_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditStoreSignedOnly_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 27u8) as u32) }
    }
@@ -5003,6 +5882,28 @@ impl _PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 27u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            27u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            27u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5092,6 +5993,28 @@ impl _PROCESS_MITIGATION_FONT_DISABLE_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DisableNonSystemFonts_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DisableNonSystemFonts_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditNonSystemFontLoading(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -5103,6 +6026,28 @@ impl _PROCESS_MITIGATION_FONT_DISABLE_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn AuditNonSystemFontLoading_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditNonSystemFontLoading_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
    }
@@ -5111,6 +6056,28 @@ impl _PROCESS_MITIGATION_FONT_DISABLE_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 30u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            30u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            30u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5185,6 +6152,28 @@ impl _PROCESS_MITIGATION_IMAGE_LOAD_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn NoRemoteImages_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NoRemoteImages_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn NoLowMandatoryLabelImages(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -5193,6 +6182,28 @@ impl _PROCESS_MITIGATION_IMAGE_LOAD_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn NoLowMandatoryLabelImages_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NoLowMandatoryLabelImages_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5207,6 +6218,28 @@ impl _PROCESS_MITIGATION_IMAGE_LOAD_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn PreferSystem32Images_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PreferSystem32Images_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditNoRemoteImages(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -5215,6 +6248,28 @@ impl _PROCESS_MITIGATION_IMAGE_LOAD_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AuditNoRemoteImages_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditNoRemoteImages_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5229,6 +6284,28 @@ impl _PROCESS_MITIGATION_IMAGE_LOAD_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn AuditNoLowMandatoryLabelImages_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditNoLowMandatoryLabelImages_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 27u8) as u32) }
    }
@@ -5237,6 +6314,28 @@ impl _PROCESS_MITIGATION_IMAGE_LOAD_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 27u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            27u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            27u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5327,6 +6426,28 @@ impl _PROCESS_MITIGATION_SYSTEM_CALL_FILTER_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn FilterId_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_FilterId_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 28u8) as u32) }
    }
@@ -5335,6 +6456,28 @@ impl _PROCESS_MITIGATION_SYSTEM_CALL_FILTER_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 28u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            28u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            28u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5404,6 +6547,28 @@ impl _PROCESS_MITIGATION_PAYLOAD_RESTRICTION_POLICY__bindgen_ty_1__bindgen_ty_1 
       }
    }
    #[inline]
+   pub unsafe fn EnableExportAddressFilter_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableExportAddressFilter_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditExportAddressFilter(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -5412,6 +6577,28 @@ impl _PROCESS_MITIGATION_PAYLOAD_RESTRICTION_POLICY__bindgen_ty_1__bindgen_ty_1 
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AuditExportAddressFilter_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditExportAddressFilter_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5426,6 +6613,28 @@ impl _PROCESS_MITIGATION_PAYLOAD_RESTRICTION_POLICY__bindgen_ty_1__bindgen_ty_1 
       }
    }
    #[inline]
+   pub unsafe fn EnableExportAddressFilterPlus_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableExportAddressFilterPlus_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditExportAddressFilterPlus(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -5434,6 +6643,28 @@ impl _PROCESS_MITIGATION_PAYLOAD_RESTRICTION_POLICY__bindgen_ty_1__bindgen_ty_1 
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AuditExportAddressFilterPlus_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditExportAddressFilterPlus_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5448,6 +6679,28 @@ impl _PROCESS_MITIGATION_PAYLOAD_RESTRICTION_POLICY__bindgen_ty_1__bindgen_ty_1 
       }
    }
    #[inline]
+   pub unsafe fn EnableImportAddressFilter_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableImportAddressFilter_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditImportAddressFilter(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u32) }
    }
@@ -5456,6 +6709,28 @@ impl _PROCESS_MITIGATION_PAYLOAD_RESTRICTION_POLICY__bindgen_ty_1__bindgen_ty_1 
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AuditImportAddressFilter_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditImportAddressFilter_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5470,6 +6745,28 @@ impl _PROCESS_MITIGATION_PAYLOAD_RESTRICTION_POLICY__bindgen_ty_1__bindgen_ty_1 
       }
    }
    #[inline]
+   pub unsafe fn EnableRopStackPivot_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableRopStackPivot_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditRopStackPivot(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u32) }
    }
@@ -5478,6 +6775,28 @@ impl _PROCESS_MITIGATION_PAYLOAD_RESTRICTION_POLICY__bindgen_ty_1__bindgen_ty_1 
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AuditRopStackPivot_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditRopStackPivot_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5492,6 +6811,28 @@ impl _PROCESS_MITIGATION_PAYLOAD_RESTRICTION_POLICY__bindgen_ty_1__bindgen_ty_1 
       }
    }
    #[inline]
+   pub unsafe fn EnableRopCallerCheck_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableRopCallerCheck_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditRopCallerCheck(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 1u8) as u32) }
    }
@@ -5500,6 +6841,28 @@ impl _PROCESS_MITIGATION_PAYLOAD_RESTRICTION_POLICY__bindgen_ty_1__bindgen_ty_1 
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(9usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AuditRopCallerCheck_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditRopCallerCheck_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5514,6 +6877,28 @@ impl _PROCESS_MITIGATION_PAYLOAD_RESTRICTION_POLICY__bindgen_ty_1__bindgen_ty_1 
       }
    }
    #[inline]
+   pub unsafe fn EnableRopSimExec_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableRopSimExec_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditRopSimExec(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(11usize, 1u8) as u32) }
    }
@@ -5525,6 +6910,28 @@ impl _PROCESS_MITIGATION_PAYLOAD_RESTRICTION_POLICY__bindgen_ty_1__bindgen_ty_1 
       }
    }
    #[inline]
+   pub unsafe fn AuditRopSimExec_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            11usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditRopSimExec_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            11usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(12usize, 20u8) as u32) }
    }
@@ -5533,6 +6940,28 @@ impl _PROCESS_MITIGATION_PAYLOAD_RESTRICTION_POLICY__bindgen_ty_1__bindgen_ty_1 
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(12usize, 20u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            20u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            20u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5663,6 +7092,28 @@ impl _PROCESS_MITIGATION_CHILD_PROCESS_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn NoChildProcessCreation_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NoChildProcessCreation_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditNoChildProcessCreation(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -5671,6 +7122,28 @@ impl _PROCESS_MITIGATION_CHILD_PROCESS_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AuditNoChildProcessCreation_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditNoChildProcessCreation_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5685,6 +7158,28 @@ impl _PROCESS_MITIGATION_CHILD_PROCESS_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn AllowSecureProcessCreation_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AllowSecureProcessCreation_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 29u8) as u32) }
    }
@@ -5693,6 +7188,28 @@ impl _PROCESS_MITIGATION_CHILD_PROCESS_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 29u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            29u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            29u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5775,6 +7292,28 @@ impl _PROCESS_MITIGATION_SIDE_CHANNEL_ISOLATION_POLICY__bindgen_ty_1__bindgen_ty
       }
    }
    #[inline]
+   pub unsafe fn SmtBranchTargetIsolation_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SmtBranchTargetIsolation_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IsolateSecurityDomain(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -5783,6 +7322,28 @@ impl _PROCESS_MITIGATION_SIDE_CHANNEL_ISOLATION_POLICY__bindgen_ty_1__bindgen_ty
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IsolateSecurityDomain_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsolateSecurityDomain_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5797,6 +7358,28 @@ impl _PROCESS_MITIGATION_SIDE_CHANNEL_ISOLATION_POLICY__bindgen_ty_1__bindgen_ty
       }
    }
    #[inline]
+   pub unsafe fn DisablePageCombine_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DisablePageCombine_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SpeculativeStoreBypassDisable(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -5805,6 +7388,28 @@ impl _PROCESS_MITIGATION_SIDE_CHANNEL_ISOLATION_POLICY__bindgen_ty_1__bindgen_ty
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SpeculativeStoreBypassDisable_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpeculativeStoreBypassDisable_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5819,6 +7424,28 @@ impl _PROCESS_MITIGATION_SIDE_CHANNEL_ISOLATION_POLICY__bindgen_ty_1__bindgen_ty
       }
    }
    #[inline]
+   pub unsafe fn RestrictCoreSharing_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_RestrictCoreSharing_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 27u8) as u32) }
    }
@@ -5827,6 +7454,28 @@ impl _PROCESS_MITIGATION_SIDE_CHANNEL_ISOLATION_POLICY__bindgen_ty_1__bindgen_ty
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 27u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            27u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            27u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5918,6 +7567,28 @@ impl _PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnableUserShadowStack_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableUserShadowStack_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditUserShadowStack(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -5926,6 +7597,28 @@ impl _PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AuditUserShadowStack_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditUserShadowStack_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5940,6 +7633,28 @@ impl _PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SetContextIpValidation_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SetContextIpValidation_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditSetContextIpValidation(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -5948,6 +7663,28 @@ impl _PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AuditSetContextIpValidation_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditSetContextIpValidation_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5962,6 +7699,28 @@ impl _PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnableUserShadowStackStrictMode_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableUserShadowStackStrictMode_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn BlockNonCetBinaries(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u32) }
    }
@@ -5970,6 +7729,28 @@ impl _PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn BlockNonCetBinaries_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BlockNonCetBinaries_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -5984,6 +7765,28 @@ impl _PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn BlockNonCetBinariesNonEhcont_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BlockNonCetBinariesNonEhcont_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditBlockNonCetBinaries(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u32) }
    }
@@ -5992,6 +7795,28 @@ impl _PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AuditBlockNonCetBinaries_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditBlockNonCetBinaries_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -6006,6 +7831,28 @@ impl _PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn CetDynamicApisOutOfProcOnly_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CetDynamicApisOutOfProcOnly_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SetContextIpValidationRelaxedMode(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 1u8) as u32) }
    }
@@ -6017,6 +7864,28 @@ impl _PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SetContextIpValidationRelaxedMode_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SetContextIpValidationRelaxedMode_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(10usize, 22u8) as u32) }
    }
@@ -6025,6 +7894,28 @@ impl _PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(10usize, 22u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            22u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            22u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -6145,6 +8036,28 @@ impl _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnablePointerAuthUserIp_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnablePointerAuthUserIp_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -6153,6 +8066,28 @@ impl _PROCESS_MITIGATION_USER_POINTER_AUTH_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -6222,6 +8157,28 @@ impl _PROCESS_MITIGATION_REDIRECTION_TRUST_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnforceRedirectionTrust_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnforceRedirectionTrust_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditRedirectionTrust(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -6233,6 +8190,28 @@ impl _PROCESS_MITIGATION_REDIRECTION_TRUST_POLICY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn AuditRedirectionTrust_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditRedirectionTrust_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
    }
@@ -6241,6 +8220,28 @@ impl _PROCESS_MITIGATION_REDIRECTION_TRUST_POLICY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 30u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            30u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            30u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -6383,7 +8384,9 @@ pub enum _JOBOBJECTINFOCLASS {
    JobObjectReserved25Information = 47,
    JobObjectReserved26Information = 48,
    JobObjectReserved27Information = 49,
-   MaxJobObjectInfoClass = 50,
+   JobObjectReserved28Information = 50,
+   JobObjectNetworkAccountingInformation = 51,
+   MaxJobObjectInfoClass = 52,
 }
 pub use self::_JOBOBJECTINFOCLASS as JOBOBJECTINFOCLASS;
 #[repr(i32)]
@@ -6418,7 +8421,8 @@ pub struct _XSTATE_CONFIGURATION {
    pub EnabledUserVisibleSupervisorFeatures: DWORD64,
    pub ExtendedFeatureDisableFeatures: DWORD64,
    pub AllNonLargeFeatureSize: DWORD,
-   pub Spare: DWORD,
+   pub MaxSveVectorLength: WORD,
+   pub Spare1: WORD,
 }
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -6447,6 +8451,28 @@ impl _XSTATE_CONFIGURATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn OptimizedSave_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_OptimizedSave_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn CompactionEnabled(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -6458,6 +8484,28 @@ impl _XSTATE_CONFIGURATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn CompactionEnabled_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CompactionEnabled_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ExtendedFeatureDisable(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 1u8) as u32) }
    }
@@ -6466,6 +8514,28 @@ impl _XSTATE_CONFIGURATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ExtendedFeatureDisable_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ExtendedFeatureDisable_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -6542,6 +8612,28 @@ impl MEM_EXTENDED_PARAMETER__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Type_raw(this: *const Self) -> DWORD64 {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Type_raw(this: *mut Self, val: DWORD64) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> DWORD64 {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 56u8) as u64) }
    }
@@ -6550,6 +8642,28 @@ impl MEM_EXTENDED_PARAMETER__bindgen_ty_1 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 56u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> DWORD64 {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            56u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: DWORD64) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            56u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -6603,7 +8717,7 @@ pub type FILE_ID_128 = _FILE_ID_128;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union _FILE_SEGMENT_ELEMENT {
-   pub Buffer: *mut cty::c_void,
+   pub Buffer: u64,
    pub Alignment: ULONGLONG,
 }
 impl Default for _FILE_SEGMENT_ELEMENT {
@@ -6843,7 +8957,10 @@ pub enum POWER_MONITOR_REQUEST_REASON {
    MonitorRequestReasonPdcSignalSensorsHumanPresence = 52,
    MonitorRequestReasonBatteryPreCritical = 53,
    MonitorRequestReasonUserInputTouch = 54,
-   MonitorRequestReasonMax = 55,
+   MonitorRequestReasonAusterityBatteryDrain = 55,
+   MonitorRequestReasonDozeRestrictedStandby = 56,
+   MonitorRequestReasonSmartRestrictedStandby = 57,
+   MonitorRequestReasonMax = 58,
 }
 #[repr(C, packed(2))]
 #[derive(Debug, Default, Copy, Clone)]
@@ -6888,9 +9005,9 @@ pub struct _IMAGE_DATA_DIRECTORY {
    pub Size: DWORD,
 }
 pub type IMAGE_DATA_DIRECTORY = _IMAGE_DATA_DIRECTORY;
-#[repr(C, packed(4))]
+#[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
-pub struct _IMAGE_OPTIONAL_HEADER64 {
+pub struct _IMAGE_OPTIONAL_HEADER {
    pub Magic: WORD,
    pub MajorLinkerVersion: BYTE,
    pub MinorLinkerVersion: BYTE,
@@ -6899,7 +9016,8 @@ pub struct _IMAGE_OPTIONAL_HEADER64 {
    pub SizeOfUninitializedData: DWORD,
    pub AddressOfEntryPoint: DWORD,
    pub BaseOfCode: DWORD,
-   pub ImageBase: ULONGLONG,
+   pub BaseOfData: DWORD,
+   pub ImageBase: DWORD,
    pub SectionAlignment: DWORD,
    pub FileAlignment: DWORD,
    pub MajorOperatingSystemVersion: WORD,
@@ -6914,24 +9032,24 @@ pub struct _IMAGE_OPTIONAL_HEADER64 {
    pub CheckSum: DWORD,
    pub Subsystem: WORD,
    pub DllCharacteristics: WORD,
-   pub SizeOfStackReserve: ULONGLONG,
-   pub SizeOfStackCommit: ULONGLONG,
-   pub SizeOfHeapReserve: ULONGLONG,
-   pub SizeOfHeapCommit: ULONGLONG,
+   pub SizeOfStackReserve: DWORD,
+   pub SizeOfStackCommit: DWORD,
+   pub SizeOfHeapReserve: DWORD,
+   pub SizeOfHeapCommit: DWORD,
    pub LoaderFlags: DWORD,
    pub NumberOfRvaAndSizes: DWORD,
    pub DataDirectory: [IMAGE_DATA_DIRECTORY; 16usize],
 }
-pub type IMAGE_OPTIONAL_HEADER64 = _IMAGE_OPTIONAL_HEADER64;
+pub type IMAGE_OPTIONAL_HEADER32 = _IMAGE_OPTIONAL_HEADER;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
-pub struct _IMAGE_NT_HEADERS64 {
+pub struct _IMAGE_NT_HEADERS {
    pub Signature: DWORD,
    pub FileHeader: IMAGE_FILE_HEADER,
-   pub OptionalHeader: IMAGE_OPTIONAL_HEADER64,
+   pub OptionalHeader: IMAGE_OPTIONAL_HEADER32,
 }
-pub type PIMAGE_NT_HEADERS64 = *mut _IMAGE_NT_HEADERS64;
-pub type PIMAGE_NT_HEADERS = PIMAGE_NT_HEADERS64;
+pub type PIMAGE_NT_HEADERS32 = *mut _IMAGE_NT_HEADERS;
+pub type PIMAGE_NT_HEADERS = PIMAGE_NT_HEADERS32;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _IMAGE_SECTION_HEADER {
@@ -7027,7 +9145,6 @@ impl Default for _IMAGE_THUNK_DATA64 {
    }
 }
 pub type IMAGE_THUNK_DATA64 = _IMAGE_THUNK_DATA64;
-pub type PIMAGE_THUNK_DATA64 = *mut IMAGE_THUNK_DATA64;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _IMAGE_THUNK_DATA32 {
@@ -7060,7 +9177,8 @@ impl Default for _IMAGE_THUNK_DATA32 {
    }
 }
 pub type IMAGE_THUNK_DATA32 = _IMAGE_THUNK_DATA32;
-pub type PIMAGE_THUNK_DATA = PIMAGE_THUNK_DATA64;
+pub type PIMAGE_THUNK_DATA32 = *mut IMAGE_THUNK_DATA32;
+pub type PIMAGE_THUNK_DATA = PIMAGE_THUNK_DATA32;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _IMAGE_DELAYLOAD_DESCRIPTOR {
@@ -7098,6 +9216,28 @@ impl _IMAGE_DELAYLOAD_DESCRIPTOR__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn RvaBased_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_RvaBased_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedAttributes(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -7106,6 +9246,28 @@ impl _IMAGE_DELAYLOAD_DESCRIPTOR__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedAttributes_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedAttributes_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -7172,142 +9334,28 @@ pub struct _IMAGE_RESOURCE_DATA_ENTRY {
    pub Reserved: DWORD,
 }
 pub type PIMAGE_RESOURCE_DATA_ENTRY = *mut _IMAGE_RESOURCE_DATA_ENTRY;
+pub type SLIST_ENTRY = _SINGLE_LIST_ENTRY;
+pub type PSLIST_ENTRY = *mut _SINGLE_LIST_ENTRY;
 #[repr(C)]
-#[derive(Copy, Clone)]
-pub struct _IMAGE_RUNTIME_FUNCTION_ENTRY {
-   pub BeginAddress: DWORD,
-   pub EndAddress: DWORD,
-   pub __bindgen_anon_1: _IMAGE_RUNTIME_FUNCTION_ENTRY__bindgen_ty_1,
-}
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub union _IMAGE_RUNTIME_FUNCTION_ENTRY__bindgen_ty_1 {
-   pub UnwindInfoAddress: DWORD,
-   pub UnwindData: DWORD,
-}
-impl Default for _IMAGE_RUNTIME_FUNCTION_ENTRY__bindgen_ty_1 {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-impl Default for _IMAGE_RUNTIME_FUNCTION_ENTRY {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-#[repr(C)]
-#[repr(align(16))]
-#[derive(Debug, Copy, Clone)]
-pub struct _SLIST_ENTRY {
-   pub Next: *mut _SLIST_ENTRY,
-}
-impl Default for _SLIST_ENTRY {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type PSLIST_ENTRY = *mut _SLIST_ENTRY;
-#[repr(C)]
-#[repr(align(16))]
 #[derive(Copy, Clone)]
 pub union _SLIST_HEADER {
-   pub __bindgen_anon_1: _SLIST_HEADER__bindgen_ty_1,
-   pub HeaderX64: _SLIST_HEADER__bindgen_ty_2,
-}
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct _SLIST_HEADER__bindgen_ty_1 {
    pub Alignment: ULONGLONG,
-   pub Region: ULONGLONG,
+   pub __bindgen_anon_1: _SLIST_HEADER__bindgen_ty_1,
 }
 #[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct _SLIST_HEADER__bindgen_ty_2 {
-   pub _bitfield_align_1: [u64; 0],
-   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 16usize]>,
+#[derive(Debug, Copy, Clone)]
+pub struct _SLIST_HEADER__bindgen_ty_1 {
+   pub Next: SLIST_ENTRY,
+   pub Depth: WORD,
+   pub CpuId: WORD,
 }
-impl _SLIST_HEADER__bindgen_ty_2 {
-   #[inline]
-   pub fn Depth(&self) -> ULONGLONG {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 16u8) as u64) }
-   }
-   #[inline]
-   pub fn set_Depth(&mut self, val: ULONGLONG) {
+impl Default for _SLIST_HEADER__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
-         self._bitfield_1.set(0usize, 16u8, val as u64)
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
       }
-   }
-   #[inline]
-   pub fn Sequence(&self) -> ULONGLONG {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 48u8) as u64) }
-   }
-   #[inline]
-   pub fn set_Sequence(&mut self, val: ULONGLONG) {
-      unsafe {
-         let val: u64 = ::core::mem::transmute(val);
-         self._bitfield_1.set(16usize, 48u8, val as u64)
-      }
-   }
-   #[inline]
-   pub fn Reserved(&self) -> ULONGLONG {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(64usize, 4u8) as u64) }
-   }
-   #[inline]
-   pub fn set_Reserved(&mut self, val: ULONGLONG) {
-      unsafe {
-         let val: u64 = ::core::mem::transmute(val);
-         self._bitfield_1.set(64usize, 4u8, val as u64)
-      }
-   }
-   #[inline]
-   pub fn NextEntry(&self) -> ULONGLONG {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(68usize, 60u8) as u64) }
-   }
-   #[inline]
-   pub fn set_NextEntry(&mut self, val: ULONGLONG) {
-      unsafe {
-         let val: u64 = ::core::mem::transmute(val);
-         self._bitfield_1.set(68usize, 60u8, val as u64)
-      }
-   }
-   #[inline]
-   pub fn new_bitfield_1(
-      Depth: ULONGLONG,
-      Sequence: ULONGLONG,
-      Reserved: ULONGLONG,
-      NextEntry: ULONGLONG,
-   ) -> __BindgenBitfieldUnit<[u8; 16usize]> {
-      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 16usize]> = Default::default();
-      __bindgen_bitfield_unit.set(0usize, 16u8, {
-         let Depth: u64 = unsafe { ::core::mem::transmute(Depth) };
-         Depth as u64
-      });
-      __bindgen_bitfield_unit.set(16usize, 48u8, {
-         let Sequence: u64 = unsafe { ::core::mem::transmute(Sequence) };
-         Sequence as u64
-      });
-      __bindgen_bitfield_unit.set(64usize, 4u8, {
-         let Reserved: u64 = unsafe { ::core::mem::transmute(Reserved) };
-         Reserved as u64
-      });
-      __bindgen_bitfield_unit.set(68usize, 60u8, {
-         let NextEntry: u64 = unsafe { ::core::mem::transmute(NextEntry) };
-         NextEntry as u64
-      });
-      __bindgen_bitfield_unit
    }
 }
 impl Default for _SLIST_HEADER {
@@ -7399,10 +9447,9 @@ pub enum _RTL_SYSTEM_GLOBAL_DATA_ID {
    GlobalDataIdLastSystemRITEventTickCount = 13,
    GlobalDataIdConsoleSharedDataFlags = 14,
    GlobalDataIdNtSystemRootDrive = 15,
-   GlobalDataIdQpcShift = 16,
-   GlobalDataIdQpcBypassEnabled = 17,
-   GlobalDataIdQpcData = 18,
-   GlobalDataIdQpcBias = 19,
+   GlobalDataIdQpcBypassEnabled = 16,
+   GlobalDataIdQpcData = 17,
+   GlobalDataIdQpcBias = 18,
 }
 pub use self::_RTL_SYSTEM_GLOBAL_DATA_ID as RTL_SYSTEM_GLOBAL_DATA_ID;
 #[repr(C)]
@@ -7481,9 +9528,10 @@ impl Default for _RTL_CONDITION_VARIABLE {
    }
 }
 pub type PRTL_CONDITION_VARIABLE = *mut _RTL_CONDITION_VARIABLE;
-pub type PAPCFUNC = ::core::option::Option<unsafe extern "C" fn(Parameter: ULONG_PTR)>;
-pub type PVECTORED_EXCEPTION_HANDLER =
-   ::core::option::Option<unsafe extern "C" fn(ExceptionInfo: *mut _EXCEPTION_POINTERS) -> LONG>;
+pub type PAPCFUNC = ::core::option::Option<unsafe extern "stdcall" fn(Parameter: ULONG_PTR)>;
+pub type PVECTORED_EXCEPTION_HANDLER = ::core::option::Option<
+   unsafe extern "stdcall" fn(ExceptionInfo: *mut _EXCEPTION_POINTERS) -> LONG,
+>;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -7495,11 +9543,12 @@ pub enum _HEAP_INFORMATION_CLASS {
 }
 pub use self::_HEAP_INFORMATION_CLASS as HEAP_INFORMATION_CLASS;
 pub type WAITORTIMERCALLBACKFUNC =
-   ::core::option::Option<unsafe extern "C" fn(arg1: PVOID, arg2: BOOLEAN)>;
-pub type WORKERCALLBACKFUNC = ::core::option::Option<unsafe extern "C" fn(arg1: PVOID)>;
+   ::core::option::Option<unsafe extern "stdcall" fn(arg1: PVOID, arg2: BOOLEAN)>;
+pub type WORKERCALLBACKFUNC = ::core::option::Option<unsafe extern "stdcall" fn(arg1: PVOID)>;
 pub type APC_CALLBACK_FUNCTION =
-   ::core::option::Option<unsafe extern "C" fn(arg1: DWORD, arg2: PVOID, arg3: PVOID)>;
-pub type PFLS_CALLBACK_FUNCTION = ::core::option::Option<unsafe extern "C" fn(lpFlsData: PVOID)>;
+   ::core::option::Option<unsafe extern "stdcall" fn(arg1: DWORD, arg2: PVOID, arg3: PVOID)>;
+pub type PFLS_CALLBACK_FUNCTION =
+   ::core::option::Option<unsafe extern "stdcall" fn(lpFlsData: PVOID)>;
 impl _ACTIVATION_CONTEXT_INFO_CLASS {
    pub const AssemblyDetailedInformationInActivationContxt: _ACTIVATION_CONTEXT_INFO_CLASS =
       _ACTIVATION_CONTEXT_INFO_CLASS::AssemblyDetailedInformationInActivationContext;
@@ -7676,7 +9725,7 @@ pub struct _TP_CALLBACK_INSTANCE {
 }
 pub type PTP_CALLBACK_INSTANCE = *mut _TP_CALLBACK_INSTANCE;
 pub type PTP_SIMPLE_CALLBACK =
-   ::core::option::Option<unsafe extern "C" fn(Instance: PTP_CALLBACK_INSTANCE, Context: PVOID)>;
+   ::core::option::Option<unsafe extern "stdcall" fn(arg1: PTP_CALLBACK_INSTANCE, arg2: PVOID)>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _TP_POOL {
@@ -7711,7 +9760,7 @@ pub struct _TP_CLEANUP_GROUP {
 }
 pub type PTP_CLEANUP_GROUP = *mut _TP_CLEANUP_GROUP;
 pub type PTP_CLEANUP_GROUP_CANCEL_CALLBACK =
-   ::core::option::Option<unsafe extern "C" fn(ObjectContext: PVOID, CleanupContext: PVOID)>;
+   ::core::option::Option<unsafe extern "stdcall" fn(arg1: PVOID, arg2: PVOID)>;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _TP_CALLBACK_ENVIRON_V3 {
@@ -7751,6 +9800,28 @@ impl _TP_CALLBACK_ENVIRON_V3__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn LongFunction_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_LongFunction_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Persistent(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -7762,6 +9833,28 @@ impl _TP_CALLBACK_ENVIRON_V3__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Persistent_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Persistent_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Private(&self) -> DWORD {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
    }
@@ -7770,6 +9863,28 @@ impl _TP_CALLBACK_ENVIRON_V3__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 30u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Private_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            30u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Private_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            30u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -7821,7 +9936,7 @@ pub struct _TP_WORK {
 }
 pub type PTP_WORK = *mut _TP_WORK;
 pub type PTP_WORK_CALLBACK = ::core::option::Option<
-   unsafe extern "C" fn(Instance: PTP_CALLBACK_INSTANCE, Context: PVOID, Work: PTP_WORK),
+   unsafe extern "stdcall" fn(arg1: PTP_CALLBACK_INSTANCE, arg2: PVOID, arg3: PTP_WORK),
 >;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -7830,7 +9945,7 @@ pub struct _TP_TIMER {
 }
 pub type PTP_TIMER = *mut _TP_TIMER;
 pub type PTP_TIMER_CALLBACK = ::core::option::Option<
-   unsafe extern "C" fn(Instance: PTP_CALLBACK_INSTANCE, Context: PVOID, Timer: PTP_TIMER),
+   unsafe extern "stdcall" fn(arg1: PTP_CALLBACK_INSTANCE, arg2: PVOID, arg3: PTP_TIMER),
 >;
 pub type TP_WAIT_RESULT = DWORD;
 #[repr(C)]
@@ -7840,11 +9955,11 @@ pub struct _TP_WAIT {
 }
 pub type PTP_WAIT = *mut _TP_WAIT;
 pub type PTP_WAIT_CALLBACK = ::core::option::Option<
-   unsafe extern "C" fn(
-      Instance: PTP_CALLBACK_INSTANCE,
-      Context: PVOID,
-      Wait: PTP_WAIT,
-      WaitResult: TP_WAIT_RESULT,
+   unsafe extern "stdcall" fn(
+      arg1: PTP_CALLBACK_INSTANCE,
+      arg2: PVOID,
+      arg3: PTP_WAIT,
+      arg4: TP_WAIT_RESULT,
    ),
 >;
 #[repr(C)]
@@ -7952,10 +10067,10 @@ pub struct tagSIZE {
 }
 pub type SIZE = tagSIZE;
 pub type PTHREAD_START_ROUTINE =
-   ::core::option::Option<unsafe extern "C" fn(lpThreadParameter: LPVOID) -> DWORD>;
+   ::core::option::Option<unsafe extern "stdcall" fn(lpThreadParameter: LPVOID) -> DWORD>;
 pub type LPTHREAD_START_ROUTINE = PTHREAD_START_ROUTINE;
 pub type PENCLAVE_ROUTINE =
-   ::core::option::Option<unsafe extern "C" fn(lpThreadParameter: LPVOID) -> LPVOID>;
+   ::core::option::Option<unsafe extern "stdcall" fn(lpThreadParameter: LPVOID) -> LPVOID>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _EXCEPTION_DEBUG_INFO {
@@ -7973,7 +10088,7 @@ impl Default for _EXCEPTION_DEBUG_INFO {
 }
 pub type EXCEPTION_DEBUG_INFO = _EXCEPTION_DEBUG_INFO;
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct _CREATE_THREAD_DEBUG_INFO {
    pub hThread: HANDLE,
    pub lpThreadLocalBase: LPVOID,
@@ -7990,7 +10105,7 @@ impl Default for _CREATE_THREAD_DEBUG_INFO {
 }
 pub type CREATE_THREAD_DEBUG_INFO = _CREATE_THREAD_DEBUG_INFO;
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct _CREATE_PROCESS_DEBUG_INFO {
    pub hFile: HANDLE,
    pub hProcess: HANDLE,
@@ -8175,7 +10290,7 @@ impl Default for tagACTCTX_SECTION_KEYED_DATA {
 }
 pub type PACTCTX_SECTION_KEYED_DATA = *mut tagACTCTX_SECTION_KEYED_DATA;
 pub type TIMERPROC = ::core::option::Option<
-   unsafe extern "C" fn(arg1: HWND, arg2: UINT, arg3: UINT_PTR, arg4: DWORD),
+   unsafe extern "stdcall" fn(arg1: HWND, arg2: UINT, arg3: UINT_PTR, arg4: DWORD),
 >;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -8371,7 +10486,7 @@ impl Default for _ICONINFO {
 pub type ICONINFO = _ICONINFO;
 pub type PICONINFO = *mut ICONINFO;
 pub type MONITORENUMPROC = ::core::option::Option<
-   unsafe extern "C" fn(arg1: HMONITOR, arg2: HDC, arg3: LPRECT, arg4: LPARAM) -> BOOL,
+   unsafe extern "stdcall" fn(arg1: HMONITOR, arg2: HDC, arg3: LPRECT, arg4: LPARAM) -> BOOL,
 >;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -8430,7 +10545,6 @@ pub struct tagMENUBARINFO {
    pub hwndMenu: HWND,
    pub _bitfield_align_1: [u32; 0],
    pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize]>,
-   pub __bindgen_padding_0: u32,
 }
 impl Default for tagMENUBARINFO {
    fn default() -> Self {
@@ -8454,6 +10568,28 @@ impl tagMENUBARINFO {
       }
    }
    #[inline]
+   pub unsafe fn fBarFocused_raw(this: *const Self) -> BOOL {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_fBarFocused_raw(this: *mut Self, val: BOOL) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn fFocused(&self) -> BOOL {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -8465,6 +10601,28 @@ impl tagMENUBARINFO {
       }
    }
    #[inline]
+   pub unsafe fn fFocused_raw(this: *const Self) -> BOOL {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_fFocused_raw(this: *mut Self, val: BOOL) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn fUnused(&self) -> BOOL {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
    }
@@ -8473,6 +10631,28 @@ impl tagMENUBARINFO {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 30u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn fUnused_raw(this: *const Self) -> BOOL {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            30u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_fUnused_raw(this: *mut Self, val: BOOL) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            30u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -8685,6 +10865,8 @@ impl Default for _WNODE_HEADER {
 pub type WNODE_HEADER = _WNODE_HEADER;
 pub type PWNODE_HEADER = *mut _WNODE_HEADER;
 pub type TRACEHANDLE = ULONG64;
+pub type PROCESSTRACE_HANDLE = ULONG64;
+pub type CONTROLTRACE_ID = ULONG64;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _EVENT_TRACE_HEADER {
@@ -8883,7 +11065,7 @@ impl Default for _QUAD {
 pub type QUAD = _QUAD;
 pub type PQUAD = *mut _QUAD;
 #[repr(C)]
-#[repr(align(16))]
+#[repr(align(8))]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _QUAD_PTR {
    pub DoNotUseThisField1: ULONG_PTR,
@@ -9044,6 +11226,28 @@ impl _RTL_BALANCED_NODE__bindgen_ty_2 {
       }
    }
    #[inline]
+   pub unsafe fn Red_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Red_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Balance(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 2u8) as u8) }
    }
@@ -9052,6 +11256,28 @@ impl _RTL_BALANCED_NODE__bindgen_ty_2 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 2u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Balance_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            2u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Balance_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            2u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -9404,7 +11630,7 @@ pub enum _KPROFILE_SOURCE {
 }
 pub use self::_KPROFILE_SOURCE as KPROFILE_SOURCE;
 pub type PLDR_INIT_ROUTINE = ::core::option::Option<
-   unsafe extern "C" fn(DllHandle: PVOID, Reason: ULONG, Context: PVOID) -> BOOLEAN,
+   unsafe extern "stdcall" fn(DllHandle: PVOID, Reason: ULONG, Context: PVOID) -> BOOLEAN,
 >;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -9620,6 +11846,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn PackagedBinary_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PackagedBinary_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn MarkedForRemoval(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -9628,6 +11876,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn MarkedForRemoval_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_MarkedForRemoval_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -9642,6 +11912,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ImageDll_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageDll_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn LoadNotificationsSent(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -9650,6 +11942,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn LoadNotificationsSent_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_LoadNotificationsSent_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -9664,6 +11978,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn TelemetryEntryProcessed_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_TelemetryEntryProcessed_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ProcessStaticImport(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u32) }
    }
@@ -9672,6 +12008,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ProcessStaticImport_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessStaticImport_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -9686,6 +12044,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn InLegacyLists_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_InLegacyLists_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn InIndexes(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u32) }
    }
@@ -9694,6 +12074,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn InIndexes_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_InIndexes_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -9708,6 +12110,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ShimDll_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ShimDll_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn InExceptionTable(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 1u8) as u32) }
    }
@@ -9716,6 +12140,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(9usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn InExceptionTable_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_InExceptionTable_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -9730,6 +12176,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ReservedFlags1_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags1_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn LoadInProgress(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(12usize, 1u8) as u32) }
    }
@@ -9738,6 +12206,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(12usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn LoadInProgress_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_LoadInProgress_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -9752,6 +12242,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn LoadConfigProcessed_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            13usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_LoadConfigProcessed_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            13usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn EntryProcessed(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(14usize, 1u8) as u32) }
    }
@@ -9760,6 +12272,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(14usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn EntryProcessed_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            14usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EntryProcessed_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            14usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -9774,6 +12308,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ProtectDelayLoad_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            15usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProtectDelayLoad_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            15usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags3(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 2u8) as u32) }
    }
@@ -9782,6 +12338,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(16usize, 2u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags3_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags3_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            2u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -9796,6 +12374,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DontCallForThreads_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            18usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DontCallForThreads_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            18usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ProcessAttachCalled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(19usize, 1u8) as u32) }
    }
@@ -9804,6 +12404,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(19usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ProcessAttachCalled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            19usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessAttachCalled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            19usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -9818,6 +12440,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ProcessAttachFailed_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            20usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessAttachFailed_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            20usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn CorDeferredValidate(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(21usize, 1u8) as u32) }
    }
@@ -9826,6 +12470,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(21usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn CorDeferredValidate_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            21usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CorDeferredValidate_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            21usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -9840,6 +12506,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn CorImage_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            22usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CorImage_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            22usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DontRelocate(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(23usize, 1u8) as u32) }
    }
@@ -9848,6 +12536,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(23usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DontRelocate_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            23usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DontRelocate_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            23usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -9862,6 +12572,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn CorILOnly_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            24usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CorILOnly_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            24usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ChpeImage(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(25usize, 1u8) as u32) }
    }
@@ -9870,6 +12602,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(25usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ChpeImage_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            25usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ChpeImage_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            25usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -9884,6 +12638,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ChpeEmulatorImage_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            26usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ChpeEmulatorImage_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            26usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags5(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(27usize, 1u8) as u32) }
    }
@@ -9892,6 +12668,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(27usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags5_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            27usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags5_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            27usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -9906,6 +12704,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Redirected_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            28usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Redirected_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            28usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags6(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(29usize, 2u8) as u32) }
    }
@@ -9917,6 +12737,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ReservedFlags6_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            29usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags6_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            29usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn CompatDatabaseProcessed(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(31usize, 1u8) as u32) }
    }
@@ -9925,6 +12767,28 @@ impl _LDR_DATA_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(31usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn CompatDatabaseProcessed_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            31usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CompatDatabaseProcessed_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            31usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -10102,9 +12966,9 @@ impl Default for _LDR_DATA_TABLE_ENTRY {
 pub type LDR_DATA_TABLE_ENTRY = _LDR_DATA_TABLE_ENTRY;
 pub type PLDR_DATA_TABLE_ENTRY = *mut _LDR_DATA_TABLE_ENTRY;
 pub type PLDR_IMPORT_MODULE_CALLBACK =
-   ::core::option::Option<unsafe extern "C" fn(Parameter: PVOID, ModuleName: PSTR)>;
+   ::core::option::Option<unsafe extern "stdcall" fn(Parameter: PVOID, ModuleName: PSTR)>;
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct _LDR_IMPORT_CALLBACK_INFO {
    pub ImportCallbackRoutine: PLDR_IMPORT_MODULE_CALLBACK,
    pub ImportCallbackParameter: PVOID,
@@ -10141,7 +13005,7 @@ impl Default for _LDR_SECTION_INFO {
 pub type LDR_SECTION_INFO = _LDR_SECTION_INFO;
 pub type PLDR_SECTION_INFO = *mut _LDR_SECTION_INFO;
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct _LDR_VERIFY_IMAGE_INFO {
    pub Size: ULONG,
    pub Flags: ULONG,
@@ -10218,7 +13082,7 @@ impl Default for _LDR_DLL_NOTIFICATION_DATA {
 pub type LDR_DLL_NOTIFICATION_DATA = _LDR_DLL_NOTIFICATION_DATA;
 pub type PLDR_DLL_NOTIFICATION_DATA = *mut _LDR_DLL_NOTIFICATION_DATA;
 pub type PLDR_DLL_NOTIFICATION_FUNCTION = ::core::option::Option<
-   unsafe extern "C" fn(
+   unsafe extern "stdcall" fn(
       NotificationReason: ULONG,
       NotificationData: PLDR_DLL_NOTIFICATION_DATA,
       Context: PVOID,
@@ -10303,6 +13167,28 @@ impl _PS_SYSTEM_DLL_INIT_BLOCK__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn CfgOverride_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CfgOverride_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -10311,6 +13197,28 @@ impl _PS_SYSTEM_DLL_INIT_BLOCK__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -10548,7 +13456,7 @@ impl Default for _RTL_PROCESS_MODULE_INFORMATION_EX {
 pub type RTL_PROCESS_MODULE_INFORMATION_EX = _RTL_PROCESS_MODULE_INFORMATION_EX;
 pub type PRTL_PROCESS_MODULE_INFORMATION_EX = *mut _RTL_PROCESS_MODULE_INFORMATION_EX;
 pub type PLDR_ENUM_CALLBACK = ::core::option::Option<
-   unsafe extern "C" fn(
+   unsafe extern "stdcall" fn(
       ModuleInformation: PLDR_DATA_TABLE_ENTRY,
       Parameter: PVOID,
       Stop: *mut BOOLEAN,
@@ -10610,10 +13518,11 @@ impl Default for _DELAYLOAD_INFO {
 pub type DELAYLOAD_INFO = _DELAYLOAD_INFO;
 pub type PDELAYLOAD_INFO = *mut _DELAYLOAD_INFO;
 pub type PDELAYLOAD_FAILURE_DLL_CALLBACK = ::core::option::Option<
-   unsafe extern "C" fn(NotificationReason: ULONG, DelayloadInfo: PDELAYLOAD_INFO) -> PVOID,
+   unsafe extern "stdcall" fn(NotificationReason: ULONG, DelayloadInfo: PDELAYLOAD_INFO) -> PVOID,
 >;
-pub type PDELAYLOAD_FAILURE_SYSTEM_ROUTINE =
-   ::core::option::Option<unsafe extern "C" fn(DllName: PCSTR, ProcedureName: PCSTR) -> PVOID>;
+pub type PDELAYLOAD_FAILURE_SYSTEM_ROUTINE = ::core::option::Option<
+   unsafe extern "stdcall" fn(DllName: PCSTR, ProcedureName: PCSTR) -> PVOID,
+>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _LDR_SOFTWARE_ENCLAVE {
@@ -10872,7 +13781,7 @@ impl Default for _TIMER_BASIC_INFORMATION {
 pub type TIMER_BASIC_INFORMATION = _TIMER_BASIC_INFORMATION;
 pub type PTIMER_BASIC_INFORMATION = *mut _TIMER_BASIC_INFORMATION;
 pub type PTIMER_APC_ROUTINE = ::core::option::Option<
-   unsafe extern "C" fn(TimerContext: PVOID, TimerLowValue: ULONG, TimerHighValue: LONG),
+   unsafe extern "stdcall" fn(TimerContext: PVOID, TimerLowValue: ULONG, TimerHighValue: LONG),
 >;
 #[repr(i32)]
 #[non_exhaustive]
@@ -12761,9 +15670,9 @@ pub struct _SYSTEM_NUMA_INFORMATION {
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union _SYSTEM_NUMA_INFORMATION__bindgen_ty_1 {
-   pub ActiveProcessorsGroupAffinity: [GROUP_AFFINITY; 64usize],
-   pub AvailableMemory: [ULONGLONG; 64usize],
-   pub Pad: [ULONGLONG; 128usize],
+   pub ActiveProcessorsGroupAffinity: [GROUP_AFFINITY; 16usize],
+   pub AvailableMemory: [ULONGLONG; 16usize],
+   pub Pad: [ULONGLONG; 32usize],
 }
 impl Default for _SYSTEM_NUMA_INFORMATION__bindgen_ty_1 {
    fn default() -> Self {
@@ -12878,20 +15787,42 @@ impl Default for _SYSTEM_BIGPOOL_ENTRY__bindgen_ty_1 {
 impl _SYSTEM_BIGPOOL_ENTRY__bindgen_ty_1 {
    #[inline]
    pub fn NonPaged(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_NonPaged(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(0usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn NonPaged_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NonPaged_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
    pub fn new_bitfield_1(NonPaged: ULONG_PTR) -> __BindgenBitfieldUnit<[u8; 1usize]> {
       let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 1usize]> = Default::default();
       __bindgen_bitfield_unit.set(0usize, 1u8, {
-         let NonPaged: u64 = unsafe { ::core::mem::transmute(NonPaged) };
+         let NonPaged: u32 = unsafe { ::core::mem::transmute(NonPaged) };
          NonPaged as u64
       });
       __bindgen_bitfield_unit
@@ -13041,7 +15972,7 @@ pub enum _WATCHDOG_HANDLER_ACTION {
 }
 pub use self::_WATCHDOG_HANDLER_ACTION as WATCHDOG_HANDLER_ACTION;
 pub type PSYSTEM_WATCHDOG_HANDLER = ::core::option::Option<
-   unsafe extern "C" fn(
+   unsafe extern "stdcall" fn(
       Action: WATCHDOG_HANDLER_ACTION,
       Context: PVOID,
       DataValue: PULONG,
@@ -13049,7 +15980,7 @@ pub type PSYSTEM_WATCHDOG_HANDLER = ::core::option::Option<
    ) -> NTSTATUS,
 >;
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct _SYSTEM_WATCHDOG_HANDLER_INFORMATION {
    pub WdHandler: PSYSTEM_WATCHDOG_HANDLER,
    pub Context: PVOID,
@@ -13335,6 +16266,28 @@ impl _SYSTEM_BOOT_ENVIRONMENT_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DbgMenuOsSelection_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 3usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgMenuOsSelection_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 3usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DbgHiberBoot(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u64) }
    }
@@ -13343,6 +16296,28 @@ impl _SYSTEM_BOOT_ENVIRONMENT_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DbgHiberBoot_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 3usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgHiberBoot_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 3usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -13357,6 +16332,28 @@ impl _SYSTEM_BOOT_ENVIRONMENT_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DbgSoftBoot_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 3usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgSoftBoot_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 3usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DbgMeasuredLaunch(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u64) }
    }
@@ -13365,6 +16362,28 @@ impl _SYSTEM_BOOT_ENVIRONMENT_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DbgMeasuredLaunch_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 3usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgMeasuredLaunch_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 3usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -13379,6 +16398,28 @@ impl _SYSTEM_BOOT_ENVIRONMENT_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DbgMeasuredLaunchCapable_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 3usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgMeasuredLaunchCapable_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 3usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DbgSystemHiveReplace(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u64) }
    }
@@ -13387,6 +16428,28 @@ impl _SYSTEM_BOOT_ENVIRONMENT_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DbgSystemHiveReplace_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 3usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgSystemHiveReplace_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 3usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -13401,6 +16464,28 @@ impl _SYSTEM_BOOT_ENVIRONMENT_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DbgMeasuredLaunchSmmProtections_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 3usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgMeasuredLaunchSmmProtections_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 3usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DbgMeasuredLaunchSmmLevel(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 7u8) as u64) }
    }
@@ -13409,6 +16494,28 @@ impl _SYSTEM_BOOT_ENVIRONMENT_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 7u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DbgMeasuredLaunchSmmLevel_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 3usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            7u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgMeasuredLaunchSmmLevel_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 3usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            7u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -13423,6 +16530,28 @@ impl _SYSTEM_BOOT_ENVIRONMENT_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DbgBugCheckRecovery_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 3usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            14usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgBugCheckRecovery_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 3usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            14usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DbgFASR(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(15usize, 1u8) as u64) }
    }
@@ -13434,6 +16563,28 @@ impl _SYSTEM_BOOT_ENVIRONMENT_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DbgFASR_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 3usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            15usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgFASR_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 3usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            15usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DbgUseCachedBcd(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 1u8) as u64) }
    }
@@ -13442,6 +16593,28 @@ impl _SYSTEM_BOOT_ENVIRONMENT_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(16usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DbgUseCachedBcd_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 3usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgUseCachedBcd_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 3usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -13647,7 +16820,7 @@ pub struct _SYSTEM_VERIFIER_INFORMATION_EX {
    pub PreviousBucketName: UNICODE_STRING,
    pub IrpCancelTimeoutMsec: ULONG,
    pub VerifierExtensionEnabled: ULONG,
-   pub Reserved: [ULONG; 1usize],
+   pub Reserved: [ULONG; 3usize],
 }
 impl Default for _SYSTEM_VERIFIER_INFORMATION_EX {
    fn default() -> Self {
@@ -13877,6 +17050,28 @@ impl _SM_STATS_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DetailLevel(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 8u8) as u32) }
    }
@@ -13888,6 +17083,28 @@ impl _SM_STATS_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn DetailLevel_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DetailLevel_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn StoreId(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 16u8) as u32) }
    }
@@ -13896,6 +17113,28 @@ impl _SM_STATS_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(16usize, 16u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn StoreId_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            16u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_StoreId_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            16u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14054,6 +17293,28 @@ impl _ST_STATS {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Level(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 4u8) as u32) }
    }
@@ -14062,6 +17323,28 @@ impl _ST_STATS {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Level_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Level_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14076,6 +17359,28 @@ impl _ST_STATS {
       }
    }
    #[inline]
+   pub unsafe fn StoreType_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_StoreType_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn NoDuplication(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 1u8) as u32) }
    }
@@ -14084,6 +17389,28 @@ impl _ST_STATS {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(16usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn NoDuplication_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NoDuplication_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14098,6 +17425,28 @@ impl _ST_STATS {
       }
    }
    #[inline]
+   pub unsafe fn NoCompression_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            17usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NoCompression_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            17usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn EncryptionStrength(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(18usize, 12u8) as u32) }
    }
@@ -14106,6 +17455,28 @@ impl _ST_STATS {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(18usize, 12u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn EncryptionStrength_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            18usize,
+            12u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EncryptionStrength_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            18usize,
+            12u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14120,6 +17491,28 @@ impl _ST_STATS {
       }
    }
    #[inline]
+   pub unsafe fn VirtualRegions_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            30usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_VirtualRegions_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            30usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare0(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(31usize, 1u8) as u32) }
    }
@@ -14128,6 +17521,28 @@ impl _ST_STATS {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(31usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare0_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            31usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare0_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            31usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14222,6 +17637,28 @@ impl _SM_STORE_BASIC_PARAMS__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn StoreType_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_StoreType_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn NoDuplication(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 1u8) as u32) }
    }
@@ -14230,6 +17667,28 @@ impl _SM_STORE_BASIC_PARAMS__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn NoDuplication_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NoDuplication_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14244,6 +17703,28 @@ impl _SM_STORE_BASIC_PARAMS__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn FailNoCompression_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_FailNoCompression_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn NoCompression(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(10usize, 1u8) as u32) }
    }
@@ -14252,6 +17733,28 @@ impl _SM_STORE_BASIC_PARAMS__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(10usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn NoCompression_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NoCompression_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14266,6 +17769,28 @@ impl _SM_STORE_BASIC_PARAMS__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn NoEncryption_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            11usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NoEncryption_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            11usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn NoEvictOnAdd(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(12usize, 1u8) as u32) }
    }
@@ -14274,6 +17799,28 @@ impl _SM_STORE_BASIC_PARAMS__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(12usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn NoEvictOnAdd_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NoEvictOnAdd_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14288,6 +17835,28 @@ impl _SM_STORE_BASIC_PARAMS__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn PerformsFileIo_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            13usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PerformsFileIo_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            13usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn VdlNotSet(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(14usize, 1u8) as u32) }
    }
@@ -14296,6 +17865,28 @@ impl _SM_STORE_BASIC_PARAMS__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(14usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn VdlNotSet_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            14usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_VdlNotSet_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            14usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14310,6 +17901,28 @@ impl _SM_STORE_BASIC_PARAMS__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn UseIntermediateAddBuffer_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            15usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_UseIntermediateAddBuffer_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            15usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn CompressNoHuff(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 1u8) as u32) }
    }
@@ -14318,6 +17931,28 @@ impl _SM_STORE_BASIC_PARAMS__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(16usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn CompressNoHuff_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CompressNoHuff_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14332,6 +17967,28 @@ impl _SM_STORE_BASIC_PARAMS__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn LockActiveRegions_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            17usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_LockActiveRegions_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            17usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn VirtualRegions(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(18usize, 1u8) as u32) }
    }
@@ -14343,6 +18000,28 @@ impl _SM_STORE_BASIC_PARAMS__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn VirtualRegions_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            18usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_VirtualRegions_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            18usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(19usize, 13u8) as u32) }
    }
@@ -14351,6 +18030,28 @@ impl _SM_STORE_BASIC_PARAMS__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(19usize, 13u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            19usize,
+            13u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            19usize,
+            13u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14547,6 +18248,28 @@ impl _SM_CREATE_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AcquireReference(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 1u8) as u32) }
    }
@@ -14555,6 +18278,28 @@ impl _SM_CREATE_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AcquireReference_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AcquireReference_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14569,6 +18314,28 @@ impl _SM_CREATE_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn KeyedStore_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KeyedStore_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(10usize, 22u8) as u32) }
    }
@@ -14577,6 +18344,28 @@ impl _SM_CREATE_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(10usize, 22u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            22u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            22u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14628,6 +18417,28 @@ impl _SM_DELETE_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 24u8) as u32) }
    }
@@ -14636,6 +18447,28 @@ impl _SM_DELETE_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 24u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            24u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            24u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14674,6 +18507,28 @@ impl _SM_STORE_LIST_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn StoreCount(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 8u8) as u32) }
    }
@@ -14682,6 +18537,28 @@ impl _SM_STORE_LIST_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 8u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn StoreCount_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_StoreCount_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            8u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14696,6 +18573,28 @@ impl _SM_STORE_LIST_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn ExtendedRequest_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ExtendedRequest_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(17usize, 15u8) as u32) }
    }
@@ -14704,6 +18603,28 @@ impl _SM_STORE_LIST_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(17usize, 15u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            17usize,
+            15u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            17usize,
+            15u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14772,6 +18693,28 @@ impl _SMC_CACHE_LIST_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn CacheCount(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 8u8) as u32) }
    }
@@ -14783,6 +18726,28 @@ impl _SMC_CACHE_LIST_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn CacheCount_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CacheCount_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 16u8) as u32) }
    }
@@ -14791,6 +18756,28 @@ impl _SMC_CACHE_LIST_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(16usize, 16u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            16u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            16u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14840,6 +18827,28 @@ impl _SMC_CACHE_PARAMETERS {
       }
    }
    #[inline]
+   pub unsafe fn PerformsFileIo_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PerformsFileIo_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn VdlNotSet(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -14851,6 +18860,28 @@ impl _SMC_CACHE_PARAMETERS {
       }
    }
    #[inline]
+   pub unsafe fn VdlNotSet_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_VdlNotSet_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
    }
@@ -14859,6 +18890,28 @@ impl _SMC_CACHE_PARAMETERS {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 30u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            30u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            30u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14932,6 +18985,28 @@ impl _SMC_CACHE_CREATE_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 24u8) as u32) }
    }
@@ -14940,6 +19015,28 @@ impl _SMC_CACHE_CREATE_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 24u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            24u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            24u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -14978,6 +19075,28 @@ impl _SMC_CACHE_DELETE_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 24u8) as u32) }
    }
@@ -14986,6 +19105,28 @@ impl _SMC_CACHE_DELETE_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 24u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            24u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            24u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -15045,6 +19186,28 @@ impl _SMC_STORE_CREATE_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 24u8) as u32) }
    }
@@ -15053,6 +19216,28 @@ impl _SMC_STORE_CREATE_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 24u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            24u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            24u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -15102,6 +19287,28 @@ impl _SMC_STORE_DELETE_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 24u8) as u32) }
    }
@@ -15110,6 +19317,28 @@ impl _SMC_STORE_DELETE_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 24u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            24u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            24u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -15164,6 +19393,28 @@ impl _SMC_CACHE_STATS {
       }
    }
    #[inline]
+   pub unsafe fn FileCount_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            6u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_FileCount_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            6u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn PerformsFileIo(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(6usize, 1u8) as u32) }
    }
@@ -15175,6 +19426,28 @@ impl _SMC_CACHE_STATS {
       }
    }
    #[inline]
+   pub unsafe fn PerformsFileIo_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PerformsFileIo_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 25u8) as u32) }
    }
@@ -15183,6 +19456,28 @@ impl _SMC_CACHE_STATS {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 25u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            25u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            25u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -15239,6 +19534,28 @@ impl _SMC_CACHE_STATS_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn NoFilePath(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 1u8) as u32) }
    }
@@ -15250,6 +19567,28 @@ impl _SMC_CACHE_STATS_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn NoFilePath_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NoFilePath_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 23u8) as u32) }
    }
@@ -15258,6 +19597,28 @@ impl _SMC_CACHE_STATS_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(9usize, 23u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            23u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            23u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -15329,6 +19690,28 @@ impl _SM_REGISTRATION_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 24u8) as u32) }
    }
@@ -15337,6 +19720,28 @@ impl _SM_REGISTRATION_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 24u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            24u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            24u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -15386,6 +19791,28 @@ impl _SM_STORE_RESIZE_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AddRegions(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 1u8) as u32) }
    }
@@ -15397,6 +19824,28 @@ impl _SM_STORE_RESIZE_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn AddRegions_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AddRegions_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 23u8) as u32) }
    }
@@ -15405,6 +19854,28 @@ impl _SM_STORE_RESIZE_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(9usize, 23u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            23u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            23u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -15463,6 +19934,28 @@ impl _SMC_STORE_RESIZE_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AddRegions(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 1u8) as u32) }
    }
@@ -15474,6 +19967,28 @@ impl _SMC_STORE_RESIZE_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn AddRegions_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AddRegions_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 23u8) as u32) }
    }
@@ -15482,6 +19997,28 @@ impl _SMC_STORE_RESIZE_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(9usize, 23u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            23u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            23u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -15538,6 +20075,28 @@ impl _SM_CONFIG_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 16u8) as u32) }
    }
@@ -15549,6 +20108,28 @@ impl _SM_CONFIG_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            16u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            16u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ConfigType(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(24usize, 8u8) as u32) }
    }
@@ -15557,6 +20138,28 @@ impl _SM_CONFIG_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(24usize, 8u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ConfigType_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            24usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ConfigType_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            24usize,
+            8u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -15612,6 +20215,28 @@ impl _SM_STORE_HIGH_MEM_PRIORITY_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SetHighMemoryPriority(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 1u8) as u32) }
    }
@@ -15623,6 +20248,28 @@ impl _SM_STORE_HIGH_MEM_PRIORITY_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn SetHighMemoryPriority_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SetHighMemoryPriority_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 23u8) as u32) }
    }
@@ -15631,6 +20278,28 @@ impl _SM_STORE_HIGH_MEM_PRIORITY_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(9usize, 23u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            23u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            23u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -15677,6 +20346,28 @@ impl _SM_SYSTEM_STORE_TRIM_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 24u8) as u32) }
    }
@@ -15685,6 +20376,28 @@ impl _SM_SYSTEM_STORE_TRIM_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 24u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            24u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            24u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -15727,6 +20440,28 @@ impl _SM_MEM_COMPRESSION_INFO_REQUEST {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 24u8) as u32) }
    }
@@ -15735,6 +20470,28 @@ impl _SM_MEM_COMPRESSION_INFO_REQUEST {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 24u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            24u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            24u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -15984,6 +20741,28 @@ impl _SYSTEM_ACPI_AUDIT_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn SameRsdt_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SameRsdt_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SlicPresent(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -15995,6 +20774,28 @@ impl _SYSTEM_ACPI_AUDIT_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn SlicPresent_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SlicPresent_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SlicDifferent(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 1u8) as u32) }
    }
@@ -16003,6 +20804,28 @@ impl _SYSTEM_ACPI_AUDIT_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SlicDifferent_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SlicDifferent_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -16069,6 +20892,28 @@ impl _QUERY_PERFORMANCE_COUNTER_FLAGS__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn KernelTransition_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KernelTransition_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -16077,6 +20922,28 @@ impl _QUERY_PERFORMANCE_COUNTER_FLAGS__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -16189,7 +21056,7 @@ pub type PMEMORY_SCRUB_INFORMATION = *mut _MEMORY_SCRUB_INFORMATION;
 #[derive(Copy, Clone)]
 pub union _SYSTEM_BAD_PAGE_INFORMATION {
    pub _bitfield_align_1: [u8; 0],
-   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 8usize]>,
+   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize]>,
 }
 impl Default for _SYSTEM_BAD_PAGE_INFORMATION {
    fn default() -> Self {
@@ -16202,71 +21069,159 @@ impl Default for _SYSTEM_BAD_PAGE_INFORMATION {
 }
 impl _SYSTEM_BAD_PAGE_INFORMATION {
    #[inline]
-   pub fn PhysicalPageNumber(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 52u8) as u64) }
+   pub fn PhysicalPageNumber(&self) -> ULONG {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 20u8) as u32) }
    }
    #[inline]
-   pub fn set_PhysicalPageNumber(&mut self, val: ULONG_PTR) {
+   pub fn set_PhysicalPageNumber(&mut self, val: ULONG) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
-         self._bitfield_1.set(0usize, 52u8, val as u64)
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(0usize, 20u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn PhysicalPageNumber_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            20u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PhysicalPageNumber_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            20u8,
+            val as u64,
+         )
       }
    }
    #[inline]
    pub fn Reserved(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(52usize, 10u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(20usize, 10u8) as u32) }
    }
    #[inline]
    pub fn set_Reserved(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
-         self._bitfield_1.set(52usize, 10u8, val as u64)
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(20usize, 10u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            20usize,
+            10u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            20usize,
+            10u8,
+            val as u64,
+         )
       }
    }
    #[inline]
    pub fn Pending(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(62usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(30usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_Pending(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
-         self._bitfield_1.set(62usize, 1u8, val as u64)
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(30usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Pending_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            30usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Pending_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            30usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
    pub fn Poisoned(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(63usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(31usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_Poisoned(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
-         self._bitfield_1.set(63usize, 1u8, val as u64)
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(31usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Poisoned_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            31usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Poisoned_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            31usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
    pub fn new_bitfield_1(
-      PhysicalPageNumber: ULONG_PTR,
+      PhysicalPageNumber: ULONG,
       Reserved: ULONG_PTR,
       Pending: ULONG_PTR,
       Poisoned: ULONG_PTR,
-   ) -> __BindgenBitfieldUnit<[u8; 8usize]> {
-      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 8usize]> = Default::default();
-      __bindgen_bitfield_unit.set(0usize, 52u8, {
-         let PhysicalPageNumber: u64 = unsafe { ::core::mem::transmute(PhysicalPageNumber) };
+   ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
+      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
+      __bindgen_bitfield_unit.set(0usize, 20u8, {
+         let PhysicalPageNumber: u32 = unsafe { ::core::mem::transmute(PhysicalPageNumber) };
          PhysicalPageNumber as u64
       });
-      __bindgen_bitfield_unit.set(52usize, 10u8, {
-         let Reserved: u64 = unsafe { ::core::mem::transmute(Reserved) };
+      __bindgen_bitfield_unit.set(20usize, 10u8, {
+         let Reserved: u32 = unsafe { ::core::mem::transmute(Reserved) };
          Reserved as u64
       });
-      __bindgen_bitfield_unit.set(62usize, 1u8, {
-         let Pending: u64 = unsafe { ::core::mem::transmute(Pending) };
+      __bindgen_bitfield_unit.set(30usize, 1u8, {
+         let Pending: u32 = unsafe { ::core::mem::transmute(Pending) };
          Pending as u64
       });
-      __bindgen_bitfield_unit.set(63usize, 1u8, {
-         let Poisoned: u64 = unsafe { ::core::mem::transmute(Poisoned) };
+      __bindgen_bitfield_unit.set(31usize, 1u8, {
+         let Poisoned: u32 = unsafe { ::core::mem::transmute(Poisoned) };
          Poisoned as u64
       });
       __bindgen_bitfield_unit
@@ -16410,11 +21365,11 @@ impl Default for _MEMORY_COMBINE_INFORMATION_EX2 {
 pub type MEMORY_COMBINE_INFORMATION_EX2 = _MEMORY_COMBINE_INFORMATION_EX2;
 pub type PMEMORY_COMBINE_INFORMATION_EX2 = *mut _MEMORY_COMBINE_INFORMATION_EX2;
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct _SYSTEM_ENTROPY_TIMING_INFORMATION {
-   pub EntropyRoutine: ::core::option::Option<unsafe extern "C" fn(arg1: PVOID, arg2: ULONG)>,
+   pub EntropyRoutine: ::core::option::Option<unsafe extern "stdcall" fn(arg1: PVOID, arg2: ULONG)>,
    pub InitializationRoutine:
-      ::core::option::Option<unsafe extern "C" fn(arg1: PVOID, arg2: ULONG, arg3: PVOID)>,
+      ::core::option::Option<unsafe extern "stdcall" fn(arg1: PVOID, arg2: ULONG, arg3: PVOID)>,
    pub InitializationContext: PVOID,
 }
 impl Default for _SYSTEM_ENTROPY_TIMING_INFORMATION {
@@ -16447,6 +21402,28 @@ impl _SYSTEM_CONSOLE_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn DriverLoaded_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DriverLoaded_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -16455,6 +21432,28 @@ impl _SYSTEM_CONSOLE_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -16739,6 +21738,28 @@ impl _ENERGY_STATE_DURATION__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Duration_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Duration_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            31u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IsInState(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(31usize, 1u8) as u32) }
    }
@@ -16747,6 +21768,28 @@ impl _ENERGY_STATE_DURATION__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(31usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IsInState_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            31usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsInState_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            31usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -17019,6 +22062,28 @@ impl _SYSTEM_PROCESS_INFORMATION_EXTENSION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn HasStrongId_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HasStrongId_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Classification(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 4u8) as u32) }
    }
@@ -17027,6 +22092,28 @@ impl _SYSTEM_PROCESS_INFORMATION_EXTENSION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Classification_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Classification_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -17041,6 +22128,28 @@ impl _SYSTEM_PROCESS_INFORMATION_EXTENSION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn BackgroundActivityModerated_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BackgroundActivityModerated_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(6usize, 26u8) as u32) }
    }
@@ -17049,6 +22158,28 @@ impl _SYSTEM_PROCESS_INFORMATION_EXTENSION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(6usize, 26u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            26u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            26u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -17340,6 +22471,28 @@ impl _SYSTEM_ISOLATED_USER_MODE_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn SecureKernelRunning_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SecureKernelRunning_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn HvciEnabled(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
    }
@@ -17348,6 +22501,28 @@ impl _SYSTEM_ISOLATED_USER_MODE_INFORMATION {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn HvciEnabled_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HvciEnabled_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -17362,6 +22537,28 @@ impl _SYSTEM_ISOLATED_USER_MODE_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn HvciStrictMode_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HvciStrictMode_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DebugEnabled(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u8) }
    }
@@ -17370,6 +22567,28 @@ impl _SYSTEM_ISOLATED_USER_MODE_INFORMATION {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DebugEnabled_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DebugEnabled_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -17384,6 +22603,28 @@ impl _SYSTEM_ISOLATED_USER_MODE_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn FirmwarePageProtection_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_FirmwarePageProtection_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn EncryptionKeyAvailable(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u8) }
    }
@@ -17392,6 +22633,28 @@ impl _SYSTEM_ISOLATED_USER_MODE_INFORMATION {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn EncryptionKeyAvailable_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EncryptionKeyAvailable_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -17406,6 +22669,28 @@ impl _SYSTEM_ISOLATED_USER_MODE_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn SpareFlags_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            2u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpareFlags_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn TrustletRunning(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 1u8) as u8) }
    }
@@ -17414,6 +22699,28 @@ impl _SYSTEM_ISOLATED_USER_MODE_INFORMATION {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn TrustletRunning_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_TrustletRunning_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -17428,6 +22735,28 @@ impl _SYSTEM_ISOLATED_USER_MODE_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn HvciDisableAllowed_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HvciDisableAllowed_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn HardwareEnforcedVbs(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(10usize, 1u8) as u8) }
    }
@@ -17436,6 +22765,28 @@ impl _SYSTEM_ISOLATED_USER_MODE_INFORMATION {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(10usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn HardwareEnforcedVbs_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HardwareEnforcedVbs_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -17450,6 +22801,28 @@ impl _SYSTEM_ISOLATED_USER_MODE_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn NoSecrets_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            11usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NoSecrets_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            11usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn EncryptionKeyPersistent(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(12usize, 1u8) as u8) }
    }
@@ -17458,6 +22831,28 @@ impl _SYSTEM_ISOLATED_USER_MODE_INFORMATION {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(12usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn EncryptionKeyPersistent_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EncryptionKeyPersistent_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -17472,6 +22867,28 @@ impl _SYSTEM_ISOLATED_USER_MODE_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn HardwareEnforcedHvpt_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            13usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HardwareEnforcedHvpt_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            13usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn HardwareHvptAvailable(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(14usize, 1u8) as u8) }
    }
@@ -17483,6 +22900,28 @@ impl _SYSTEM_ISOLATED_USER_MODE_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn HardwareHvptAvailable_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            14usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HardwareHvptAvailable_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            14usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SpareFlags2(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(15usize, 1u8) as u8) }
    }
@@ -17491,6 +22930,28 @@ impl _SYSTEM_ISOLATED_USER_MODE_INFORMATION {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(15usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SpareFlags2_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            15usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpareFlags2_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            15usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -17743,6 +23204,28 @@ impl _SYSTEM_INTERRUPT_STEERING_INFORMATION_OUTPUT__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Enabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Enabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -17751,6 +23234,28 @@ impl _SYSTEM_INTERRUPT_STEERING_INFORMATION_OUTPUT__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -17920,6 +23425,28 @@ impl _SYSTEM_CODEINTEGRITY_UNLOCK_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Locked_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Locked_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn UnlockApplied(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -17928,6 +23455,28 @@ impl _SYSTEM_CODEINTEGRITY_UNLOCK_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn UnlockApplied_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_UnlockApplied_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -17942,6 +23491,28 @@ impl _SYSTEM_CODEINTEGRITY_UNLOCK_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn UnlockIdValid_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_UnlockIdValid_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 29u8) as u32) }
    }
@@ -17950,6 +23521,28 @@ impl _SYSTEM_CODEINTEGRITY_UNLOCK_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 29u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            29u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            29u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18047,6 +23640,28 @@ impl _SYSTEM_KERNEL_VA_SHADOW_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn KvaShadowEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KvaShadowEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn KvaShadowUserGlobal(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -18055,6 +23670,28 @@ impl _SYSTEM_KERNEL_VA_SHADOW_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn KvaShadowUserGlobal_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KvaShadowUserGlobal_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18069,6 +23706,28 @@ impl _SYSTEM_KERNEL_VA_SHADOW_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn KvaShadowPcid_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KvaShadowPcid_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn KvaShadowInvpcid(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -18077,6 +23736,28 @@ impl _SYSTEM_KERNEL_VA_SHADOW_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn KvaShadowInvpcid_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KvaShadowInvpcid_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18091,6 +23772,28 @@ impl _SYSTEM_KERNEL_VA_SHADOW_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn KvaShadowRequired_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KvaShadowRequired_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn KvaShadowRequiredAvailable(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u32) }
    }
@@ -18099,6 +23802,28 @@ impl _SYSTEM_KERNEL_VA_SHADOW_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn KvaShadowRequiredAvailable_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KvaShadowRequiredAvailable_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18113,6 +23838,28 @@ impl _SYSTEM_KERNEL_VA_SHADOW_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn InvalidPteBit_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            6u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_InvalidPteBit_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            6u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn L1DataCacheFlushSupported(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(12usize, 1u8) as u32) }
    }
@@ -18121,6 +23868,28 @@ impl _SYSTEM_KERNEL_VA_SHADOW_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(12usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn L1DataCacheFlushSupported_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_L1DataCacheFlushSupported_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18135,6 +23904,28 @@ impl _SYSTEM_KERNEL_VA_SHADOW_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn L1TerminalFaultMitigationPresent_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            13usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_L1TerminalFaultMitigationPresent_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            13usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(14usize, 18u8) as u32) }
    }
@@ -18143,6 +23934,28 @@ impl _SYSTEM_KERNEL_VA_SHADOW_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(14usize, 18u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            14usize,
+            18u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            14usize,
+            18u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18318,6 +24131,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn BpbEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BpbEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn BpbDisabledSystemPolicy(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -18326,6 +24161,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn BpbDisabledSystemPolicy_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BpbDisabledSystemPolicy_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18340,6 +24197,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn BpbDisabledNoHardwareSupport_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BpbDisabledNoHardwareSupport_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SpecCtrlEnumerated(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -18348,6 +24227,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SpecCtrlEnumerated_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpecCtrlEnumerated_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18362,6 +24263,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SpecCmdEnumerated_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpecCmdEnumerated_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IbrsPresent(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u32) }
    }
@@ -18370,6 +24293,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IbrsPresent_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IbrsPresent_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18384,6 +24329,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn StibpPresent_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_StibpPresent_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SmepPresent(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u32) }
    }
@@ -18392,6 +24359,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SmepPresent_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SmepPresent_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18406,6 +24395,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SpeculativeStoreBypassDisableAvailable_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpeculativeStoreBypassDisableAvailable_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SpeculativeStoreBypassDisableSupported(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 1u8) as u32) }
    }
@@ -18414,6 +24425,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(9usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SpeculativeStoreBypassDisableSupported_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpeculativeStoreBypassDisableSupported_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18428,6 +24461,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SpeculativeStoreBypassDisabledSystemWide_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpeculativeStoreBypassDisabledSystemWide_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SpeculativeStoreBypassDisabledKernel(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(11usize, 1u8) as u32) }
    }
@@ -18436,6 +24491,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(11usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SpeculativeStoreBypassDisabledKernel_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            11usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpeculativeStoreBypassDisabledKernel_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            11usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18450,6 +24527,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SpeculativeStoreBypassDisableRequired_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpeculativeStoreBypassDisableRequired_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn BpbDisabledKernelToUser(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(13usize, 1u8) as u32) }
    }
@@ -18458,6 +24557,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(13usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn BpbDisabledKernelToUser_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            13usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BpbDisabledKernelToUser_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            13usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18472,6 +24593,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SpecCtrlRetpolineEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            14usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpecCtrlRetpolineEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            14usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SpecCtrlImportOptimizationEnabled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(15usize, 1u8) as u32) }
    }
@@ -18480,6 +24623,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(15usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SpecCtrlImportOptimizationEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            15usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpecCtrlImportOptimizationEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            15usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18494,6 +24659,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnhancedIbrs_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnhancedIbrs_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn HvL1tfStatusAvailable(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(17usize, 1u8) as u32) }
    }
@@ -18502,6 +24689,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(17usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn HvL1tfStatusAvailable_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            17usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HvL1tfStatusAvailable_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            17usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18516,6 +24725,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn HvL1tfProcessorNotAffected_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            18usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HvL1tfProcessorNotAffected_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            18usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn HvL1tfMigitationEnabled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(19usize, 1u8) as u32) }
    }
@@ -18524,6 +24755,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(19usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn HvL1tfMigitationEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            19usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HvL1tfMigitationEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            19usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18538,6 +24791,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn HvL1tfMigitationNotEnabled_Hardware_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            20usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HvL1tfMigitationNotEnabled_Hardware_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            20usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn HvL1tfMigitationNotEnabled_LoadOption(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(21usize, 1u8) as u32) }
    }
@@ -18546,6 +24821,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(21usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn HvL1tfMigitationNotEnabled_LoadOption_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            21usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HvL1tfMigitationNotEnabled_LoadOption_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            21usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18560,6 +24857,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn HvL1tfMigitationNotEnabled_CoreScheduler_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            22usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HvL1tfMigitationNotEnabled_CoreScheduler_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            22usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn EnhancedIbrsReported(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(23usize, 1u8) as u32) }
    }
@@ -18568,6 +24887,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(23usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn EnhancedIbrsReported_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            23usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnhancedIbrsReported_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            23usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18582,6 +24923,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn MdsHardwareProtected_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            24usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_MdsHardwareProtected_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            24usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn MbClearEnabled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(25usize, 1u8) as u32) }
    }
@@ -18590,6 +24953,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(25usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn MbClearEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            25usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_MbClearEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            25usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18604,6 +24989,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn MbClearReported_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            26usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_MbClearReported_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            26usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedTaa(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(27usize, 4u8) as u32) }
    }
@@ -18615,6 +25022,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ReservedTaa_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            27usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedTaa_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            27usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(31usize, 1u8) as u32) }
    }
@@ -18623,6 +25052,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(31usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            31usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            31usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18827,6 +25278,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SbdrSsdpHardwareProtected_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SbdrSsdpHardwareProtected_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn FbsdpHardwareProtected(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -18835,6 +25308,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn FbsdpHardwareProtected_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_FbsdpHardwareProtected_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18849,6 +25344,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn PsdpHardwareProtected_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PsdpHardwareProtected_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn FbClearEnabled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -18857,6 +25374,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn FbClearEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_FbClearEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18871,6 +25410,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn FbClearReported_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_FbClearReported_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn BhbEnabled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u32) }
    }
@@ -18879,6 +25440,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn BhbEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BhbEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18893,6 +25476,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn BhbDisabledSystemPolicy_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BhbDisabledSystemPolicy_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn BhbDisabledNoHardwareSupport(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u32) }
    }
@@ -18901,6 +25506,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn BhbDisabledNoHardwareSupport_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BhbDisabledNoHardwareSupport_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18915,6 +25542,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn BranchConfusionStatus_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BranchConfusionStatus_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn BranchConfusionReported(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(10usize, 1u8) as u32) }
    }
@@ -18923,6 +25572,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(10usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn BranchConfusionReported_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BranchConfusionReported_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18937,6 +25608,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn RdclHardwareProtectedReported_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            11usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_RdclHardwareProtectedReported_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            11usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn RdclHardwareProtected(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(12usize, 1u8) as u32) }
    }
@@ -18945,6 +25638,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(12usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn RdclHardwareProtected_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_RdclHardwareProtected_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18959,6 +25674,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Reserved3_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            13usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved3_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            13usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved4(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(17usize, 3u8) as u32) }
    }
@@ -18967,6 +25704,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(17usize, 3u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved4_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            17usize,
+            3u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved4_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            17usize,
+            3u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -18981,6 +25740,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DivideByZeroReported_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            20usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DivideByZeroReported_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            20usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DivideByZeroStatus(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(21usize, 1u8) as u32) }
    }
@@ -18989,6 +25770,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(21usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DivideByZeroStatus_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            21usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DivideByZeroStatus_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            21usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -19003,6 +25806,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Reserved5_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            22usize,
+            3u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved5_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            22usize,
+            3u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(25usize, 7u8) as u32) }
    }
@@ -19011,6 +25836,28 @@ impl _SYSTEM_SPECULATION_CONTROL_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(25usize, 7u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            25usize,
+            7u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            25usize,
+            7u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -19198,6 +26045,28 @@ impl _SYSTEM_SECURITY_MODEL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ReservedFlag_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlag_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AllowDeviceOwnerProtectionDowngrade(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -19209,6 +26078,28 @@ impl _SYSTEM_SECURITY_MODEL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn AllowDeviceOwnerProtectionDowngrade_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AllowDeviceOwnerProtectionDowngrade_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
    }
@@ -19217,6 +26108,28 @@ impl _SYSTEM_SECURITY_MODEL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 30u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            30u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            30u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -19290,6 +26203,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn KvaShadowSupported_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KvaShadowSupported_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn KvaShadowEnabled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -19298,6 +26233,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn KvaShadowEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KvaShadowEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -19312,6 +26269,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn KvaShadowUserGlobal_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KvaShadowUserGlobal_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn KvaShadowPcid(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -19320,6 +26299,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn KvaShadowPcid_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KvaShadowPcid_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -19334,6 +26335,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn MbClearEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_MbClearEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn L1TFMitigated(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u32) }
    }
@@ -19342,6 +26365,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn L1TFMitigated_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_L1TFMitigated_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -19356,6 +26401,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn BpbEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BpbEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IbrsPresent(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u32) }
    }
@@ -19364,6 +26431,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IbrsPresent_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IbrsPresent_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -19378,6 +26467,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn EnhancedIbrs_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnhancedIbrs_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn StibpPresent(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 1u8) as u32) }
    }
@@ -19386,6 +26497,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(9usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn StibpPresent_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_StibpPresent_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -19400,6 +26533,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn SsbdSupported_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SsbdSupported_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SsbdRequired(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(11usize, 1u8) as u32) }
    }
@@ -19408,6 +26563,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(11usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SsbdRequired_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            11usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SsbdRequired_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            11usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -19422,6 +26599,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn BpbKernelToUser_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BpbKernelToUser_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn BpbUserToKernel(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(13usize, 1u8) as u32) }
    }
@@ -19430,6 +26629,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(13usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn BpbUserToKernel_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            13usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BpbUserToKernel_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            13usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -19444,6 +26665,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn ReturnSpeculate_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            14usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReturnSpeculate_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            14usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn BranchConfusionSafe(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(15usize, 1u8) as u32) }
    }
@@ -19452,6 +26695,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(15usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn BranchConfusionSafe_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            15usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BranchConfusionSafe_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            15usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -19466,6 +26731,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn SsbsEnabledAlways_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SsbsEnabledAlways_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SsbsEnabledKernel(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(17usize, 1u8) as u32) }
    }
@@ -19477,6 +26764,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn SsbsEnabledKernel_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            17usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SsbsEnabledKernel_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            17usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(18usize, 14u8) as u32) }
    }
@@ -19485,6 +26794,28 @@ impl _SECURE_SPECULATION_CONTROL_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(18usize, 14u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            18usize,
+            14u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            18usize,
+            14u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -19632,6 +26963,28 @@ impl _SYSTEM_SHADOW_STACK_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn CetCapable_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CetCapable_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn UserCetAllowed(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -19640,6 +26993,28 @@ impl _SYSTEM_SHADOW_STACK_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn UserCetAllowed_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_UserCetAllowed_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -19654,6 +27029,28 @@ impl _SYSTEM_SHADOW_STACK_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ReservedForUserCet_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            6u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedForUserCet_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            6u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn KernelCetEnabled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 1u8) as u32) }
    }
@@ -19662,6 +27059,28 @@ impl _SYSTEM_SHADOW_STACK_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn KernelCetEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KernelCetEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -19676,6 +27095,28 @@ impl _SYSTEM_SHADOW_STACK_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn KernelCetAuditModeEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KernelCetAuditModeEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedForKernelCet(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(10usize, 6u8) as u32) }
    }
@@ -19687,6 +27128,28 @@ impl _SYSTEM_SHADOW_STACK_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ReservedForKernelCet_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            6u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedForKernelCet_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            6u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 16u8) as u32) }
    }
@@ -19695,6 +27158,28 @@ impl _SYSTEM_SHADOW_STACK_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(16usize, 16u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            16u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            16u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -19787,6 +27272,28 @@ impl _SYSTEM_BUILD_VERSION_INFORMATION_FLAGS__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IsTopLevel_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsTopLevel_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IsChecked(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -19795,6 +27302,28 @@ impl _SYSTEM_BUILD_VERSION_INFORMATION_FLAGS__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IsChecked_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsChecked_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -19993,6 +27522,28 @@ impl _SYSTEM_POINTER_AUTH_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn AddressAuthSupported_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AddressAuthSupported_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AddressAuthQarma(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u16) }
    }
@@ -20001,6 +27552,28 @@ impl _SYSTEM_POINTER_AUTH_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AddressAuthQarma_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AddressAuthQarma_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -20015,6 +27588,28 @@ impl _SYSTEM_POINTER_AUTH_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn GenericAuthSupported_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_GenericAuthSupported_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn GenericAuthQarma(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u16) }
    }
@@ -20023,6 +27618,28 @@ impl _SYSTEM_POINTER_AUTH_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn GenericAuthQarma_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_GenericAuthQarma_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -20037,6 +27654,28 @@ impl _SYSTEM_POINTER_AUTH_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn AddressAuthFaulting_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AddressAuthFaulting_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SupportedReserved(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 11u8) as u16) }
    }
@@ -20045,6 +27684,28 @@ impl _SYSTEM_POINTER_AUTH_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 11u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SupportedReserved_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            11u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SupportedReserved_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            11u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -20119,6 +27780,28 @@ impl _SYSTEM_POINTER_AUTH_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn UserPerProcessIpAuthEnabled_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_UserPerProcessIpAuthEnabled_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn UserGlobalIpAuthEnabled(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u16) }
    }
@@ -20127,6 +27810,28 @@ impl _SYSTEM_POINTER_AUTH_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn UserGlobalIpAuthEnabled_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_UserGlobalIpAuthEnabled_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -20141,6 +27846,28 @@ impl _SYSTEM_POINTER_AUTH_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn UserEnabledReserved_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            6u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_UserEnabledReserved_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            6u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn KernelIpAuthEnabled(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 1u8) as u16) }
    }
@@ -20152,6 +27879,28 @@ impl _SYSTEM_POINTER_AUTH_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn KernelIpAuthEnabled_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KernelIpAuthEnabled_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn KernelEnabledReserved(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 7u8) as u16) }
    }
@@ -20160,6 +27909,28 @@ impl _SYSTEM_POINTER_AUTH_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(9usize, 7u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn KernelEnabledReserved_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            7u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KernelEnabledReserved_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            7u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -20296,6 +28067,28 @@ impl _SYSTEM_MEMORY_NUMA_INFORMATION_OUTPUT__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IsAttached_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsAttached_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -20304,6 +28097,28 @@ impl _SYSTEM_MEMORY_NUMA_INFORMATION_OUTPUT__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -20420,6 +28235,28 @@ impl _SYSTEM_MEMORY_NUMA_PERFORMANCE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn MinTransferSizeToAchieveValues_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_MinTransferSizeToAchieveValues_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn NonSequentialTransfers(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
    }
@@ -20431,6 +28268,28 @@ impl _SYSTEM_MEMORY_NUMA_PERFORMANCE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn NonSequentialTransfers_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NonSequentialTransfers_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 6u8) as u8) }
    }
@@ -20439,6 +28298,28 @@ impl _SYSTEM_MEMORY_NUMA_PERFORMANCE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 6u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            6u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            6u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -20544,6 +28425,28 @@ impl _SYSTEM_TRUSTEDAPPS_RUNTIME_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Supported_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Supported_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 63u8) as u64) }
    }
@@ -20552,6 +28455,28 @@ impl _SYSTEM_TRUSTEDAPPS_RUNTIME_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 63u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            63u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            63u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -20801,6 +28726,28 @@ impl _SYSDBG_LIVEDUMP_CONTROL_FLAGS__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn UseDumpStorageStack_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_UseDumpStorageStack_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn CompressMemoryPagesData(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -20809,6 +28756,28 @@ impl _SYSDBG_LIVEDUMP_CONTROL_FLAGS__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn CompressMemoryPagesData_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CompressMemoryPagesData_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -20823,6 +28792,28 @@ impl _SYSDBG_LIVEDUMP_CONTROL_FLAGS__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IncludeUserSpaceMemoryPages_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IncludeUserSpaceMemoryPages_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AbortIfMemoryPressure(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -20831,6 +28822,28 @@ impl _SYSDBG_LIVEDUMP_CONTROL_FLAGS__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AbortIfMemoryPressure_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AbortIfMemoryPressure_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -20845,6 +28858,28 @@ impl _SYSDBG_LIVEDUMP_CONTROL_FLAGS__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SelectiveDump_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SelectiveDump_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 27u8) as u32) }
    }
@@ -20853,6 +28888,28 @@ impl _SYSDBG_LIVEDUMP_CONTROL_FLAGS__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 27u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            27u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            27u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -20930,6 +28987,28 @@ impl _SYSDBG_LIVEDUMP_CONTROL_ADDPAGES__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn HypervisorPages_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HypervisorPages_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn NonEssentialHypervisorPages(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -20941,6 +29020,28 @@ impl _SYSDBG_LIVEDUMP_CONTROL_ADDPAGES__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn NonEssentialHypervisorPages_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NonEssentialHypervisorPages_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
    }
@@ -20949,6 +29050,28 @@ impl _SYSDBG_LIVEDUMP_CONTROL_ADDPAGES__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 30u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            30u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            30u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -21018,6 +29141,28 @@ impl _SYSDBG_LIVEDUMP_SELECTIVE_CONTROL__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ThreadKernelStacks_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ThreadKernelStacks_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 63u8) as u64) }
    }
@@ -21026,6 +29171,28 @@ impl _SYSDBG_LIVEDUMP_SELECTIVE_CONTROL__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 63u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            63u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            63u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -21282,6 +29449,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn NXSupportPolicy_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            2u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NXSupportPolicy_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SEHValidationPolicy(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 2u8) as u8) }
    }
@@ -21290,6 +29479,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 2u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SEHValidationPolicy_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            2u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SEHValidationPolicy_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            2u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -21304,6 +29515,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn CurDirDevicesSkippedForDlls_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            2u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CurDirDevicesSkippedForDlls_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(6usize, 2u8) as u8) }
    }
@@ -21312,6 +29545,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(6usize, 2u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            2u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            2u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -21390,6 +29645,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DbgErrorPortPresent_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgErrorPortPresent_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DbgElevationEnabled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -21398,6 +29675,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DbgElevationEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgElevationEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -21412,6 +29711,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DbgVirtEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgVirtEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DbgInstallerDetectEnabled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -21420,6 +29741,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DbgInstallerDetectEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgInstallerDetectEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -21434,6 +29777,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DbgLkgEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgLkgEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DbgDynProcessorEnabled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u32) }
    }
@@ -21442,6 +29807,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DbgDynProcessorEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgDynProcessorEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -21456,6 +29843,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DbgConsoleBrokerEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgConsoleBrokerEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DbgSecureBootEnabled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u32) }
    }
@@ -21464,6 +29873,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DbgSecureBootEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgSecureBootEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -21478,6 +29909,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DbgMultiSessionSku_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgMultiSessionSku_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DbgMultiUsersInSessionSku(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 1u8) as u32) }
    }
@@ -21486,6 +29939,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(9usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DbgMultiUsersInSessionSku_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgMultiUsersInSessionSku_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -21500,6 +29975,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DbgStateSeparationEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgStateSeparationEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DbgSplitTokenEnabled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(11usize, 1u8) as u32) }
    }
@@ -21508,6 +30005,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(11usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DbgSplitTokenEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            11usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgSplitTokenEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            11usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -21522,6 +30041,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DbgShadowAdminEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DbgShadowAdminEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SpareBits(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(13usize, 19u8) as u32) }
    }
@@ -21530,6 +30071,28 @@ impl _KUSER_SHARED_DATA__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(13usize, 19u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SpareBits_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            13usize,
+            19u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpareBits_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            13usize,
+            19u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -21726,7 +30289,7 @@ pub enum _BCD_MESSAGE_TYPE {
 }
 pub use self::_BCD_MESSAGE_TYPE as BCD_MESSAGE_TYPE;
 pub type BCD_MESSAGE_CALLBACK =
-   ::core::option::Option<unsafe extern "C" fn(type_: BCD_MESSAGE_TYPE, Message: PCWSTR)>;
+   ::core::option::Option<unsafe extern "stdcall" fn(type_: BCD_MESSAGE_TYPE, Message: PCWSTR)>;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -21835,6 +30398,28 @@ impl _BCD_OBJECT_DATATYPE__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            28u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            28u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ObjectType(&self) -> BCD_OBJECT_TYPE {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(28usize, 4u8) as u32) }
    }
@@ -21843,6 +30428,28 @@ impl _BCD_OBJECT_DATATYPE__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(28usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ObjectType_raw(this: *const Self) -> BCD_OBJECT_TYPE {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            28usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ObjectType_raw(this: *mut Self, val: BCD_OBJECT_TYPE) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            28usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -21890,6 +30497,28 @@ impl _BCD_OBJECT_DATATYPE__bindgen_ty_1__bindgen_ty_2 {
       }
    }
    #[inline]
+   pub unsafe fn ApplicationType_raw(this: *const Self) -> BCD_APPLICATION_OBJECT_TYPE {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            20u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ApplicationType_raw(this: *mut Self, val: BCD_APPLICATION_OBJECT_TYPE) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            20u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ImageType(&self) -> BCD_APPLICATION_IMAGE_TYPE {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(20usize, 4u8) as u32) }
    }
@@ -21898,6 +30527,28 @@ impl _BCD_OBJECT_DATATYPE__bindgen_ty_1__bindgen_ty_2 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(20usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ImageType_raw(this: *const Self) -> BCD_APPLICATION_IMAGE_TYPE {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            20usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageType_raw(this: *mut Self, val: BCD_APPLICATION_IMAGE_TYPE) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            20usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -21912,6 +30563,28 @@ impl _BCD_OBJECT_DATATYPE__bindgen_ty_1__bindgen_ty_2 {
       }
    }
    #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            24usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            24usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ObjectType(&self) -> BCD_OBJECT_TYPE {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(28usize, 4u8) as u32) }
    }
@@ -21920,6 +30593,28 @@ impl _BCD_OBJECT_DATATYPE__bindgen_ty_1__bindgen_ty_2 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(28usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ObjectType_raw(this: *const Self) -> BCD_OBJECT_TYPE {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            28usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ObjectType_raw(this: *mut Self, val: BCD_OBJECT_TYPE) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            28usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -21977,6 +30672,28 @@ impl _BCD_OBJECT_DATATYPE__bindgen_ty_1__bindgen_ty_3 {
       }
    }
    #[inline]
+   pub unsafe fn Value_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            20u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Value_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            20u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Class(&self) -> BCD_INHERITED_CLASS_TYPE {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(20usize, 4u8) as u32) }
    }
@@ -21985,6 +30702,28 @@ impl _BCD_OBJECT_DATATYPE__bindgen_ty_1__bindgen_ty_3 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(20usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Class_raw(this: *const Self) -> BCD_INHERITED_CLASS_TYPE {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            20usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Class_raw(this: *mut Self, val: BCD_INHERITED_CLASS_TYPE) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            20usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -21999,6 +30738,28 @@ impl _BCD_OBJECT_DATATYPE__bindgen_ty_1__bindgen_ty_3 {
       }
    }
    #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            24usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            24usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ObjectType(&self) -> BCD_OBJECT_TYPE {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(28usize, 4u8) as u32) }
    }
@@ -22007,6 +30768,28 @@ impl _BCD_OBJECT_DATATYPE__bindgen_ty_1__bindgen_ty_3 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(28usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ObjectType_raw(this: *const Self) -> BCD_OBJECT_TYPE {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            28usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ObjectType_raw(this: *mut Self, val: BCD_OBJECT_TYPE) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            28usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -22064,6 +30847,28 @@ impl _BCD_OBJECT_DATATYPE__bindgen_ty_1__bindgen_ty_4 {
       }
    }
    #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            28u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            28u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ObjectType(&self) -> BCD_OBJECT_TYPE {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(28usize, 4u8) as u32) }
    }
@@ -22072,6 +30877,28 @@ impl _BCD_OBJECT_DATATYPE__bindgen_ty_1__bindgen_ty_4 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(28usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ObjectType_raw(this: *const Self) -> BCD_OBJECT_TYPE {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            28usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ObjectType_raw(this: *mut Self, val: BCD_OBJECT_TYPE) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            28usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -22227,6 +31054,28 @@ impl _BCD_ELEMENT_DATATYPE__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SubType_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            24u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SubType_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            24u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Format(&self) -> BCD_ELEMENT_DATATYPE_FORMAT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(24usize, 4u8) as u32) }
    }
@@ -22238,6 +31087,28 @@ impl _BCD_ELEMENT_DATATYPE__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Format_raw(this: *const Self) -> BCD_ELEMENT_DATATYPE_FORMAT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            24usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Format_raw(this: *mut Self, val: BCD_ELEMENT_DATATYPE_FORMAT) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            24usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Class(&self) -> BCD_ELEMENT_DATATYPE_CLASS {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(28usize, 4u8) as u32) }
    }
@@ -22246,6 +31117,28 @@ impl _BCD_ELEMENT_DATATYPE__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(28usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Class_raw(this: *const Self) -> BCD_ELEMENT_DATATYPE_CLASS {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            28usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Class_raw(this: *mut Self, val: BCD_ELEMENT_DATATYPE_CLASS) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            28usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -23221,66 +32114,177 @@ pub enum _MEMORY_INFORMATION_CLASS {
    MaxMemoryInfoClass = 15,
 }
 pub use self::_MEMORY_INFORMATION_CLASS as MEMORY_INFORMATION_CLASS;
+#[doc = " The MEMORY_WORKING_SET_BLOCK structure contains working set information for a page.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block"]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _MEMORY_WORKING_SET_BLOCK {
-   pub _bitfield_align_1: [u64; 0],
-   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 8usize]>,
+   pub _bitfield_align_1: [u32; 0],
+   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize]>,
 }
 impl _MEMORY_WORKING_SET_BLOCK {
    #[inline]
    pub fn Protection(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 5u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 5u8) as u32) }
    }
    #[inline]
    pub fn set_Protection(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(0usize, 5u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Protection_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            5u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Protection_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            5u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ShareCount(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 3u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 3u8) as u32) }
    }
    #[inline]
    pub fn set_ShareCount(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 3u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn ShareCount_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            3u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ShareCount_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            3u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Shared(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_Shared(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 1u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Shared_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Shared_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Node(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 3u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 3u8) as u32) }
    }
    #[inline]
    pub fn set_Node(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(9usize, 3u8, val as u64)
       }
    }
    #[inline]
-   pub fn VirtualPage(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(12usize, 52u8) as u64) }
+   pub unsafe fn Node_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            3u8,
+         ) as u32)
+      }
    }
    #[inline]
-   pub fn set_VirtualPage(&mut self, val: ULONG_PTR) {
+   pub unsafe fn set_Node_raw(this: *mut Self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
-         self._bitfield_1.set(12usize, 52u8, val as u64)
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            3u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
+   pub fn VirtualPage(&self) -> ULONG {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(12usize, 20u8) as u32) }
+   }
+   #[inline]
+   pub fn set_VirtualPage(&mut self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(12usize, 20u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn VirtualPage_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            20u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_VirtualPage_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            20u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -23289,41 +32293,46 @@ impl _MEMORY_WORKING_SET_BLOCK {
       ShareCount: ULONG_PTR,
       Shared: ULONG_PTR,
       Node: ULONG_PTR,
-      VirtualPage: ULONG_PTR,
-   ) -> __BindgenBitfieldUnit<[u8; 8usize]> {
-      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 8usize]> = Default::default();
+      VirtualPage: ULONG,
+   ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
+      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
       __bindgen_bitfield_unit.set(0usize, 5u8, {
-         let Protection: u64 = unsafe { ::core::mem::transmute(Protection) };
+         let Protection: u32 = unsafe { ::core::mem::transmute(Protection) };
          Protection as u64
       });
       __bindgen_bitfield_unit.set(5usize, 3u8, {
-         let ShareCount: u64 = unsafe { ::core::mem::transmute(ShareCount) };
+         let ShareCount: u32 = unsafe { ::core::mem::transmute(ShareCount) };
          ShareCount as u64
       });
       __bindgen_bitfield_unit.set(8usize, 1u8, {
-         let Shared: u64 = unsafe { ::core::mem::transmute(Shared) };
+         let Shared: u32 = unsafe { ::core::mem::transmute(Shared) };
          Shared as u64
       });
       __bindgen_bitfield_unit.set(9usize, 3u8, {
-         let Node: u64 = unsafe { ::core::mem::transmute(Node) };
+         let Node: u32 = unsafe { ::core::mem::transmute(Node) };
          Node as u64
       });
-      __bindgen_bitfield_unit.set(12usize, 52u8, {
-         let VirtualPage: u64 = unsafe { ::core::mem::transmute(VirtualPage) };
+      __bindgen_bitfield_unit.set(12usize, 20u8, {
+         let VirtualPage: u32 = unsafe { ::core::mem::transmute(VirtualPage) };
          VirtualPage as u64
       });
       __bindgen_bitfield_unit
    }
 }
+#[doc = " The MEMORY_WORKING_SET_BLOCK structure contains working set information for a page.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block"]
 pub type MEMORY_WORKING_SET_BLOCK = _MEMORY_WORKING_SET_BLOCK;
+#[doc = " The MEMORY_WORKING_SET_BLOCK structure contains working set information for a page.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block"]
 pub type PMEMORY_WORKING_SET_BLOCK = *mut _MEMORY_WORKING_SET_BLOCK;
+#[doc = " The MEMORY_WORKING_SET_INFORMATION structure contains working set information for a process.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information"]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _MEMORY_WORKING_SET_INFORMATION {
    pub NumberOfEntries: ULONG_PTR,
    pub WorkingSetInfo: [MEMORY_WORKING_SET_BLOCK; 1usize],
 }
+#[doc = " The MEMORY_WORKING_SET_INFORMATION structure contains working set information for a process.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information"]
 pub type MEMORY_WORKING_SET_INFORMATION = _MEMORY_WORKING_SET_INFORMATION;
+#[doc = " The MEMORY_WORKING_SET_INFORMATION structure contains working set information for a process.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information"]
 pub type PMEMORY_WORKING_SET_INFORMATION = *mut _MEMORY_WORKING_SET_INFORMATION;
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -23361,6 +32370,28 @@ impl _MEMORY_REGION_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Private_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Private_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn MappedDataFile(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -23369,6 +32400,28 @@ impl _MEMORY_REGION_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn MappedDataFile_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_MappedDataFile_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -23383,6 +32436,28 @@ impl _MEMORY_REGION_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn MappedImage_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_MappedImage_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn MappedPageFile(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -23391,6 +32466,28 @@ impl _MEMORY_REGION_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn MappedPageFile_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_MappedPageFile_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -23405,6 +32502,28 @@ impl _MEMORY_REGION_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn MappedPhysical_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_MappedPhysical_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DirectMapped(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u32) }
    }
@@ -23413,6 +32532,28 @@ impl _MEMORY_REGION_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DirectMapped_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DirectMapped_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -23427,6 +32568,28 @@ impl _MEMORY_REGION_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SoftwareEnclave_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SoftwareEnclave_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn PageSize64K(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u32) }
    }
@@ -23435,6 +32598,28 @@ impl _MEMORY_REGION_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn PageSize64K_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PageSize64K_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -23449,6 +32634,28 @@ impl _MEMORY_REGION_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn PlaceholderReservation_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PlaceholderReservation_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn MappedAwe(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 1u8) as u32) }
    }
@@ -23457,6 +32664,28 @@ impl _MEMORY_REGION_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(9usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn MappedAwe_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_MappedAwe_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -23471,6 +32700,28 @@ impl _MEMORY_REGION_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn MappedWriteWatch_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_MappedWriteWatch_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn PageSizeLarge(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(11usize, 1u8) as u32) }
    }
@@ -23479,6 +32730,28 @@ impl _MEMORY_REGION_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(11usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn PageSizeLarge_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            11usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PageSizeLarge_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            11usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -23493,6 +32766,28 @@ impl _MEMORY_REGION_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn PageSizeHuge_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PageSizeHuge_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(13usize, 19u8) as u32) }
    }
@@ -23501,6 +32796,28 @@ impl _MEMORY_REGION_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(13usize, 19u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            13usize,
+            19u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            13usize,
+            19u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -23611,9 +32928,11 @@ pub enum _MEMORY_WORKING_SET_EX_LOCATION {
    MemoryLocationReserved = 3,
 }
 pub use self::_MEMORY_WORKING_SET_EX_LOCATION as MEMORY_WORKING_SET_EX_LOCATION;
+#[doc = " The MEMORY_WORKING_SET_EX_BLOCK structure contains extended working set information for a page.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block"]
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct _MEMORY_WORKING_SET_EX_BLOCK {
+pub union _MEMORY_WORKING_SET_EX_BLOCK {
+   pub Flags: ULONG_PTR,
    pub __bindgen_anon_1: _MEMORY_WORKING_SET_EX_BLOCK__bindgen_ty_1,
 }
 #[repr(C)]
@@ -23623,154 +32942,408 @@ pub union _MEMORY_WORKING_SET_EX_BLOCK__bindgen_ty_1 {
    pub Invalid: _MEMORY_WORKING_SET_EX_BLOCK__bindgen_ty_1__bindgen_ty_2,
 }
 #[repr(C)]
-#[repr(align(8))]
+#[repr(align(4))]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _MEMORY_WORKING_SET_EX_BLOCK__bindgen_ty_1__bindgen_ty_1 {
-   pub _bitfield_align_1: [u32; 0],
-   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 8usize]>,
+   pub _bitfield_align_1: [u16; 0],
+   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 5usize]>,
+   pub __bindgen_padding_0: [u8; 3usize],
 }
 impl _MEMORY_WORKING_SET_EX_BLOCK__bindgen_ty_1__bindgen_ty_1 {
    #[inline]
    pub fn Valid(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_Valid(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(0usize, 1u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Valid_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 5usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Valid_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 5usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ShareCount(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 3u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 3u8) as u32) }
    }
    #[inline]
    pub fn set_ShareCount(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 3u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn ShareCount_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 5usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            3u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ShareCount_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 5usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            3u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Win32Protection(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 11u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 11u8) as u32) }
    }
    #[inline]
    pub fn set_Win32Protection(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 11u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Win32Protection_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 5usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            11u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Win32Protection_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 5usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            11u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Shared(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(15usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(15usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_Shared(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(15usize, 1u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Shared_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 5usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            15usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Shared_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 5usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            15usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Node(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 6u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 6u8) as u32) }
    }
    #[inline]
    pub fn set_Node(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(16usize, 6u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Node_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 5usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            6u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Node_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 5usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            6u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Locked(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(22usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(22usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_Locked(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(22usize, 1u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Locked_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 5usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            22usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Locked_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 5usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            22usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn LargePage(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(23usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(23usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_LargePage(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(23usize, 1u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn LargePage_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 5usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            23usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_LargePage_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 5usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            23usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Priority(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(24usize, 3u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(24usize, 3u8) as u32) }
    }
    #[inline]
    pub fn set_Priority(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(24usize, 3u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Priority_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 5usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            24usize,
+            3u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Priority_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 5usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            24usize,
+            3u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(27usize, 3u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(27usize, 3u8) as u32) }
    }
    #[inline]
    pub fn set_Reserved(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(27usize, 3u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 5usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            27usize,
+            3u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 5usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            27usize,
+            3u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SharedOriginal(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(30usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(30usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_SharedOriginal(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(30usize, 1u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn SharedOriginal_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 5usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            30usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SharedOriginal_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 5usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            30usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Bad(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(31usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(31usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_Bad(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(31usize, 1u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Bad_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 5usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            31usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Bad_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 5usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            31usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Win32GraphicsProtection(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(32usize, 4u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(32usize, 4u8) as u32) }
    }
    #[inline]
    pub fn set_Win32GraphicsProtection(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(32usize, 4u8, val as u64)
       }
    }
    #[inline]
-   pub fn ReservedUlong(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(36usize, 28u8) as u64) }
+   pub unsafe fn Win32GraphicsProtection_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 5usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            32usize,
+            4u8,
+         ) as u32)
+      }
    }
    #[inline]
-   pub fn set_ReservedUlong(&mut self, val: ULONG_PTR) {
+   pub unsafe fn set_Win32GraphicsProtection_raw(this: *mut Self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
-         self._bitfield_1.set(36usize, 28u8, val as u64)
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 5usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            32usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -23787,203 +33360,429 @@ impl _MEMORY_WORKING_SET_EX_BLOCK__bindgen_ty_1__bindgen_ty_1 {
       SharedOriginal: ULONG_PTR,
       Bad: ULONG_PTR,
       Win32GraphicsProtection: ULONG_PTR,
-      ReservedUlong: ULONG_PTR,
-   ) -> __BindgenBitfieldUnit<[u8; 8usize]> {
-      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 8usize]> = Default::default();
+   ) -> __BindgenBitfieldUnit<[u8; 5usize]> {
+      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 5usize]> = Default::default();
       __bindgen_bitfield_unit.set(0usize, 1u8, {
-         let Valid: u64 = unsafe { ::core::mem::transmute(Valid) };
+         let Valid: u32 = unsafe { ::core::mem::transmute(Valid) };
          Valid as u64
       });
       __bindgen_bitfield_unit.set(1usize, 3u8, {
-         let ShareCount: u64 = unsafe { ::core::mem::transmute(ShareCount) };
+         let ShareCount: u32 = unsafe { ::core::mem::transmute(ShareCount) };
          ShareCount as u64
       });
       __bindgen_bitfield_unit.set(4usize, 11u8, {
-         let Win32Protection: u64 = unsafe { ::core::mem::transmute(Win32Protection) };
+         let Win32Protection: u32 = unsafe { ::core::mem::transmute(Win32Protection) };
          Win32Protection as u64
       });
       __bindgen_bitfield_unit.set(15usize, 1u8, {
-         let Shared: u64 = unsafe { ::core::mem::transmute(Shared) };
+         let Shared: u32 = unsafe { ::core::mem::transmute(Shared) };
          Shared as u64
       });
       __bindgen_bitfield_unit.set(16usize, 6u8, {
-         let Node: u64 = unsafe { ::core::mem::transmute(Node) };
+         let Node: u32 = unsafe { ::core::mem::transmute(Node) };
          Node as u64
       });
       __bindgen_bitfield_unit.set(22usize, 1u8, {
-         let Locked: u64 = unsafe { ::core::mem::transmute(Locked) };
+         let Locked: u32 = unsafe { ::core::mem::transmute(Locked) };
          Locked as u64
       });
       __bindgen_bitfield_unit.set(23usize, 1u8, {
-         let LargePage: u64 = unsafe { ::core::mem::transmute(LargePage) };
+         let LargePage: u32 = unsafe { ::core::mem::transmute(LargePage) };
          LargePage as u64
       });
       __bindgen_bitfield_unit.set(24usize, 3u8, {
-         let Priority: u64 = unsafe { ::core::mem::transmute(Priority) };
+         let Priority: u32 = unsafe { ::core::mem::transmute(Priority) };
          Priority as u64
       });
       __bindgen_bitfield_unit.set(27usize, 3u8, {
-         let Reserved: u64 = unsafe { ::core::mem::transmute(Reserved) };
+         let Reserved: u32 = unsafe { ::core::mem::transmute(Reserved) };
          Reserved as u64
       });
       __bindgen_bitfield_unit.set(30usize, 1u8, {
-         let SharedOriginal: u64 = unsafe { ::core::mem::transmute(SharedOriginal) };
+         let SharedOriginal: u32 = unsafe { ::core::mem::transmute(SharedOriginal) };
          SharedOriginal as u64
       });
       __bindgen_bitfield_unit.set(31usize, 1u8, {
-         let Bad: u64 = unsafe { ::core::mem::transmute(Bad) };
+         let Bad: u32 = unsafe { ::core::mem::transmute(Bad) };
          Bad as u64
       });
       __bindgen_bitfield_unit.set(32usize, 4u8, {
-         let Win32GraphicsProtection: u64 =
+         let Win32GraphicsProtection: u32 =
             unsafe { ::core::mem::transmute(Win32GraphicsProtection) };
          Win32GraphicsProtection as u64
-      });
-      __bindgen_bitfield_unit.set(36usize, 28u8, {
-         let ReservedUlong: u64 = unsafe { ::core::mem::transmute(ReservedUlong) };
-         ReservedUlong as u64
       });
       __bindgen_bitfield_unit
    }
 }
 #[repr(C)]
-#[repr(align(8))]
+#[repr(align(4))]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _MEMORY_WORKING_SET_EX_BLOCK__bindgen_ty_1__bindgen_ty_2 {
-   pub _bitfield_align_1: [u32; 0],
-   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 8usize]>,
+   pub _bitfield_align_1: [u16; 0],
+   pub _bitfield_1: __BindgenBitfieldUnit<[u8; 4usize]>,
 }
 impl _MEMORY_WORKING_SET_EX_BLOCK__bindgen_ty_1__bindgen_ty_2 {
    #[inline]
    pub fn Valid(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_Valid(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(0usize, 1u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Valid_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Valid_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved0(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 14u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 14u8) as u32) }
    }
    #[inline]
    pub fn set_Reserved0(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 14u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Reserved0_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            14u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved0_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            14u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Shared(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(15usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(15usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_Shared(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(15usize, 1u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Shared_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            15usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Shared_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            15usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved1(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 5u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 5u8) as u32) }
    }
    #[inline]
    pub fn set_Reserved1(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(16usize, 5u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Reserved1_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            5u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved1_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            5u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn PageTable(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(21usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(21usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_PageTable(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(21usize, 1u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn PageTable_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            21usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PageTable_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            21usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Location(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(22usize, 2u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(22usize, 2u8) as u32) }
    }
    #[inline]
    pub fn set_Location(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(22usize, 2u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Location_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            22usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Location_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            22usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Priority(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(24usize, 3u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(24usize, 3u8) as u32) }
    }
    #[inline]
    pub fn set_Priority(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(24usize, 3u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Priority_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            24usize,
+            3u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Priority_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            24usize,
+            3u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ModifiedList(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(27usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(27usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_ModifiedList(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(27usize, 1u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn ModifiedList_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            27usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ModifiedList_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            27usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved2(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(28usize, 2u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(28usize, 2u8) as u32) }
    }
    #[inline]
    pub fn set_Reserved2(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(28usize, 2u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Reserved2_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            28usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved2_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            28usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SharedOriginal(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(30usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(30usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_SharedOriginal(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(30usize, 1u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn SharedOriginal_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            30usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SharedOriginal_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            30usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Bad(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(31usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(31usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_Bad(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(31usize, 1u8, val as u64)
       }
    }
    #[inline]
-   pub fn ReservedUlong(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(32usize, 32u8) as u64) }
+   pub unsafe fn Bad_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            31usize,
+            1u8,
+         ) as u32)
+      }
    }
    #[inline]
-   pub fn set_ReservedUlong(&mut self, val: ULONG_PTR) {
+   pub unsafe fn set_Bad_raw(this: *mut Self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
-         self._bitfield_1.set(32usize, 32u8, val as u64)
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            31usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -23999,56 +33798,51 @@ impl _MEMORY_WORKING_SET_EX_BLOCK__bindgen_ty_1__bindgen_ty_2 {
       Reserved2: ULONG_PTR,
       SharedOriginal: ULONG_PTR,
       Bad: ULONG_PTR,
-      ReservedUlong: ULONG_PTR,
-   ) -> __BindgenBitfieldUnit<[u8; 8usize]> {
-      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 8usize]> = Default::default();
+   ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
+      let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
       __bindgen_bitfield_unit.set(0usize, 1u8, {
-         let Valid: u64 = unsafe { ::core::mem::transmute(Valid) };
+         let Valid: u32 = unsafe { ::core::mem::transmute(Valid) };
          Valid as u64
       });
       __bindgen_bitfield_unit.set(1usize, 14u8, {
-         let Reserved0: u64 = unsafe { ::core::mem::transmute(Reserved0) };
+         let Reserved0: u32 = unsafe { ::core::mem::transmute(Reserved0) };
          Reserved0 as u64
       });
       __bindgen_bitfield_unit.set(15usize, 1u8, {
-         let Shared: u64 = unsafe { ::core::mem::transmute(Shared) };
+         let Shared: u32 = unsafe { ::core::mem::transmute(Shared) };
          Shared as u64
       });
       __bindgen_bitfield_unit.set(16usize, 5u8, {
-         let Reserved1: u64 = unsafe { ::core::mem::transmute(Reserved1) };
+         let Reserved1: u32 = unsafe { ::core::mem::transmute(Reserved1) };
          Reserved1 as u64
       });
       __bindgen_bitfield_unit.set(21usize, 1u8, {
-         let PageTable: u64 = unsafe { ::core::mem::transmute(PageTable) };
+         let PageTable: u32 = unsafe { ::core::mem::transmute(PageTable) };
          PageTable as u64
       });
       __bindgen_bitfield_unit.set(22usize, 2u8, {
-         let Location: u64 = unsafe { ::core::mem::transmute(Location) };
+         let Location: u32 = unsafe { ::core::mem::transmute(Location) };
          Location as u64
       });
       __bindgen_bitfield_unit.set(24usize, 3u8, {
-         let Priority: u64 = unsafe { ::core::mem::transmute(Priority) };
+         let Priority: u32 = unsafe { ::core::mem::transmute(Priority) };
          Priority as u64
       });
       __bindgen_bitfield_unit.set(27usize, 1u8, {
-         let ModifiedList: u64 = unsafe { ::core::mem::transmute(ModifiedList) };
+         let ModifiedList: u32 = unsafe { ::core::mem::transmute(ModifiedList) };
          ModifiedList as u64
       });
       __bindgen_bitfield_unit.set(28usize, 2u8, {
-         let Reserved2: u64 = unsafe { ::core::mem::transmute(Reserved2) };
+         let Reserved2: u32 = unsafe { ::core::mem::transmute(Reserved2) };
          Reserved2 as u64
       });
       __bindgen_bitfield_unit.set(30usize, 1u8, {
-         let SharedOriginal: u64 = unsafe { ::core::mem::transmute(SharedOriginal) };
+         let SharedOriginal: u32 = unsafe { ::core::mem::transmute(SharedOriginal) };
          SharedOriginal as u64
       });
       __bindgen_bitfield_unit.set(31usize, 1u8, {
-         let Bad: u64 = unsafe { ::core::mem::transmute(Bad) };
+         let Bad: u32 = unsafe { ::core::mem::transmute(Bad) };
          Bad as u64
-      });
-      __bindgen_bitfield_unit.set(32usize, 32u8, {
-         let ReservedUlong: u64 = unsafe { ::core::mem::transmute(ReservedUlong) };
-         ReservedUlong as u64
       });
       __bindgen_bitfield_unit
    }
@@ -24071,28 +33865,16 @@ impl Default for _MEMORY_WORKING_SET_EX_BLOCK {
       }
    }
 }
+#[doc = " The MEMORY_WORKING_SET_EX_BLOCK structure contains extended working set information for a page.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block"]
 pub type MEMORY_WORKING_SET_EX_BLOCK = _MEMORY_WORKING_SET_EX_BLOCK;
+#[doc = " The MEMORY_WORKING_SET_EX_BLOCK structure contains extended working set information for a page.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block"]
 pub type PMEMORY_WORKING_SET_EX_BLOCK = *mut _MEMORY_WORKING_SET_EX_BLOCK;
+#[doc = " The MEMORY_WORKING_SET_EX_INFORMATION structure contains extended working set information for a process.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information"]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _MEMORY_WORKING_SET_EX_INFORMATION {
    pub VirtualAddress: PVOID,
-   pub u1: _MEMORY_WORKING_SET_EX_INFORMATION__bindgen_ty_1,
-}
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub union _MEMORY_WORKING_SET_EX_INFORMATION__bindgen_ty_1 {
    pub VirtualAttributes: MEMORY_WORKING_SET_EX_BLOCK,
-   pub Long: ULONG_PTR,
-}
-impl Default for _MEMORY_WORKING_SET_EX_INFORMATION__bindgen_ty_1 {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
 }
 impl Default for _MEMORY_WORKING_SET_EX_INFORMATION {
    fn default() -> Self {
@@ -24103,7 +33885,9 @@ impl Default for _MEMORY_WORKING_SET_EX_INFORMATION {
       }
    }
 }
+#[doc = " The MEMORY_WORKING_SET_EX_INFORMATION structure contains extended working set information for a process.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information"]
 pub type MEMORY_WORKING_SET_EX_INFORMATION = _MEMORY_WORKING_SET_EX_INFORMATION;
+#[doc = " The MEMORY_WORKING_SET_EX_INFORMATION structure contains extended working set information for a process.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information"]
 pub type PMEMORY_WORKING_SET_EX_INFORMATION = *mut _MEMORY_WORKING_SET_EX_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -24144,6 +33928,28 @@ impl _MEMORY_IMAGE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ImagePartialMap_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImagePartialMap_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ImageNotExecutable(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -24152,6 +33958,28 @@ impl _MEMORY_IMAGE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ImageNotExecutable_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageNotExecutable_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -24166,6 +33994,28 @@ impl _MEMORY_IMAGE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ImageSigningLevel_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageSigningLevel_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ImageExtensionPresent(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(6usize, 1u8) as u32) }
    }
@@ -24177,6 +34027,28 @@ impl _MEMORY_IMAGE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ImageExtensionPresent_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageExtensionPresent_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 25u8) as u32) }
    }
@@ -24185,6 +34057,28 @@ impl _MEMORY_IMAGE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 25u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            25u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            25u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -24298,6 +34192,28 @@ impl _MEMORY_PHYSICAL_CONTIGUITY_UNIT_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn State_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_State_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
    }
@@ -24306,6 +34222,28 @@ impl _MEMORY_PHYSICAL_CONTIGUITY_UNIT_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 30u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            30u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            30u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -24567,6 +34505,28 @@ impl _MEMORY_FRAME_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn UseDescription_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            4u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_UseDescription_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ListDescription(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 3u8) as u64) }
    }
@@ -24575,6 +34535,28 @@ impl _MEMORY_FRAME_INFORMATION {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 3u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ListDescription_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            3u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ListDescription_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            3u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -24589,6 +34571,28 @@ impl _MEMORY_FRAME_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn Cold_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Cold_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Pinned(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 1u8) as u64) }
    }
@@ -24597,6 +34601,28 @@ impl _MEMORY_FRAME_INFORMATION {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Pinned_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Pinned_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -24611,6 +34637,28 @@ impl _MEMORY_FRAME_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn DontUse_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            48u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DontUse_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            48u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Priority(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(57usize, 3u8) as u64) }
    }
@@ -24619,6 +34667,28 @@ impl _MEMORY_FRAME_INFORMATION {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(57usize, 3u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Priority_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            57usize,
+            3u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Priority_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            57usize,
+            3u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -24633,6 +34703,28 @@ impl _MEMORY_FRAME_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn NonTradeable_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            60usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NonTradeable_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            60usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(61usize, 3u8) as u64) }
    }
@@ -24641,6 +34733,28 @@ impl _MEMORY_FRAME_INFORMATION {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(61usize, 3u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            61usize,
+            3u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            61usize,
+            3u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -24710,6 +34824,28 @@ impl _FILEOFFSET_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn DontUse_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            9u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DontUse_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            9u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Offset(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 48u8) as u64) }
    }
@@ -24721,6 +34857,28 @@ impl _FILEOFFSET_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn Offset_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            48u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Offset_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            48u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(57usize, 7u8) as u64) }
    }
@@ -24729,6 +34887,28 @@ impl _FILEOFFSET_INFORMATION {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(57usize, 7u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            57usize,
+            7u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            57usize,
+            7u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -24773,6 +34953,28 @@ impl _PAGEDIR_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn DontUse_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            9u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DontUse_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            9u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn PageDirectoryBase(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 48u8) as u64) }
    }
@@ -24784,6 +34986,28 @@ impl _PAGEDIR_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn PageDirectoryBase_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            48u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PageDirectoryBase_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            48u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(57usize, 7u8) as u64) }
    }
@@ -24792,6 +35016,28 @@ impl _PAGEDIR_INFORMATION {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(57usize, 7u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            57usize,
+            7u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            57usize,
+            7u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -24836,6 +35082,28 @@ impl _UNIQUE_PROCESS_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn DontUse_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            9u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DontUse_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            9u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn UniqueProcessKey(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 48u8) as u64) }
    }
@@ -24847,6 +35115,28 @@ impl _UNIQUE_PROCESS_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn UniqueProcessKey_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            48u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_UniqueProcessKey_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            48u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(57usize, 7u8) as u64) }
    }
@@ -24855,6 +35145,28 @@ impl _UNIQUE_PROCESS_INFORMATION {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(57usize, 7u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            57usize,
+            7u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            57usize,
+            7u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -24916,34 +35228,78 @@ pub union _MMPFN_IDENTITY__bindgen_ty_2 {
    pub VirtualAddress: ULONG_PTR,
 }
 #[repr(C)]
-#[repr(align(8))]
+#[repr(align(4))]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _MMPFN_IDENTITY__bindgen_ty_2__bindgen_ty_1 {
    pub _bitfield_align_1: [u8; 0],
    pub _bitfield_1: __BindgenBitfieldUnit<[u8; 1usize]>,
-   pub __bindgen_padding_0: [u8; 7usize],
+   pub __bindgen_padding_0: [u8; 3usize],
 }
 impl _MMPFN_IDENTITY__bindgen_ty_2__bindgen_ty_1 {
    #[inline]
    pub fn Image(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_Image(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(0usize, 1u8, val as u64)
       }
    }
    #[inline]
+   pub unsafe fn Image_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Image_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Mismatch(&self) -> ULONG_PTR {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u64) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
    #[inline]
    pub fn set_Mismatch(&mut self, val: ULONG_PTR) {
       unsafe {
-         let val: u64 = ::core::mem::transmute(val);
+         let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Mismatch_raw(this: *const Self) -> ULONG_PTR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Mismatch_raw(this: *mut Self, val: ULONG_PTR) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -24953,11 +35309,11 @@ impl _MMPFN_IDENTITY__bindgen_ty_2__bindgen_ty_1 {
    ) -> __BindgenBitfieldUnit<[u8; 1usize]> {
       let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 1usize]> = Default::default();
       __bindgen_bitfield_unit.set(0usize, 1u8, {
-         let Image: u64 = unsafe { ::core::mem::transmute(Image) };
+         let Image: u32 = unsafe { ::core::mem::transmute(Image) };
          Image as u64
       });
       __bindgen_bitfield_unit.set(1usize, 1u8, {
-         let Mismatch: u64 = unsafe { ::core::mem::transmute(Mismatch) };
+         let Mismatch: u32 = unsafe { ::core::mem::transmute(Mismatch) };
          Mismatch as u64
       });
       __bindgen_bitfield_unit
@@ -25111,6 +35467,28 @@ impl _SECTION_IMAGE_INFORMATION__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ComPlusNativeReady_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ComPlusNativeReady_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ComPlusILOnly(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
    }
@@ -25119,6 +35497,28 @@ impl _SECTION_IMAGE_INFORMATION__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ComPlusILOnly_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ComPlusILOnly_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -25133,6 +35533,28 @@ impl _SECTION_IMAGE_INFORMATION__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ImageDynamicallyRelocated_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageDynamicallyRelocated_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ImageMappedFlat(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u8) }
    }
@@ -25141,6 +35563,28 @@ impl _SECTION_IMAGE_INFORMATION__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ImageMappedFlat_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageMappedFlat_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -25155,6 +35599,28 @@ impl _SECTION_IMAGE_INFORMATION__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn BaseBelow4gb_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BaseBelow4gb_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ComPlusPrefer32bit(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u8) }
    }
@@ -25166,6 +35632,28 @@ impl _SECTION_IMAGE_INFORMATION__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ComPlusPrefer32bit_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ComPlusPrefer32bit_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(6usize, 2u8) as u8) }
    }
@@ -25174,6 +35662,28 @@ impl _SECTION_IMAGE_INFORMATION__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(6usize, 2u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            2u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            2u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -25269,6 +35779,28 @@ impl _SECTION_INTERNAL_IMAGE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ImageExportSuppressionEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageExportSuppressionEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ImageCetShadowStacksReady(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -25277,6 +35809,28 @@ impl _SECTION_INTERNAL_IMAGE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ImageCetShadowStacksReady_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageCetShadowStacksReady_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -25291,6 +35845,28 @@ impl _SECTION_INTERNAL_IMAGE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ImageXfgEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageXfgEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ImageCetShadowStacksStrictMode(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -25299,6 +35875,28 @@ impl _SECTION_INTERNAL_IMAGE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ImageCetShadowStacksStrictMode_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageCetShadowStacksStrictMode_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -25313,6 +35911,28 @@ impl _SECTION_INTERNAL_IMAGE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ImageCetSetContextIpValidationRelaxedMode_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageCetSetContextIpValidationRelaxedMode_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ImageCetDynamicApisAllowInProc(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u32) }
    }
@@ -25321,6 +35941,28 @@ impl _SECTION_INTERNAL_IMAGE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ImageCetDynamicApisAllowInProc_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageCetDynamicApisAllowInProc_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -25335,6 +35977,28 @@ impl _SECTION_INTERNAL_IMAGE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ImageCetDowngradeReserved1_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageCetDowngradeReserved1_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ImageCetDowngradeReserved2(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u32) }
    }
@@ -25343,6 +36007,28 @@ impl _SECTION_INTERNAL_IMAGE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ImageCetDowngradeReserved2_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageCetDowngradeReserved2_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -25357,6 +36043,28 @@ impl _SECTION_INTERNAL_IMAGE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ImageExportSuppressionInfoPresent_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageExportSuppressionInfoPresent_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ImageCfgEnabled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 1u8) as u32) }
    }
@@ -25368,6 +36076,28 @@ impl _SECTION_INTERNAL_IMAGE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ImageCfgEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageCfgEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(10usize, 22u8) as u32) }
    }
@@ -25376,6 +36106,28 @@ impl _SECTION_INTERNAL_IMAGE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(10usize, 22u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            22u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            22u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -25684,6 +36436,28 @@ impl _MEMORY_PARTITION_MEMORY_EVENTS_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn CommitEvents_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CommitEvents_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -25692,6 +36466,28 @@ impl _MEMORY_PARTITION_MEMORY_EVENTS_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -25929,6 +36725,28 @@ impl _OBJECT_BOUNDARY_DESCRIPTOR__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn AddAppContainerSid_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AddAppContainerSid_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -25937,6 +36755,28 @@ impl _OBJECT_BOUNDARY_DESCRIPTOR__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -26510,7 +37350,7 @@ impl Default for _ASSEMBLY_STORAGE_MAP {
 pub type ASSEMBLY_STORAGE_MAP = _ASSEMBLY_STORAGE_MAP;
 pub type PASSEMBLY_STORAGE_MAP = *mut _ASSEMBLY_STORAGE_MAP;
 pub type PACTIVATION_CONTEXT_NOTIFY_ROUTINE = ::core::option::Option<
-   unsafe extern "C" fn(
+   unsafe extern "stdcall" fn(
       NotificationType: ULONG,
       ActivationContext: PACTIVATION_CONTEXT,
       ActivationContextData: PACTIVATION_CONTEXT_DATA,
@@ -26520,7 +37360,7 @@ pub type PACTIVATION_CONTEXT_NOTIFY_ROUTINE = ::core::option::Option<
    ),
 >;
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct _ACTIVATION_CONTEXT {
    pub RefCount: LONG,
    pub Flags: ULONG,
@@ -26668,6 +37508,28 @@ impl _TELEMETRY_COVERAGE_HEADER__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn TracingEnabled_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_TracingEnabled_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved1(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 15u8) as u16) }
    }
@@ -26676,6 +37538,28 @@ impl _TELEMETRY_COVERAGE_HEADER__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 15u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved1_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            15u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved1_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            15u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -26892,7 +37776,7 @@ impl Default for _WER_PEB_HEADER_BLOCK {
 }
 pub type WER_PEB_HEADER_BLOCK = _WER_PEB_HEADER_BLOCK;
 pub type PWER_PEB_HEADER_BLOCK = *mut _WER_PEB_HEADER_BLOCK;
-pub type GDI_HANDLE_BUFFER = [ULONG; 60usize];
+pub type GDI_HANDLE_BUFFER = [ULONG; 34usize];
 pub type GDI_HANDLE_BUFFER32 = [ULONG; 34usize];
 pub type GDI_HANDLE_BUFFER64 = [ULONG; 60usize];
 #[repr(C)]
@@ -27022,6 +37906,28 @@ impl _PEB__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ImageUsesLargePages_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageUsesLargePages_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IsProtectedProcess(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
    }
@@ -27030,6 +37936,28 @@ impl _PEB__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IsProtectedProcess_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsProtectedProcess_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27044,6 +37972,28 @@ impl _PEB__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IsImageDynamicallyRelocated_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsImageDynamicallyRelocated_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SkipPatchingUser32Forwarders(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u8) }
    }
@@ -27052,6 +38002,28 @@ impl _PEB__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SkipPatchingUser32Forwarders_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SkipPatchingUser32Forwarders_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27066,6 +38038,28 @@ impl _PEB__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IsPackagedProcess_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsPackagedProcess_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IsAppContainer(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u8) }
    }
@@ -27074,6 +38068,28 @@ impl _PEB__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IsAppContainer_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsAppContainer_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27088,6 +38104,28 @@ impl _PEB__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IsProtectedProcessLight_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsProtectedProcessLight_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IsLongPathAwareProcess(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u8) }
    }
@@ -27096,6 +38134,28 @@ impl _PEB__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IsLongPathAwareProcess_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsLongPathAwareProcess_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27182,6 +38242,28 @@ impl _PEB__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ProcessInJob_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessInJob_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ProcessInitializing(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -27190,6 +38272,28 @@ impl _PEB__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ProcessInitializing_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessInitializing_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27204,6 +38308,28 @@ impl _PEB__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ProcessUsingVEH_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessUsingVEH_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ProcessUsingVCH(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -27212,6 +38338,28 @@ impl _PEB__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ProcessUsingVCH_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessUsingVCH_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27226,6 +38374,28 @@ impl _PEB__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ProcessUsingFTH_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessUsingFTH_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ProcessPreviouslyThrottled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u32) }
    }
@@ -27234,6 +38404,28 @@ impl _PEB__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ProcessPreviouslyThrottled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessPreviouslyThrottled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27248,6 +38440,28 @@ impl _PEB__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ProcessCurrentlyThrottled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessCurrentlyThrottled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ProcessImagesHotPatched(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u32) }
    }
@@ -27259,6 +38473,28 @@ impl _PEB__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ProcessImagesHotPatched_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessImagesHotPatched_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedBits0(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 24u8) as u32) }
    }
@@ -27267,6 +38503,28 @@ impl _PEB__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 24u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedBits0_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            24u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedBits0_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            24u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27389,6 +38647,28 @@ impl _PEB__bindgen_ty_5__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn HeapTracingEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HeapTracingEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn CritSecTracingEnabled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -27397,6 +38677,28 @@ impl _PEB__bindgen_ty_5__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn CritSecTracingEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CritSecTracingEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27411,6 +38713,28 @@ impl _PEB__bindgen_ty_5__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn LibLoaderTracingEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_LibLoaderTracingEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SpareTracingBits(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 29u8) as u32) }
    }
@@ -27419,6 +38743,28 @@ impl _PEB__bindgen_ty_5__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 29u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SpareTracingBits_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            29u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpareTracingBits_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            29u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27483,6 +38829,28 @@ impl _PEB__bindgen_ty_6__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SixtySecondEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SixtySecondEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -27491,6 +38859,28 @@ impl _PEB__bindgen_ty_6__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27636,9 +39026,7 @@ pub struct _TEB {
    pub CurrentLocale: LCID,
    pub FpSoftwareStatusRegister: ULONG,
    pub ReservedForDebuggerInstrumentation: [PVOID; 16usize],
-   pub SystemReserved1: [PVOID; 25usize],
-   pub HeapFlsData: PVOID,
-   pub RngState: [ULONG_PTR; 4usize],
+   pub SystemReserved1: [PVOID; 26usize],
    pub PlaceholderCompatibilityMode: CHAR,
    pub PlaceholderHydrationAlwaysExplicit: BOOLEAN,
    pub PlaceholderReserved: [CHAR; 10usize],
@@ -27650,9 +39038,9 @@ pub struct _TEB {
    pub InstrumentationCallbackSp: ULONG_PTR,
    pub InstrumentationCallbackPreviousPc: ULONG_PTR,
    pub InstrumentationCallbackPreviousSp: ULONG_PTR,
-   pub TxFsContext: ULONG,
    pub InstrumentationCallbackDisabled: BOOLEAN,
-   pub UnalignedLoadStoreExceptions: BOOLEAN,
+   pub SpareBytes: [UCHAR; 23usize],
+   pub TxFsContext: ULONG,
    pub GdiTebBatch: GDI_TEB_BATCH,
    pub RealClientId: CLIENT_ID,
    pub GdiCachedProcessHandle: HANDLE,
@@ -27678,7 +39066,7 @@ pub struct _TEB {
    pub ReservedForNtRpc: PVOID,
    pub DbgSsReserved: [PVOID; 2usize],
    pub HardErrorMode: ULONG,
-   pub Instrumentation: [PVOID; 11usize],
+   pub Instrumentation: [PVOID; 9usize],
    pub ActivityId: GUID,
    pub SubProcessTag: PVOID,
    pub PerflibData: PVOID,
@@ -27694,8 +39082,6 @@ pub struct _TEB {
    pub ReservedForCodeCoverage: ULONG_PTR,
    pub ThreadPoolData: PVOID,
    pub TlsExpansionSlots: *mut PVOID,
-   pub ChpeV2CpuAreaInfo: PVOID,
-   pub Unused: PVOID,
    pub MuiGeneration: ULONG,
    pub IsImpersonating: ULONG,
    pub NlsCache: PVOID,
@@ -27780,6 +39166,28 @@ impl _TEB__bindgen_ty_2 {
       }
    }
    #[inline]
+   pub unsafe fn SpareCrossTebBits_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            16u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpareCrossTebBits_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            16u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn new_bitfield_1(SpareCrossTebBits: USHORT) -> __BindgenBitfieldUnit<[u8; 2usize]> {
       let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 2usize]> = Default::default();
       __bindgen_bitfield_unit.set(0usize, 16u8, {
@@ -27815,6 +39223,28 @@ impl _TEB__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SafeThunkCall_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SafeThunkCall_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn InDebugPrint(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u16) }
    }
@@ -27823,6 +39253,28 @@ impl _TEB__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn InDebugPrint_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_InDebugPrint_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27837,6 +39289,28 @@ impl _TEB__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn HasFiberData_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HasFiberData_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SkipThreadAttach(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u16) }
    }
@@ -27845,6 +39319,28 @@ impl _TEB__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SkipThreadAttach_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SkipThreadAttach_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27859,6 +39355,28 @@ impl _TEB__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn WerInShipAssertCode_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_WerInShipAssertCode_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn RanProcessInit(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u16) }
    }
@@ -27867,6 +39385,28 @@ impl _TEB__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn RanProcessInit_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_RanProcessInit_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27881,6 +39421,28 @@ impl _TEB__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ClonedThread_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ClonedThread_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SuppressDebugMsg(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u16) }
    }
@@ -27889,6 +39451,28 @@ impl _TEB__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SuppressDebugMsg_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SuppressDebugMsg_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27903,6 +39487,28 @@ impl _TEB__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DisableUserStackWalk_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DisableUserStackWalk_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn RtlExceptionAttached(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 1u8) as u16) }
    }
@@ -27911,6 +39517,28 @@ impl _TEB__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(9usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn RtlExceptionAttached_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_RtlExceptionAttached_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27925,6 +39553,28 @@ impl _TEB__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn InitialThread_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_InitialThread_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SessionAware(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(11usize, 1u8) as u16) }
    }
@@ -27933,6 +39583,28 @@ impl _TEB__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(11usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SessionAware_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            11usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SessionAware_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            11usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27947,6 +39619,28 @@ impl _TEB__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn LoadOwner_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_LoadOwner_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn LoaderWorker(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(13usize, 1u8) as u16) }
    }
@@ -27955,6 +39649,28 @@ impl _TEB__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(13usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn LoaderWorker_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            13usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_LoaderWorker_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            13usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -27969,6 +39685,28 @@ impl _TEB__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SkipLoaderInit_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            14usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SkipLoaderInit_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            14usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SkipFileAPIBrokering(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(15usize, 1u8) as u16) }
    }
@@ -27977,6 +39715,28 @@ impl _TEB__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(15usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SkipFileAPIBrokering_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            15usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SkipFileAPIBrokering_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            15usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -28367,6 +40127,28 @@ impl _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IsProtectedProcess_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsProtectedProcess_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IsWow64Process(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -28375,6 +40157,28 @@ impl _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IsWow64Process_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsWow64Process_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -28389,6 +40193,28 @@ impl _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IsProcessDeleting_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsProcessDeleting_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IsCrossSessionCreate(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -28397,6 +40223,28 @@ impl _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IsCrossSessionCreate_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsCrossSessionCreate_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -28411,6 +40259,28 @@ impl _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IsFrozen_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsFrozen_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IsBackground(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u32) }
    }
@@ -28419,6 +40289,28 @@ impl _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IsBackground_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsBackground_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -28433,6 +40325,28 @@ impl _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IsStronglyNamed_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsStronglyNamed_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IsSecureProcess(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u32) }
    }
@@ -28441,6 +40355,28 @@ impl _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IsSecureProcess_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsSecureProcess_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -28455,6 +40391,28 @@ impl _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IsSubsystemProcess_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsSubsystemProcess_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IsTrustedApp(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 1u8) as u32) }
    }
@@ -28466,6 +40424,28 @@ impl _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IsTrustedApp_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsTrustedApp_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SpareBits(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(10usize, 22u8) as u32) }
    }
@@ -28474,6 +40454,28 @@ impl _PROCESS_EXTENDED_BASIC_INFORMATION__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(10usize, 22u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SpareBits_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            22u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpareBits_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            22u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -28809,6 +40811,28 @@ impl _PROCESS_PRIORITY_CLASS_EX__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ForegroundValid_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ForegroundValid_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn PriorityClassValid(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u16) }
    }
@@ -28817,6 +40841,28 @@ impl _PROCESS_PRIORITY_CLASS_EX__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn PriorityClassValid_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PriorityClassValid_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -28856,6 +40902,7 @@ impl Default for _PROCESS_PRIORITY_CLASS_EX {
 }
 pub type PROCESS_PRIORITY_CLASS_EX = _PROCESS_PRIORITY_CLASS_EX;
 pub type PPROCESS_PRIORITY_CLASS_EX = *mut _PROCESS_PRIORITY_CLASS_EX;
+#[doc = " The PROCESS_FOREGROUND_BACKGROUND structure is used to manage the the priority class of a process, specifically whether it runs in the foreground or background."]
 #[repr(C)]
 pub struct _PROCESS_FOREGROUND_BACKGROUND {
    pub Foreground: BOOLEAN,
@@ -28869,8 +40916,11 @@ impl Default for _PROCESS_FOREGROUND_BACKGROUND {
       }
    }
 }
+#[doc = " The PROCESS_FOREGROUND_BACKGROUND structure is used to manage the the priority class of a process, specifically whether it runs in the foreground or background."]
 pub type PROCESS_FOREGROUND_BACKGROUND = _PROCESS_FOREGROUND_BACKGROUND;
+#[doc = " The PROCESS_FOREGROUND_BACKGROUND structure is used to manage the the priority class of a process, specifically whether it runs in the foreground or background."]
 pub type PPROCESS_FOREGROUND_BACKGROUND = *mut _PROCESS_FOREGROUND_BACKGROUND;
+#[doc = " The PROCESS_DEVICEMAP_INFORMATION structure contains information about a process's device map."]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _PROCESS_DEVICEMAP_INFORMATION {
@@ -28920,8 +40970,11 @@ impl Default for _PROCESS_DEVICEMAP_INFORMATION {
       }
    }
 }
+#[doc = " The PROCESS_DEVICEMAP_INFORMATION structure contains information about a process's device map."]
 pub type PROCESS_DEVICEMAP_INFORMATION = _PROCESS_DEVICEMAP_INFORMATION;
+#[doc = " The PROCESS_DEVICEMAP_INFORMATION structure contains information about a process's device map."]
 pub type PPROCESS_DEVICEMAP_INFORMATION = *mut _PROCESS_DEVICEMAP_INFORMATION;
+#[doc = " The _PROCESS_DEVICEMAP_INFORMATION_EX structure contains information about a process's device map."]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _PROCESS_DEVICEMAP_INFORMATION_EX {
@@ -28972,14 +41025,19 @@ impl Default for _PROCESS_DEVICEMAP_INFORMATION_EX {
       }
    }
 }
+#[doc = " The _PROCESS_DEVICEMAP_INFORMATION_EX structure contains information about a process's device map."]
 pub type PROCESS_DEVICEMAP_INFORMATION_EX = _PROCESS_DEVICEMAP_INFORMATION_EX;
+#[doc = " The _PROCESS_DEVICEMAP_INFORMATION_EX structure contains information about a process's device map."]
 pub type PPROCESS_DEVICEMAP_INFORMATION_EX = *mut _PROCESS_DEVICEMAP_INFORMATION_EX;
+#[doc = " The PROCESS_SESSION_INFORMATION structure is used to store information about the session ID of a process."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _PROCESS_SESSION_INFORMATION {
    pub SessionId: ULONG,
 }
+#[doc = " The PROCESS_SESSION_INFORMATION structure is used to store information about the session ID of a process."]
 pub type PROCESS_SESSION_INFORMATION = _PROCESS_SESSION_INFORMATION;
+#[doc = " The PROCESS_SESSION_INFORMATION structure is used to store information about the session ID of a process."]
 pub type PPROCESS_SESSION_INFORMATION = *mut _PROCESS_SESSION_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -29166,6 +41224,28 @@ impl _PROCESS_AFFINITY_UPDATE_MODE__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnableAutoUpdate_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableAutoUpdate_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Permanent(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -29177,6 +41257,28 @@ impl _PROCESS_AFFINITY_UPDATE_MODE__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Permanent_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Permanent_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
    }
@@ -29185,6 +41287,28 @@ impl _PROCESS_AFFINITY_UPDATE_MODE__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 30u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            30u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            30u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -29245,6 +41369,28 @@ impl _PROCESS_MEMORY_ALLOCATION_MODE__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn TopDown_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_TopDown_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -29253,6 +41399,28 @@ impl _PROCESS_MEMORY_ALLOCATION_MODE__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -29376,6 +41544,28 @@ impl _PROCESS_MITIGATION_ACTIVATION_CONTEXT_TRUST_POLICY2__bindgen_ty_1__bindgen
       }
    }
    #[inline]
+   pub unsafe fn AssemblyManifestRedirectionTrust_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AssemblyManifestRedirectionTrust_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -29384,6 +41574,28 @@ impl _PROCESS_MITIGATION_ACTIVATION_CONTEXT_TRUST_POLICY2__bindgen_ty_1__bindgen
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -29596,6 +41808,28 @@ impl _PS_PROTECTION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Type_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            3u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Type_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            3u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Audit(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u8) }
    }
@@ -29607,6 +41841,28 @@ impl _PS_PROTECTION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Audit_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Audit_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Signer(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 4u8) as u8) }
    }
@@ -29615,6 +41871,28 @@ impl _PS_PROTECTION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Signer_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            4u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Signer_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -29718,6 +41996,28 @@ impl _PROCESS_COMMIT_RELEASE_INFORMATION__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Eligible_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Eligible_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReleaseRepurposedMemResetCommit(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -29726,6 +42026,28 @@ impl _PROCESS_COMMIT_RELEASE_INFORMATION__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReleaseRepurposedMemResetCommit_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReleaseRepurposedMemResetCommit_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -29740,6 +42062,28 @@ impl _PROCESS_COMMIT_RELEASE_INFORMATION__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ForceReleaseMemResetCommit_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ForceReleaseMemResetCommit_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 29u8) as u32) }
    }
@@ -29748,6 +42092,28 @@ impl _PROCESS_COMMIT_RELEASE_INFORMATION__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 29u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            29u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            29u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -29878,6 +42244,28 @@ impl _PROCESS_ENERGY_TRACKING_STATE {
       }
    }
    #[inline]
+   pub unsafe fn UpdateTag_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_UpdateTag_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn new_bitfield_1(UpdateTag: ULONG) -> __BindgenBitfieldUnit<[u8; 1usize]> {
       let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 1usize]> = Default::default();
       __bindgen_bitfield_unit.set(0usize, 1u8, {
@@ -29918,6 +42306,28 @@ impl _MANAGE_WRITES_TO_EXECUTABLE_MEMORY {
       }
    }
    #[inline]
+   pub unsafe fn Version_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Version_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ProcessEnableWriteExceptions(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 1u8) as u32) }
    }
@@ -29926,6 +42336,28 @@ impl _MANAGE_WRITES_TO_EXECUTABLE_MEMORY {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ProcessEnableWriteExceptions_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessEnableWriteExceptions_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -29940,6 +42372,28 @@ impl _MANAGE_WRITES_TO_EXECUTABLE_MEMORY {
       }
    }
    #[inline]
+   pub unsafe fn ThreadAllowWrites_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ThreadAllowWrites_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(10usize, 22u8) as u32) }
    }
@@ -29948,6 +42402,28 @@ impl _MANAGE_WRITES_TO_EXECUTABLE_MEMORY {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(10usize, 22u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            22u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            22u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -30014,6 +42490,28 @@ impl _PROCESS_READWRITEVM_LOGGING_INFORMATION__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnableReadVmLogging_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableReadVmLogging_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn EnableWriteVmLogging(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
    }
@@ -30025,6 +42523,28 @@ impl _PROCESS_READWRITEVM_LOGGING_INFORMATION__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnableWriteVmLogging_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableWriteVmLogging_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Unused(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 6u8) as u8) }
    }
@@ -30033,6 +42553,28 @@ impl _PROCESS_READWRITEVM_LOGGING_INFORMATION__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 6u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Unused_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            6u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Unused_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            6u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -30100,6 +42642,28 @@ impl _PROCESS_UPTIME_INFORMATION__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn HangCount_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HangCount_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn GhostCount(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 4u8) as u32) }
    }
@@ -30108,6 +42672,28 @@ impl _PROCESS_UPTIME_INFORMATION__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn GhostCount_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_GhostCount_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -30122,6 +42708,28 @@ impl _PROCESS_UPTIME_INFORMATION__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Crashed_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Crashed_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Terminated(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 1u8) as u32) }
    }
@@ -30130,6 +42738,28 @@ impl _PROCESS_UPTIME_INFORMATION__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(9usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Terminated_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Terminated_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -30186,6 +42816,28 @@ impl _PROCESS_SYSTEM_RESOURCE_MANAGEMENT__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Foreground_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Foreground_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -30194,6 +42846,28 @@ impl _PROCESS_SYSTEM_RESOURCE_MANAGEMENT__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -30274,6 +42948,28 @@ impl _PROCESS_LOGGING_INFORMATION__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnableReadVmLogging_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableReadVmLogging_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn EnableWriteVmLogging(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -30282,6 +42978,28 @@ impl _PROCESS_LOGGING_INFORMATION__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn EnableWriteVmLogging_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableWriteVmLogging_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -30296,6 +43014,28 @@ impl _PROCESS_LOGGING_INFORMATION__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnableProcessSuspendResumeLogging_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableProcessSuspendResumeLogging_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn EnableThreadSuspendResumeLogging(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -30304,6 +43044,28 @@ impl _PROCESS_LOGGING_INFORMATION__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn EnableThreadSuspendResumeLogging_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableThreadSuspendResumeLogging_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -30318,6 +43080,28 @@ impl _PROCESS_LOGGING_INFORMATION__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnableLocalExecProtectVmLogging_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableLocalExecProtectVmLogging_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn EnableRemoteExecProtectVmLogging(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u32) }
    }
@@ -30326,6 +43110,28 @@ impl _PROCESS_LOGGING_INFORMATION__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn EnableRemoteExecProtectVmLogging_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableRemoteExecProtectVmLogging_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -30340,6 +43146,28 @@ impl _PROCESS_LOGGING_INFORMATION__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnableImpersonationLogging_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableImpersonationLogging_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 25u8) as u32) }
    }
@@ -30348,6 +43176,28 @@ impl _PROCESS_LOGGING_INFORMATION__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 25u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            25u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            25u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -30476,14 +43326,6 @@ pub struct _PROCESS_MEMBERSHIP_INFORMATION {
 }
 pub type PROCESS_MEMBERSHIP_INFORMATION = _PROCESS_MEMBERSHIP_INFORMATION;
 pub type PPROCESS_MEMBERSHIP_INFORMATION = *mut _PROCESS_MEMBERSHIP_INFORMATION;
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct _PROCESS_NETWORK_COUNTERS {
-   pub BytesIn: ULONG64,
-   pub BytesOut: ULONG64,
-}
-pub type PROCESS_NETWORK_COUNTERS = _PROCESS_NETWORK_COUNTERS;
-pub type PPROCESS_NETWORK_COUNTERS = *mut _PROCESS_NETWORK_COUNTERS;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _PROCESS_TEB_VALUE_INFORMATION {
@@ -30668,11 +43510,9 @@ pub type THREAD_PROFILING_INFORMATION = _THREAD_PROFILING_INFORMATION;
 #[doc = " The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n\n \\sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata"]
 pub type PTHREAD_PROFILING_INFORMATION = *mut _THREAD_PROFILING_INFORMATION;
 #[repr(C)]
-#[repr(align(16))]
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct _RTL_UMS_CONTEXT {
    pub Link: SINGLE_LIST_ENTRY,
-   pub __bindgen_padding_0: u64,
    pub Context: CONTEXT,
    pub Teb: PVOID,
    pub UserContext: PVOID,
@@ -30710,6 +43550,28 @@ impl _RTL_UMS_CONTEXT {
       }
    }
    #[inline]
+   pub unsafe fn ScheduledThread_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ScheduledThread_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Suspended(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -30718,6 +43580,28 @@ impl _RTL_UMS_CONTEXT {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Suspended_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Suspended_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -30732,6 +43616,28 @@ impl _RTL_UMS_CONTEXT {
       }
    }
    #[inline]
+   pub unsafe fn VolatileContext_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_VolatileContext_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Terminated(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -30740,6 +43646,28 @@ impl _RTL_UMS_CONTEXT {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Terminated_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Terminated_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -30754,6 +43682,28 @@ impl _RTL_UMS_CONTEXT {
       }
    }
    #[inline]
+   pub unsafe fn DebugActive_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DebugActive_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn RunningOnSelfThread(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u32) }
    }
@@ -30765,6 +43715,28 @@ impl _RTL_UMS_CONTEXT {
       }
    }
    #[inline]
+   pub unsafe fn RunningOnSelfThread_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_RunningOnSelfThread_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DenyRunningOnSelfThread(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(6usize, 1u8) as u32) }
    }
@@ -30773,6 +43745,28 @@ impl _RTL_UMS_CONTEXT {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(6usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DenyRunningOnSelfThread_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DenyRunningOnSelfThread_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -30829,6 +43823,28 @@ impl _RTL_UMS_CONTEXT {
       }
    }
    #[inline]
+   pub unsafe fn KernelUpdateLock_raw(this: *const Self) -> ULONG64 {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_2),
+            0usize,
+            2u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KernelUpdateLock_raw(this: *mut Self, val: ULONG64) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_2),
+            0usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn PrimaryClientID(&self) -> ULONG64 {
       unsafe { ::core::mem::transmute(self._bitfield_2.get(2usize, 62u8) as u64) }
    }
@@ -30837,6 +43853,28 @@ impl _RTL_UMS_CONTEXT {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_2.set(2usize, 62u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn PrimaryClientID_raw(this: *const Self) -> ULONG64 {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_2),
+            2usize,
+            62u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PrimaryClientID_raw(this: *mut Self, val: ULONG64) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_2),
+            2usize,
+            62u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -30920,6 +43958,28 @@ impl _THREAD_UMS_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IsUmsSchedulerThread_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsUmsSchedulerThread_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IsUmsWorkerThread(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -30931,6 +43991,28 @@ impl _THREAD_UMS_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IsUmsWorkerThread_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsUmsWorkerThread_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SpareBits(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
    }
@@ -30939,6 +44021,28 @@ impl _THREAD_UMS_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 30u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SpareBits_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            30u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpareBits_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            30u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -31041,6 +44145,28 @@ impl _RTL_WORK_ON_BEHALF_TICKET_EX__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn CurrentThread_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CurrentThread_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved1(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -31049,6 +44175,28 @@ impl _RTL_WORK_ON_BEHALF_TICKET_EX__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved1_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved1_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -31136,7 +44284,7 @@ pub use self::_THREAD_STATE_CHANGE_TYPE as THREAD_STATE_CHANGE_TYPE;
 pub type PTHREAD_STATE_CHANGE_TYPE = *mut _THREAD_STATE_CHANGE_TYPE;
 #[doc = " A pointer to a function that serves as an APC routine.\n\n @param ApcArgument1 Optional. A pointer to the first argument to be passed to the APC routine.\n @param ApcArgument2 Optional. A pointer to the second argument to be passed to the APC routine.\n @param ApcArgument3 Optional. A pointer to the third argument to be passed to the APC routine."]
 pub type PPS_APC_ROUTINE = ::core::option::Option<
-   unsafe extern "C" fn(ApcArgument1: PVOID, ApcArgument2: PVOID, ApcArgument3: PVOID),
+   unsafe extern "stdcall" fn(ApcArgument1: PVOID, ApcArgument2: PVOID, ApcArgument3: PVOID),
 >;
 #[doc = " The APC_CALLBACK_DATA_CONTEXT structure is used to pass information to the APC callback routine."]
 #[repr(C)]
@@ -31409,6 +44557,28 @@ impl _PS_STD_HANDLE_INFO__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn StdHandleState_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_StdHandleState_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn PseudoHandleMask(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 3u8) as u32) }
    }
@@ -31417,6 +44587,28 @@ impl _PS_STD_HANDLE_INFO__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 3u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn PseudoHandleMask_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            3u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PseudoHandleMask_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            3u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -31485,6 +44677,28 @@ impl _PS_TRUSTLET_ATTRIBUTE_ACCESSRIGHTS {
       }
    }
    #[inline]
+   pub unsafe fn Trustlet_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Trustlet_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Ntos(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
    }
@@ -31493,6 +44707,28 @@ impl _PS_TRUSTLET_ATTRIBUTE_ACCESSRIGHTS {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Ntos_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Ntos_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -31507,6 +44743,28 @@ impl _PS_TRUSTLET_ATTRIBUTE_ACCESSRIGHTS {
       }
    }
    #[inline]
+   pub unsafe fn WriteHandle_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_WriteHandle_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReadHandle(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u8) }
    }
@@ -31518,6 +44776,28 @@ impl _PS_TRUSTLET_ATTRIBUTE_ACCESSRIGHTS {
       }
    }
    #[inline]
+   pub unsafe fn ReadHandle_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReadHandle_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 4u8) as u8) }
    }
@@ -31526,6 +44806,28 @@ impl _PS_TRUSTLET_ATTRIBUTE_ACCESSRIGHTS {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            4u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -31639,6 +44941,28 @@ impl _PS_TRUSTLET_ATTRIBUTE_HEADER {
       }
    }
    #[inline]
+   pub unsafe fn InstanceNumber_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_InstanceNumber_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 24u8) as u32) }
    }
@@ -31647,6 +44971,28 @@ impl _PS_TRUSTLET_ATTRIBUTE_HEADER {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 24u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            24u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            24u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -31748,6 +45094,28 @@ impl _PS_PROCESS_CREATION_SVE_VECTOR_LENGTH {
       }
    }
    #[inline]
+   pub unsafe fn VectorLength_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            24u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_VectorLength_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            24u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn FlagsReserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(24usize, 8u8) as u32) }
    }
@@ -31756,6 +45124,28 @@ impl _PS_PROCESS_CREATION_SVE_VECTOR_LENGTH {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(24usize, 8u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn FlagsReserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            24usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_FlagsReserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            24usize,
+            8u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -31882,6 +45272,28 @@ impl _PS_CREATE_INFO__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn WriteOutputOnExit_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_WriteOutputOnExit_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DetectManifest(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
    }
@@ -31890,6 +45302,28 @@ impl _PS_CREATE_INFO__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DetectManifest_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DetectManifest_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -31904,6 +45338,28 @@ impl _PS_CREATE_INFO__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IFEOSkipDebugger_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IFEOSkipDebugger_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IFEODoNotPropagateKeyState(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u8) }
    }
@@ -31912,6 +45368,28 @@ impl _PS_CREATE_INFO__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IFEODoNotPropagateKeyState_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IFEODoNotPropagateKeyState_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -31926,6 +45404,28 @@ impl _PS_CREATE_INFO__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SpareBits1_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            4u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpareBits1_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SpareBits2(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 8u8) as u8) }
    }
@@ -31937,6 +45437,28 @@ impl _PS_CREATE_INFO__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SpareBits2_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            8u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpareBits2_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ProhibitedImageCharacteristics(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 16u8) as u16) }
    }
@@ -31945,6 +45467,28 @@ impl _PS_CREATE_INFO__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(16usize, 16u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ProhibitedImageCharacteristics_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            16u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProhibitedImageCharacteristics_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            16u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -32081,6 +45625,28 @@ impl _PS_CREATE_INFO__bindgen_ty_1__bindgen_ty_5__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ProtectedProcess_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProtectedProcess_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AddressSpaceOverride(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
    }
@@ -32089,6 +45655,28 @@ impl _PS_CREATE_INFO__bindgen_ty_1__bindgen_ty_5__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AddressSpaceOverride_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AddressSpaceOverride_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -32103,6 +45691,28 @@ impl _PS_CREATE_INFO__bindgen_ty_1__bindgen_ty_5__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DevOverrideEnabled_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DevOverrideEnabled_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ManifestDetected(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u8) }
    }
@@ -32111,6 +45721,28 @@ impl _PS_CREATE_INFO__bindgen_ty_1__bindgen_ty_5__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ManifestDetected_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ManifestDetected_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -32125,6 +45757,28 @@ impl _PS_CREATE_INFO__bindgen_ty_1__bindgen_ty_5__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ProtectedProcessLight_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProtectedProcessLight_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SpareBits1(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 3u8) as u8) }
    }
@@ -32133,6 +45787,28 @@ impl _PS_CREATE_INFO__bindgen_ty_1__bindgen_ty_5__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 3u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SpareBits1_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            3u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpareBits1_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            3u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -32147,6 +45823,28 @@ impl _PS_CREATE_INFO__bindgen_ty_1__bindgen_ty_5__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SpareBits2_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            8u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpareBits2_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SpareBits3(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 16u8) as u16) }
    }
@@ -32155,6 +45853,28 @@ impl _PS_CREATE_INFO__bindgen_ty_1__bindgen_ty_5__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(16usize, 16u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SpareBits3_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            16u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpareBits3_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            16u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -32244,7 +45964,7 @@ pub type PS_CREATE_INFO = _PS_CREATE_INFO;
 pub type PPS_CREATE_INFO = *mut _PS_CREATE_INFO;
 #[doc = " A pointer to a user-defined function that serves as the starting routine for a new thread.\n\n @param ThreadParameter A pointer to a variable to be passed to the thread.\n @return NTSTATUS Successful or errant status."]
 pub type PUSER_THREAD_START_ROUTINE =
-   ::core::option::Option<unsafe extern "C" fn(ThreadParameter: PVOID) -> NTSTATUS>;
+   ::core::option::Option<unsafe extern "stdcall" fn(ThreadParameter: PVOID) -> NTSTATUS>;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _JOBOBJECT_EXTENDED_LIMIT_INFORMATION_V2 {
@@ -32371,6 +46091,28 @@ impl _JOBOBJECT_FREEZE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn FreezeOperation_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_FreezeOperation_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn FilterOperation(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -32379,6 +46121,28 @@ impl _JOBOBJECT_FREEZE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn FilterOperation_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_FilterOperation_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -32393,6 +46157,28 @@ impl _JOBOBJECT_FREEZE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SwapOperation_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SwapOperation_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 29u8) as u32) }
    }
@@ -32401,6 +46187,28 @@ impl _JOBOBJECT_FREEZE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 29u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            29u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            29u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -32614,30 +46422,6 @@ impl Default for _JOBOBJECT_PAGE_PRIORITY_LIMIT {
 }
 pub type JOBOBJECT_PAGE_PRIORITY_LIMIT = _JOBOBJECT_PAGE_PRIORITY_LIMIT;
 pub type PJOBOBJECT_PAGE_PRIORITY_LIMIT = *mut _JOBOBJECT_PAGE_PRIORITY_LIMIT;
-#[repr(C)]
-pub struct _SERVERSILO_DIAGNOSTIC_INFORMATION {
-   pub ExitStatus: NTSTATUS,
-   pub CriticalProcessName: [WCHAR; 15usize],
-}
-impl Default for _SERVERSILO_DIAGNOSTIC_INFORMATION {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type SERVERSILO_DIAGNOSTIC_INFORMATION = _SERVERSILO_DIAGNOSTIC_INFORMATION;
-pub type PSERVERSILO_DIAGNOSTIC_INFORMATION = *mut _SERVERSILO_DIAGNOSTIC_INFORMATION;
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct _JOBOBJECT_NETWORK_ACCOUNTING_INFORMATION {
-   pub DataBytesIn: ULONG64,
-   pub DataBytesOut: ULONG64,
-}
-pub type JOBOBJECT_NETWORK_ACCOUNTING_INFORMATION = _JOBOBJECT_NETWORK_ACCOUNTING_INFORMATION;
-pub type PJOBOBJECT_NETWORK_ACCOUNTING_INFORMATION = *mut _JOBOBJECT_NETWORK_ACCOUNTING_INFORMATION;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -32939,7 +46723,7 @@ pub enum _DEBUGOBJECTINFOCLASS {
 pub use self::_DEBUGOBJECTINFOCLASS as DEBUGOBJECTINFOCLASS;
 pub type PDEBUGOBJECTINFOCLASS = *mut _DEBUGOBJECTINFOCLASS;
 pub type PENABLECALLBACK = ::core::option::Option<
-   unsafe extern "C" fn(
+   unsafe extern "stdcall" fn(
       SourceId: LPCGUID,
       IsEnabled: ULONG,
       Level: UCHAR,
@@ -32973,7 +46757,7 @@ pub type PEXTENDED_CREATE_INFORMATION = *mut _EXTENDED_CREATE_INFORMATION;
 #[derive(Debug, Copy, Clone)]
 pub struct _EXTENDED_CREATE_INFORMATION_32 {
    pub ExtendedCreateFlags: LONGLONG,
-   pub EaBuffer: u32,
+   pub EaBuffer: *mut cty::c_void,
    pub EaLength: ULONG,
 }
 impl Default for _EXTENDED_CREATE_INFORMATION_32 {
@@ -33017,7 +46801,7 @@ impl Default for _IO_STATUS_BLOCK {
 }
 pub type IO_STATUS_BLOCK = _IO_STATUS_BLOCK;
 pub type PIO_APC_ROUTINE = ::core::option::Option<
-   unsafe extern "C" fn(ApcContext: PVOID, IoStatusBlock: PIO_STATUS_BLOCK, Reserved: ULONG),
+   unsafe extern "stdcall" fn(ApcContext: PVOID, IoStatusBlock: PIO_STATUS_BLOCK, Reserved: ULONG),
 >;
 #[repr(C)]
 pub struct _FILE_IO_COMPLETION_INFORMATION {
@@ -33222,6 +47006,28 @@ impl _FILE_INTERNAL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn MftRecordIndex_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            48u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_MftRecordIndex_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            48u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SequenceNumber(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(48usize, 16u8) as u64) }
    }
@@ -33230,6 +47036,28 @@ impl _FILE_INTERNAL_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(48usize, 16u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SequenceNumber_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            48usize,
+            16u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SequenceNumber_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            48usize,
+            16u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -34001,6 +47829,28 @@ impl _FILE_ID_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn FileIdLowPart_raw(this: *const Self) -> LONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 16usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            64u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_FileIdLowPart_raw(this: *mut Self, val: LONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 16usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            64u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn FileIdHighPart(&self) -> LONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(64usize, 64u8) as u64) }
    }
@@ -34009,6 +47859,28 @@ impl _FILE_ID_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(64usize, 64u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn FileIdHighPart_raw(this: *const Self) -> LONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 16usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            64usize,
+            64u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_FileIdHighPart_raw(this: *mut Self, val: LONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 16usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            64usize,
+            64u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -34251,62 +48123,6 @@ pub type FILE_ID_ALL_EXTD_BOTH_DIR_INFORMATION = _FILE_ID_ALL_EXTD_BOTH_DIR_INFO
 pub type PFILE_ID_ALL_EXTD_BOTH_DIR_INFORMATION = *mut _FILE_ID_ALL_EXTD_BOTH_DIR_INFORMATION;
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct _FILE_STAT_INFORMATION {
-   pub FileId: LARGE_INTEGER,
-   pub CreationTime: LARGE_INTEGER,
-   pub LastAccessTime: LARGE_INTEGER,
-   pub LastWriteTime: LARGE_INTEGER,
-   pub ChangeTime: LARGE_INTEGER,
-   pub AllocationSize: LARGE_INTEGER,
-   pub EndOfFile: LARGE_INTEGER,
-   pub FileAttributes: ULONG,
-   pub ReparseTag: ULONG,
-   pub NumberOfLinks: ULONG,
-   pub EffectiveAccess: ACCESS_MASK,
-}
-impl Default for _FILE_STAT_INFORMATION {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type FILE_STAT_INFORMATION = _FILE_STAT_INFORMATION;
-pub type PFILE_STAT_INFORMATION = *mut _FILE_STAT_INFORMATION;
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct _FILE_STAT_BASIC_INFORMATION {
-   pub FileId: LARGE_INTEGER,
-   pub CreationTime: LARGE_INTEGER,
-   pub LastAccessTime: LARGE_INTEGER,
-   pub LastWriteTime: LARGE_INTEGER,
-   pub ChangeTime: LARGE_INTEGER,
-   pub AllocationSize: LARGE_INTEGER,
-   pub EndOfFile: LARGE_INTEGER,
-   pub FileAttributes: ULONG,
-   pub ReparseTag: ULONG,
-   pub NumberOfLinks: ULONG,
-   pub DeviceType: ULONG,
-   pub DeviceCharacteristics: ULONG,
-   pub Reserved: ULONG,
-   pub VolumeSerialNumber: LARGE_INTEGER,
-   pub FileId128: FILE_ID_128,
-}
-impl Default for _FILE_STAT_BASIC_INFORMATION {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type FILE_STAT_BASIC_INFORMATION = _FILE_STAT_BASIC_INFORMATION;
-pub type PFILE_STAT_BASIC_INFORMATION = *mut _FILE_STAT_BASIC_INFORMATION;
-#[repr(C)]
-#[derive(Copy, Clone)]
 pub struct _FILE_MEMORY_PARTITION_INFORMATION {
    pub OwnerPartitionHandle: HANDLE,
    pub Flags: _FILE_MEMORY_PARTITION_INFORMATION__bindgen_ty_1,
@@ -34344,38 +48160,6 @@ impl Default for _FILE_MEMORY_PARTITION_INFORMATION {
 pub type FILE_MEMORY_PARTITION_INFORMATION = _FILE_MEMORY_PARTITION_INFORMATION;
 pub type PFILE_MEMORY_PARTITION_INFORMATION = *mut _FILE_MEMORY_PARTITION_INFORMATION;
 #[repr(C)]
-#[derive(Copy, Clone)]
-pub struct _FILE_STAT_LX_INFORMATION {
-   pub FileId: LARGE_INTEGER,
-   pub CreationTime: LARGE_INTEGER,
-   pub LastAccessTime: LARGE_INTEGER,
-   pub LastWriteTime: LARGE_INTEGER,
-   pub ChangeTime: LARGE_INTEGER,
-   pub AllocationSize: LARGE_INTEGER,
-   pub EndOfFile: LARGE_INTEGER,
-   pub FileAttributes: ULONG,
-   pub ReparseTag: ULONG,
-   pub NumberOfLinks: ULONG,
-   pub EffectiveAccess: ACCESS_MASK,
-   pub LxFlags: ULONG,
-   pub LxUid: ULONG,
-   pub LxGid: ULONG,
-   pub LxMode: ULONG,
-   pub LxDeviceIdMajor: ULONG,
-   pub LxDeviceIdMinor: ULONG,
-}
-impl Default for _FILE_STAT_LX_INFORMATION {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type FILE_STAT_LX_INFORMATION = _FILE_STAT_LX_INFORMATION;
-pub type PFILE_STAT_LX_INFORMATION = *mut _FILE_STAT_LX_INFORMATION;
-#[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _FILE_STORAGE_RESERVE_ID_INFORMATION {
    pub StorageReserveId: STORAGE_RESERVE_ID,
@@ -34391,13 +48175,6 @@ impl Default for _FILE_STORAGE_RESERVE_ID_INFORMATION {
 }
 pub type FILE_STORAGE_RESERVE_ID_INFORMATION = _FILE_STORAGE_RESERVE_ID_INFORMATION;
 pub type PFILE_STORAGE_RESERVE_ID_INFORMATION = *mut _FILE_STORAGE_RESERVE_ID_INFORMATION;
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct _FILE_CASE_SENSITIVE_INFORMATION {
-   pub Flags: ULONG,
-}
-pub type FILE_CASE_SENSITIVE_INFORMATION = _FILE_CASE_SENSITIVE_INFORMATION;
-pub type PFILE_CASE_SENSITIVE_INFORMATION = *mut _FILE_CASE_SENSITIVE_INFORMATION;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -35789,6 +49566,28 @@ impl _MUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn RequiresMutualAuth_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_RequiresMutualAuth_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn RequiresIntegrity(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -35800,6 +49599,28 @@ impl _MUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn RequiresIntegrity_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_RequiresIntegrity_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn RequiresPrivacy(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 1u8) as u32) }
    }
@@ -35808,6 +49629,28 @@ impl _MUP_FSCTL_UNC_HARDENING_PREFIX_TABLE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn RequiresPrivacy_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_RequiresPrivacy_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -35898,6 +49741,28 @@ impl _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT__bindgen_ty_1__bindgen_ty_
       }
    }
    #[inline]
+   pub unsafe fn RequiresMutualAuth_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_RequiresMutualAuth_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn RequiresIntegrity(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -35909,6 +49774,28 @@ impl _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT__bindgen_ty_1__bindgen_ty_
       }
    }
    #[inline]
+   pub unsafe fn RequiresIntegrity_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_RequiresIntegrity_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn RequiresPrivacy(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 1u8) as u32) }
    }
@@ -35917,6 +49804,28 @@ impl _MUP_FSCTL_QUERY_UNC_HARDENING_CONFIGURATION_OUT__bindgen_ty_1__bindgen_ty_
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn RequiresPrivacy_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_RequiresPrivacy_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -36372,7 +50281,6 @@ pub struct _ALPC_PORT_ATTRIBUTES {
    pub MaxViewSize: SIZE_T,
    pub MaxTotalSectionSize: SIZE_T,
    pub DupObjectTypes: ULONG,
-   pub Reserved: ULONG,
 }
 impl Default for _ALPC_PORT_ATTRIBUTES {
    fn default() -> Self {
@@ -36424,6 +50332,28 @@ impl _ALPC_COMPLETION_LIST_STATE__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Head_raw(this: *const Self) -> ULONG64 {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            24u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Head_raw(this: *mut Self, val: ULONG64) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            24u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Tail(&self) -> ULONG64 {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(24usize, 24u8) as u64) }
    }
@@ -36435,6 +50365,28 @@ impl _ALPC_COMPLETION_LIST_STATE__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Tail_raw(this: *const Self) -> ULONG64 {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            24usize,
+            24u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Tail_raw(this: *mut Self, val: ULONG64) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            24usize,
+            24u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ActiveThreadCount(&self) -> ULONG64 {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(48usize, 16u8) as u64) }
    }
@@ -36443,6 +50395,28 @@ impl _ALPC_COMPLETION_LIST_STATE__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(48usize, 16u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ActiveThreadCount_raw(this: *const Self) -> ULONG64 {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            48usize,
+            16u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ActiveThreadCount_raw(this: *mut Self, val: ULONG64) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            48usize,
+            16u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -36511,7 +50485,7 @@ pub struct _ALPC_COMPLETION_LIST_HEADER {
    pub ReturnCount: ULONG,
    pub __bindgen_padding_3: [u32; 31usize],
    pub LogSequenceNumber: ULONG,
-   pub __bindgen_padding_4: [u64; 15usize],
+   pub __bindgen_padding_4: [u32; 31usize],
    pub UserLock: RTL_SRWLOCK,
    pub EndMagic: ULONG64,
 }
@@ -37007,6 +50981,28 @@ impl _PF_LOG_EVENT_DATA {
       }
    }
    #[inline]
+   pub unsafe fn EventType_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            5u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EventType_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            5u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Flags(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 2u8) as u32) }
    }
@@ -37018,6 +51014,28 @@ impl _PF_LOG_EVENT_DATA {
       }
    }
    #[inline]
+   pub unsafe fn Flags_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Flags_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DataSize(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 25u8) as u32) }
    }
@@ -37026,6 +51044,28 @@ impl _PF_LOG_EVENT_DATA {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 25u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DataSize_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            25u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DataSize_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            25u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -37169,6 +51209,28 @@ impl _PF_PRIVSOURCE_INFO {
       }
    }
    #[inline]
+   pub unsafe fn ModernApp_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ModernApp_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DeepFrozen(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -37177,6 +51239,28 @@ impl _PF_PRIVSOURCE_INFO {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DeepFrozen_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DeepFrozen_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -37191,6 +51275,28 @@ impl _PF_PRIVSOURCE_INFO {
       }
    }
    #[inline]
+   pub unsafe fn Foreground_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Foreground_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn PerProcessStore(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -37202,6 +51308,28 @@ impl _PF_PRIVSOURCE_INFO {
       }
    }
    #[inline]
+   pub unsafe fn PerProcessStore_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PerProcessStore_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 28u8) as u32) }
    }
@@ -37210,6 +51338,28 @@ impl _PF_PRIVSOURCE_INFO {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 28u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            28u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            28u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -37321,6 +51471,28 @@ impl _PF_MEMORY_LIST_NODE {
       }
    }
    #[inline]
+   pub unsafe fn Node_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Node_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 56u8) as u64) }
    }
@@ -37329,6 +51501,28 @@ impl _PF_MEMORY_LIST_NODE {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 56u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            56u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            56u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -37483,6 +51677,28 @@ impl _PF_VIRTUAL_QUERY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn FaultInPageTables_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_FaultInPageTables_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReportPageTables(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -37494,6 +51710,28 @@ impl _PF_VIRTUAL_QUERY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ReportPageTables_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReportPageTables_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
    }
@@ -37502,6 +51740,28 @@ impl _PF_VIRTUAL_QUERY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 30u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            30u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            30u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -37586,6 +51846,28 @@ impl _PF_DEPRIORITIZE_OLD_PAGES__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn TargetPriority_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_TargetPriority_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn TrimPages(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 2u8) as u32) }
    }
@@ -37597,6 +51879,28 @@ impl _PF_DEPRIORITIZE_OLD_PAGES__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn TrimPages_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_TrimPages_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(6usize, 26u8) as u32) }
    }
@@ -37605,6 +51909,28 @@ impl _PF_DEPRIORITIZE_OLD_PAGES__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(6usize, 26u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            26u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            26u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -38170,6 +52496,28 @@ impl _SYSTEM_POWER_STATE_CONTEXT__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Reserved1_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved1_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn TargetSystemState(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 4u8) as u32) }
    }
@@ -38178,6 +52526,28 @@ impl _SYSTEM_POWER_STATE_CONTEXT__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn TargetSystemState_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_TargetSystemState_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -38192,6 +52562,28 @@ impl _SYSTEM_POWER_STATE_CONTEXT__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EffectiveSystemState_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EffectiveSystemState_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn CurrentSystemState(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 4u8) as u32) }
    }
@@ -38200,6 +52592,28 @@ impl _SYSTEM_POWER_STATE_CONTEXT__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(16usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn CurrentSystemState_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CurrentSystemState_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -38214,6 +52628,28 @@ impl _SYSTEM_POWER_STATE_CONTEXT__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IgnoreHibernationPath_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            20usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IgnoreHibernationPath_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            20usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn PseudoTransition(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(21usize, 1u8) as u32) }
    }
@@ -38222,6 +52658,28 @@ impl _SYSTEM_POWER_STATE_CONTEXT__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(21usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn PseudoTransition_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            21usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PseudoTransition_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            21usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -38236,6 +52694,28 @@ impl _SYSTEM_POWER_STATE_CONTEXT__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn KernelSoftReboot_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            22usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KernelSoftReboot_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            22usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DirectedDripsTransition(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(23usize, 1u8) as u32) }
    }
@@ -38247,6 +52727,28 @@ impl _SYSTEM_POWER_STATE_CONTEXT__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DirectedDripsTransition_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            23usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DirectedDripsTransition_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            23usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved2(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(24usize, 8u8) as u32) }
    }
@@ -38255,6 +52757,28 @@ impl _SYSTEM_POWER_STATE_CONTEXT__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(24usize, 8u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved2_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            24usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved2_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            24usize,
+            8u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -38464,12 +52988,11 @@ pub struct PROCESSOR_IDLE_TIMES {
    pub Reserved: [ULONG; 4usize],
 }
 pub type PPROCESSOR_IDLE_TIMES = *mut PROCESSOR_IDLE_TIMES;
-pub type PROCESSOR_IDLE_HANDLER = ::core::option::Option<
-   unsafe extern "C" fn(Context: ULONG_PTR, IdleTimes: PPROCESSOR_IDLE_TIMES) -> NTSTATUS,
+pub type PPROCESSOR_IDLE_HANDLER = ::core::option::Option<
+   unsafe extern "fastcall" fn(arg1: ULONG_PTR, arg2: PPROCESSOR_IDLE_TIMES) -> NTSTATUS,
 >;
-pub type PPROCESSOR_IDLE_HANDLER = PROCESSOR_IDLE_HANDLER;
 #[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
+#[derive(Default, Copy, Clone)]
 pub struct _PROCESSOR_IDLE_STATE {
    pub StateType: UCHAR,
    pub StateFlags: ULONG,
@@ -38481,7 +53004,7 @@ pub struct _PROCESSOR_IDLE_STATE {
 pub type PROCESSOR_IDLE_STATE = _PROCESSOR_IDLE_STATE;
 pub type PPROCESSOR_IDLE_STATE = *mut _PROCESSOR_IDLE_STATE;
 #[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
+#[derive(Default, Copy, Clone)]
 pub struct _PROCESSOR_IDLE_STATES {
    pub Size: ULONG,
    pub Revision: ULONG,
@@ -38766,9 +53289,9 @@ pub enum _POWER_STATE_HANDLER_TYPE {
 pub use self::_POWER_STATE_HANDLER_TYPE as POWER_STATE_HANDLER_TYPE;
 pub type PPOWER_STATE_HANDLER_TYPE = *mut _POWER_STATE_HANDLER_TYPE;
 pub type PENTER_STATE_SYSTEM_HANDLER =
-   ::core::option::Option<unsafe extern "C" fn(SystemContext: PVOID) -> NTSTATUS>;
+   ::core::option::Option<unsafe extern "stdcall" fn(SystemContext: PVOID) -> NTSTATUS>;
 pub type PENTER_STATE_HANDLER = ::core::option::Option<
-   unsafe extern "C" fn(
+   unsafe extern "stdcall" fn(
       Context: PVOID,
       SystemHandler: PENTER_STATE_SYSTEM_HANDLER,
       SystemContext: PVOID,
@@ -38796,14 +53319,14 @@ impl Default for _POWER_STATE_HANDLER {
 pub type POWER_STATE_HANDLER = _POWER_STATE_HANDLER;
 pub type PPOWER_STATE_HANDLER = *mut _POWER_STATE_HANDLER;
 pub type PENTER_STATE_NOTIFY_HANDLER = ::core::option::Option<
-   unsafe extern "C" fn(
+   unsafe extern "stdcall" fn(
       State: POWER_STATE_HANDLER_TYPE,
       Context: PVOID,
       Entering: BOOLEAN,
    ) -> NTSTATUS,
 >;
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct _POWER_STATE_NOTIFY_HANDLER {
    pub Handler: PENTER_STATE_NOTIFY_HANDLER,
    pub Context: PVOID,
@@ -38985,6 +53508,28 @@ impl _POWER_S0_LOW_POWER_IDLE_INFO__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Storage_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Storage_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn WiFi(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
    }
@@ -38993,6 +53538,28 @@ impl _POWER_S0_LOW_POWER_IDLE_INFO__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn WiFi_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_WiFi_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -39007,6 +53574,28 @@ impl _POWER_S0_LOW_POWER_IDLE_INFO__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Mbn_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Mbn_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Ethernet(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u8) }
    }
@@ -39018,6 +53607,28 @@ impl _POWER_S0_LOW_POWER_IDLE_INFO__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Ethernet_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Ethernet_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 4u8) as u8) }
    }
@@ -39026,6 +53637,28 @@ impl _POWER_S0_LOW_POWER_IDLE_INFO__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            4u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -39088,6 +53721,28 @@ impl _POWER_S0_LOW_POWER_IDLE_INFO__bindgen_ty_2 {
       }
    }
    #[inline]
+   pub unsafe fn DisconnectInStandby_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DisconnectInStandby_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn EnforceDs(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
    }
@@ -39099,6 +53754,28 @@ impl _POWER_S0_LOW_POWER_IDLE_INFO__bindgen_ty_2 {
       }
    }
    #[inline]
+   pub unsafe fn EnforceDs_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnforceDs_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 6u8) as u8) }
    }
@@ -39107,6 +53784,28 @@ impl _POWER_S0_LOW_POWER_IDLE_INFO__bindgen_ty_2 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 6u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            6u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            6u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -39514,6 +54213,28 @@ impl _KEY_VIRTUALIZATION_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn VirtualizationCandidate_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_VirtualizationCandidate_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn VirtualizationEnabled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -39522,6 +54243,28 @@ impl _KEY_VIRTUALIZATION_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn VirtualizationEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_VirtualizationEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -39536,6 +54279,28 @@ impl _KEY_VIRTUALIZATION_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn VirtualTarget_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_VirtualTarget_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn VirtualStore(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -39544,6 +54309,28 @@ impl _KEY_VIRTUALIZATION_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn VirtualStore_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_VirtualStore_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -39558,6 +54345,28 @@ impl _KEY_VIRTUALIZATION_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn VirtualSource_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_VirtualSource_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 27u8) as u32) }
    }
@@ -39566,6 +54375,28 @@ impl _KEY_VIRTUALIZATION_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 27u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            27u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            27u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -39630,6 +54461,28 @@ impl _KEY_TRUST_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn TrustedKey_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_TrustedKey_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -39638,6 +54491,28 @@ impl _KEY_TRUST_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -39681,6 +54556,28 @@ impl _KEY_LAYER_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn IsTombstone_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsTombstone_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IsSupersedeLocal(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -39689,6 +54586,28 @@ impl _KEY_LAYER_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IsSupersedeLocal_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsSupersedeLocal_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -39703,6 +54622,28 @@ impl _KEY_LAYER_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn IsSupersedeTree_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsSupersedeTree_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ClassIsInherited(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -39714,6 +54655,28 @@ impl _KEY_LAYER_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn ClassIsInherited_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ClassIsInherited_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 28u8) as u32) }
    }
@@ -39722,6 +54685,28 @@ impl _KEY_LAYER_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 28u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            28u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            28u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -39833,6 +54818,28 @@ impl _KEY_SET_LAYER_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn IsTombstone_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsTombstone_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IsSupersedeLocal(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -39841,6 +54848,28 @@ impl _KEY_SET_LAYER_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IsSupersedeLocal_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsSupersedeLocal_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -39855,6 +54884,28 @@ impl _KEY_SET_LAYER_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn IsSupersedeTree_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsSupersedeTree_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ClassIsInherited(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -39866,6 +54917,28 @@ impl _KEY_SET_LAYER_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn ClassIsInherited_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ClassIsInherited_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 28u8) as u32) }
    }
@@ -39874,6 +54947,28 @@ impl _KEY_SET_LAYER_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 28u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            28u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            28u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -39941,6 +55036,28 @@ impl _KEY_SET_VIRTUALIZATION_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn VirtualTarget_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_VirtualTarget_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn VirtualStore(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -39949,6 +55066,28 @@ impl _KEY_SET_VIRTUALIZATION_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn VirtualStore_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_VirtualStore_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -39963,6 +55102,28 @@ impl _KEY_SET_VIRTUALIZATION_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn VirtualSource_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_VirtualSource_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 29u8) as u32) }
    }
@@ -39971,6 +55132,28 @@ impl _KEY_SET_VIRTUALIZATION_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 29u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            29u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            29u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -40075,6 +55258,28 @@ impl _KEY_VALUE_LAYER_INFORMATION {
       }
    }
    #[inline]
+   pub unsafe fn IsTombstone_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsTombstone_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -40083,6 +55288,28 @@ impl _KEY_VALUE_LAYER_INFORMATION {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -40140,6 +55367,28 @@ impl _CM_EXTENDED_PARAMETER__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Type_raw(this: *const Self) -> ULONG64 {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Type_raw(this: *mut Self, val: ULONG64) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG64 {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 56u8) as u64) }
    }
@@ -40148,6 +55397,28 @@ impl _CM_EXTENDED_PARAMETER__bindgen_ty_1 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 56u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG64 {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            56u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG64) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            56u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -40486,19 +55757,23 @@ pub struct _RTL_AVL_TABLE {
    _unused: [u8; 0],
 }
 pub type PRTL_AVL_COMPARE_ROUTINE = ::core::option::Option<
-   unsafe extern "C" fn(
+   unsafe extern "stdcall" fn(
       Table: *mut _RTL_AVL_TABLE,
       FirstStruct: PVOID,
       SecondStruct: PVOID,
    ) -> RTL_GENERIC_COMPARE_RESULTS,
 >;
 pub type PRTL_AVL_ALLOCATE_ROUTINE = ::core::option::Option<
-   unsafe extern "C" fn(Table: *mut _RTL_AVL_TABLE, ByteSize: CLONG) -> PVOID,
+   unsafe extern "stdcall" fn(Table: *mut _RTL_AVL_TABLE, ByteSize: CLONG) -> PVOID,
 >;
 pub type PRTL_AVL_FREE_ROUTINE =
-   ::core::option::Option<unsafe extern "C" fn(Table: *mut _RTL_AVL_TABLE, Buffer: PVOID)>;
+   ::core::option::Option<unsafe extern "stdcall" fn(Table: *mut _RTL_AVL_TABLE, Buffer: PVOID)>;
 pub type PRTL_AVL_MATCH_FUNCTION = ::core::option::Option<
-   unsafe extern "C" fn(Table: *mut _RTL_AVL_TABLE, UserData: PVOID, MatchData: PVOID) -> NTSTATUS,
+   unsafe extern "stdcall" fn(
+      Table: *mut _RTL_AVL_TABLE,
+      UserData: PVOID,
+      MatchData: PVOID,
+   ) -> NTSTATUS,
 >;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -40541,19 +55816,20 @@ impl Default for _RTL_SPLAY_LINKS {
 pub type RTL_SPLAY_LINKS = _RTL_SPLAY_LINKS;
 pub type PRTL_SPLAY_LINKS = *mut _RTL_SPLAY_LINKS;
 pub type PRTL_GENERIC_COMPARE_ROUTINE = ::core::option::Option<
-   unsafe extern "C" fn(
+   unsafe extern "stdcall" fn(
       Table: *mut _RTL_GENERIC_TABLE,
       FirstStruct: PVOID,
       SecondStruct: PVOID,
    ) -> RTL_GENERIC_COMPARE_RESULTS,
 >;
 pub type PRTL_GENERIC_ALLOCATE_ROUTINE = ::core::option::Option<
-   unsafe extern "C" fn(Table: *mut _RTL_GENERIC_TABLE, ByteSize: CLONG) -> PVOID,
+   unsafe extern "stdcall" fn(Table: *mut _RTL_GENERIC_TABLE, ByteSize: CLONG) -> PVOID,
 >;
-pub type PRTL_GENERIC_FREE_ROUTINE =
-   ::core::option::Option<unsafe extern "C" fn(Table: *mut _RTL_GENERIC_TABLE, Buffer: PVOID)>;
+pub type PRTL_GENERIC_FREE_ROUTINE = ::core::option::Option<
+   unsafe extern "stdcall" fn(Table: *mut _RTL_GENERIC_TABLE, Buffer: PVOID),
+>;
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct _RTL_GENERIC_TABLE {
    pub TableRoot: PRTL_SPLAY_LINKS,
    pub InsertOrderList: LIST_ENTRY,
@@ -40973,45 +56249,7 @@ pub struct _CONTEXT_EX {
 pub type CONTEXT_EX = _CONTEXT_EX;
 pub type PCONTEXT_EX = *mut _CONTEXT_EX;
 pub type PRTLP_UNHANDLED_EXCEPTION_FILTER =
-   ::core::option::Option<unsafe extern "C" fn(ExceptionInfo: PEXCEPTION_POINTERS) -> ULONG>;
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub enum _FUNCTION_TABLE_TYPE {
-   RF_SORTED = 0,
-   RF_UNSORTED = 1,
-   RF_CALLBACK = 2,
-   RF_KERNEL_DYNAMIC = 3,
-}
-pub use self::_FUNCTION_TABLE_TYPE as FUNCTION_TABLE_TYPE;
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct _DYNAMIC_FUNCTION_TABLE {
-   pub ListEntry: LIST_ENTRY,
-   pub FunctionTable: PRUNTIME_FUNCTION,
-   pub TimeStamp: LARGE_INTEGER,
-   pub MinimumAddress: ULONG64,
-   pub MaximumAddress: ULONG64,
-   pub BaseAddress: ULONG64,
-   pub Callback: PGET_RUNTIME_FUNCTION_CALLBACK,
-   pub Context: PVOID,
-   pub OutOfProcessCallbackDll: PWSTR,
-   pub Type: FUNCTION_TABLE_TYPE,
-   pub EntryCount: ULONG,
-   pub TreeNodeMin: RTL_BALANCED_NODE,
-   pub TreeNodeMax: RTL_BALANCED_NODE,
-}
-impl Default for _DYNAMIC_FUNCTION_TABLE {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type DYNAMIC_FUNCTION_TABLE = _DYNAMIC_FUNCTION_TABLE;
-pub type PDYNAMIC_FUNCTION_TABLE = *mut _DYNAMIC_FUNCTION_TABLE;
+   ::core::option::Option<unsafe extern "stdcall" fn(ExceptionInfo: PEXCEPTION_POINTERS) -> ULONG>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _RTLP_CURDIR_REF {
@@ -41406,10 +56644,10 @@ impl Default for _RTL_SEGMENT_HEAP_PARAMETERS {
 pub type RTL_SEGMENT_HEAP_PARAMETERS = _RTL_SEGMENT_HEAP_PARAMETERS;
 pub type PRTL_SEGMENT_HEAP_PARAMETERS = *mut _RTL_SEGMENT_HEAP_PARAMETERS;
 pub type PRTL_HEAP_COMMIT_ROUTINE = ::core::option::Option<
-   unsafe extern "C" fn(arg1: PVOID, arg2: *mut PVOID, arg3: PSIZE_T) -> NTSTATUS,
+   unsafe extern "stdcall" fn(arg1: PVOID, arg2: *mut PVOID, arg3: PSIZE_T) -> NTSTATUS,
 >;
 #[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
+#[derive(Default, Copy, Clone)]
 pub struct _RTL_HEAP_PARAMETERS {
    pub Length: ULONG,
    pub SegmentReserve: SIZE_T,
@@ -41435,7 +56673,7 @@ pub struct _RTL_HEAP_TAG_INFO {
 pub type RTL_HEAP_TAG_INFO = _RTL_HEAP_TAG_INFO;
 pub type PRTL_HEAP_TAG_INFO = *mut _RTL_HEAP_TAG_INFO;
 pub type PRTL_ENUM_HEAPS_ROUTINE =
-   ::core::option::Option<unsafe extern "C" fn(arg1: PVOID, arg2: PVOID) -> NTSTATUS>;
+   ::core::option::Option<unsafe extern "stdcall" fn(arg1: PVOID, arg2: PVOID) -> NTSTATUS>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _RTL_HEAP_USAGE_ENTRY {
@@ -41756,7 +56994,7 @@ impl Default for _HEAP_INFORMATION_ITEM {
 pub type HEAP_INFORMATION_ITEM = _HEAP_INFORMATION_ITEM;
 pub type PHEAP_INFORMATION_ITEM = *mut _HEAP_INFORMATION_ITEM;
 pub type PRTL_HEAP_EXTENDED_ENUMERATION_ROUTINE = ::core::option::Option<
-   unsafe extern "C" fn(Information: PHEAP_INFORMATION_ITEM, Context: PVOID) -> NTSTATUS,
+   unsafe extern "stdcall" fn(Information: PHEAP_INFORMATION_ITEM, Context: PVOID) -> NTSTATUS,
 >;
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -41795,7 +57033,7 @@ impl Default for _HEAP_EXTENDED_INFORMATION {
 pub type HEAP_EXTENDED_INFORMATION = _HEAP_EXTENDED_INFORMATION;
 pub type PHEAP_EXTENDED_INFORMATION = *mut _HEAP_EXTENDED_INFORMATION;
 pub type RTL_HEAP_STACK_WRITE_ROUTINE = ::core::option::Option<
-   unsafe extern "C" fn(Information: PVOID, Size: ULONG, Context: PVOID) -> NTSTATUS,
+   unsafe extern "stdcall" fn(Information: PVOID, Size: ULONG, Context: PVOID) -> NTSTATUS,
 >;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -41866,7 +57104,7 @@ pub type RTLP_HEAP_STACK_TRACE_SERIALIZATION_STACKFRAME =
 pub type PRTLP_HEAP_STACK_TRACE_SERIALIZATION_STACKFRAME =
    *mut _RTLP_HEAP_STACK_TRACE_SERIALIZATION_STACKFRAME;
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct _RTL_HEAP_STACK_QUERY {
    pub Version: ULONG,
    pub ProcessHandle: HANDLE,
@@ -41905,7 +57143,7 @@ impl Default for _RTL_HEAP_STACK_CONTROL {
 pub type RTL_HEAP_STACK_CONTROL = _RTL_HEAP_STACK_CONTROL;
 pub type PRTL_HEAP_STACK_CONTROL = *mut _RTL_HEAP_STACK_CONTROL;
 pub type PRTL_HEAP_DEBUGGING_INTERCEPTOR_ROUTINE = ::core::option::Option<
-   unsafe extern "C" fn(
+   unsafe extern "stdcall" fn(
       HeapHandle: PVOID,
       Action: ULONG,
       StackFramesToCapture: ULONG,
@@ -41913,7 +57151,7 @@ pub type PRTL_HEAP_DEBUGGING_INTERCEPTOR_ROUTINE = ::core::option::Option<
    ) -> NTSTATUS,
 >;
 pub type PRTL_HEAP_LEAK_ENUMERATION_ROUTINE = ::core::option::Option<
-   unsafe extern "C" fn(
+   unsafe extern "stdcall" fn(
       Reserved: LONG,
       HeapHandle: PVOID,
       BaseAddress: PVOID,
@@ -41923,7 +57161,7 @@ pub type PRTL_HEAP_LEAK_ENUMERATION_ROUTINE = ::core::option::Option<
    ) -> NTSTATUS,
 >;
 #[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
+#[derive(Default, Copy, Clone)]
 pub struct _HEAP_DEBUGGING_INFORMATION {
    pub InterceptorFunction: PRTL_HEAP_DEBUGGING_INTERCEPTOR_ROUTINE,
    pub InterceptorValue: USHORT,
@@ -42225,12 +57463,12 @@ impl Default for _RTL_ACE_DATA {
 pub type RTL_ACE_DATA = _RTL_ACE_DATA;
 pub type PRTL_ACE_DATA = *mut _RTL_ACE_DATA;
 pub type PRTL_START_POOL_THREAD = ::core::option::Option<
-   unsafe extern "C" fn(arg1: PTHREAD_START_ROUTINE, arg2: PVOID, arg3: PHANDLE) -> NTSTATUS,
+   unsafe extern "stdcall" fn(arg1: PTHREAD_START_ROUTINE, arg2: PVOID, arg3: PHANDLE) -> NTSTATUS,
 >;
 pub type PRTL_EXIT_POOL_THREAD =
-   ::core::option::Option<unsafe extern "C" fn(arg1: NTSTATUS) -> NTSTATUS>;
+   ::core::option::Option<unsafe extern "stdcall" fn(arg1: NTSTATUS) -> NTSTATUS>;
 pub type PRTL_QUERY_REGISTRY_ROUTINE = ::core::option::Option<
-   unsafe extern "C" fn(
+   unsafe extern "stdcall" fn(
       arg1: PCWSTR,
       arg2: ULONG,
       arg3: PVOID,
@@ -42240,7 +57478,7 @@ pub type PRTL_QUERY_REGISTRY_ROUTINE = ::core::option::Option<
    ) -> NTSTATUS,
 >;
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct _RTL_QUERY_REGISTRY_TABLE {
    pub QueryRoutine: PRTL_QUERY_REGISTRY_ROUTINE,
    pub Flags: ULONG,
@@ -42286,6 +57524,28 @@ impl _RTL_ELEVATION_FLAGS__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ElevationEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ElevationEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn VirtualizationEnabled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -42294,6 +57554,28 @@ impl _RTL_ELEVATION_FLAGS__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn VirtualizationEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_VirtualizationEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -42308,6 +57590,28 @@ impl _RTL_ELEVATION_FLAGS__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn InstallerDetectEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_InstallerDetectEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AdminApprovalModeType(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 2u8) as u32) }
    }
@@ -42319,6 +57623,28 @@ impl _RTL_ELEVATION_FLAGS__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn AdminApprovalModeType_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AdminApprovalModeType_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedBits(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 27u8) as u32) }
    }
@@ -42327,6 +57653,28 @@ impl _RTL_ELEVATION_FLAGS__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 27u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedBits_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            27u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedBits_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            27u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -42458,6 +57806,28 @@ impl _RTL_IMAGE_MITIGATION_POLICY__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn AuditState_raw(this: *const Self) -> ULONG64 {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            2u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditState_raw(this: *mut Self, val: ULONG64) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditFlag(&self) -> ULONG64 {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 1u8) as u64) }
    }
@@ -42466,6 +57836,28 @@ impl _RTL_IMAGE_MITIGATION_POLICY__bindgen_ty_1 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AuditFlag_raw(this: *const Self) -> ULONG64 {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditFlag_raw(this: *mut Self, val: ULONG64) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -42480,6 +57872,28 @@ impl _RTL_IMAGE_MITIGATION_POLICY__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn EnableAdditionalAuditingOption_raw(this: *const Self) -> ULONG64 {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableAdditionalAuditingOption_raw(this: *mut Self, val: ULONG64) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG64 {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 60u8) as u64) }
    }
@@ -42488,6 +57902,28 @@ impl _RTL_IMAGE_MITIGATION_POLICY__bindgen_ty_1 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 60u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG64 {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            60u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG64) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            60u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -42537,6 +57973,28 @@ impl _RTL_IMAGE_MITIGATION_POLICY__bindgen_ty_2 {
       }
    }
    #[inline]
+   pub unsafe fn PolicyState_raw(this: *const Self) -> ULONG64 {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            2u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PolicyState_raw(this: *mut Self, val: ULONG64) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AlwaysInherit(&self) -> ULONG64 {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 1u8) as u64) }
    }
@@ -42545,6 +58003,28 @@ impl _RTL_IMAGE_MITIGATION_POLICY__bindgen_ty_2 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AlwaysInherit_raw(this: *const Self) -> ULONG64 {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AlwaysInherit_raw(this: *mut Self, val: ULONG64) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -42559,6 +58039,28 @@ impl _RTL_IMAGE_MITIGATION_POLICY__bindgen_ty_2 {
       }
    }
    #[inline]
+   pub unsafe fn EnableAdditionalPolicyOption_raw(this: *const Self) -> ULONG64 {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnableAdditionalPolicyOption_raw(this: *mut Self, val: ULONG64) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AuditReserved(&self) -> ULONG64 {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 60u8) as u64) }
    }
@@ -42567,6 +58069,28 @@ impl _RTL_IMAGE_MITIGATION_POLICY__bindgen_ty_2 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 60u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AuditReserved_raw(this: *const Self) -> ULONG64 {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            60u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditReserved_raw(this: *mut Self, val: ULONG64) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            60u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -43018,6 +58542,28 @@ impl _RTL_BSD_DATA_POWER_TRANSITION__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SystemRunning_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SystemRunning_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ConnectedStandbyInProgress(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
    }
@@ -43026,6 +58572,28 @@ impl _RTL_BSD_DATA_POWER_TRANSITION__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ConnectedStandbyInProgress_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ConnectedStandbyInProgress_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -43040,6 +58608,28 @@ impl _RTL_BSD_DATA_POWER_TRANSITION__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn UserShutdownInProgress_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_UserShutdownInProgress_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SystemShutdownInProgress(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u8) }
    }
@@ -43051,6 +58641,28 @@ impl _RTL_BSD_DATA_POWER_TRANSITION__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SystemShutdownInProgress_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SystemShutdownInProgress_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SleepInProgress(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 4u8) as u8) }
    }
@@ -43059,6 +58671,28 @@ impl _RTL_BSD_DATA_POWER_TRANSITION__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SleepInProgress_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            4u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SleepInProgress_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -43153,6 +58787,28 @@ impl _RTL_BSD_POWER_BUTTON_PRESS_INFO__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn WatchdogArmed_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_WatchdogArmed_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ShutdownInProgress(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
    }
@@ -43161,6 +58817,28 @@ impl _RTL_BSD_POWER_BUTTON_PRESS_INFO__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ShutdownInProgress_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ShutdownInProgress_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -43210,7 +58888,7 @@ impl Default for _RTL_BSD_ITEM {
 pub type RTL_BSD_ITEM = _RTL_BSD_ITEM;
 pub type PRTL_BSD_ITEM = *mut _RTL_BSD_ITEM;
 pub type PRTL_SECURE_MEMORY_CACHE_CALLBACK =
-   ::core::option::Option<unsafe extern "C" fn(arg1: PVOID, arg2: SIZE_T) -> NTSTATUS>;
+   ::core::option::Option<unsafe extern "stdcall" fn(arg1: PVOID, arg2: SIZE_T) -> NTSTATUS>;
 pub type RTL_FEATURE_ID = ULONG;
 pub type RTL_FEATURE_CHANGE_STAMP = ULONGLONG;
 pub type PRTL_FEATURE_CHANGE_STAMP = *mut ULONGLONG;
@@ -43269,6 +58947,28 @@ impl _RTL_FEATURE_CONFIGURATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Priority_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Priority_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn EnabledState(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 2u8) as u32) }
    }
@@ -43277,6 +58977,28 @@ impl _RTL_FEATURE_CONFIGURATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 2u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn EnabledState_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EnabledState_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            2u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -43291,6 +59013,28 @@ impl _RTL_FEATURE_CONFIGURATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IsWexpConfiguration_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsWexpConfiguration_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn HasSubscriptions(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u32) }
    }
@@ -43299,6 +59043,28 @@ impl _RTL_FEATURE_CONFIGURATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn HasSubscriptions_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HasSubscriptions_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -43313,6 +59079,28 @@ impl _RTL_FEATURE_CONFIGURATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Variant_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            6u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Variant_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            6u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn VariantPayloadKind(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(14usize, 2u8) as u32) }
    }
@@ -43324,6 +59112,28 @@ impl _RTL_FEATURE_CONFIGURATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn VariantPayloadKind_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            14usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_VariantPayloadKind_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            14usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 16u8) as u32) }
    }
@@ -43332,6 +59142,28 @@ impl _RTL_FEATURE_CONFIGURATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(16usize, 16u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            16u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            16u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -43542,7 +59374,7 @@ pub struct _RTL_FEATURE_USAGE_SUBSCRIPTION_TABLE {
 pub type RTL_FEATURE_USAGE_SUBSCRIPTION_TABLE = _RTL_FEATURE_USAGE_SUBSCRIPTION_TABLE;
 pub type PRTL_FEATURE_USAGE_SUBSCRIPTION_TABLE = *mut _RTL_FEATURE_USAGE_SUBSCRIPTION_TABLE;
 pub type PRTL_FEATURE_CONFIGURATION_CHANGE_CALLBACK =
-   ::core::option::Option<unsafe extern "C" fn(arg1: PVOID)>;
+   ::core::option::Option<unsafe extern "stdcall" fn(arg1: PVOID)>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _SYSTEM_FEATURE_CONFIGURATION_QUERY {
@@ -43741,10 +59573,10 @@ pub struct _SYSTEM_FEATURE_USAGE_SUBSCRIPTION_UPDATE {
 pub type SYSTEM_FEATURE_USAGE_SUBSCRIPTION_UPDATE = _SYSTEM_FEATURE_USAGE_SUBSCRIPTION_UPDATE;
 pub type PSYSTEM_FEATURE_USAGE_SUBSCRIPTION_UPDATE = *mut _SYSTEM_FEATURE_USAGE_SUBSCRIPTION_UPDATE;
 pub type PRTL_RUN_ONCE_INIT_FN = ::core::option::Option<
-   unsafe extern "C" fn(arg1: PRTL_RUN_ONCE, arg2: PVOID, arg3: *mut PVOID) -> LOGICAL,
+   unsafe extern "stdcall" fn(arg1: PRTL_RUN_ONCE, arg2: PVOID, arg3: *mut PVOID) -> LOGICAL,
 >;
 pub type PWNF_USER_CALLBACK = ::core::option::Option<
-   unsafe extern "C" fn(
+   unsafe extern "stdcall" fn(
       arg1: WNF_STATE_NAME,
       arg2: WNF_CHANGE_STAMP,
       arg3: PWNF_TYPE_ID,
@@ -43788,6 +59620,28 @@ impl _IMAGE_RELOCATION_RECORD {
       }
    }
    #[inline]
+   pub unsafe fn Offset_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            12u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Offset_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            12u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Type(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(12usize, 4u8) as u16) }
    }
@@ -43796,6 +59650,28 @@ impl _IMAGE_RELOCATION_RECORD {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(12usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Type_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            4u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Type_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -43863,6 +59739,28 @@ impl _IMAGE_CHPE_RANGE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn NativeCode_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NativeCode_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AddressBits(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -43871,6 +59769,28 @@ impl _IMAGE_CHPE_RANGE_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AddressBits_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AddressBits_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -43967,6 +59887,28 @@ impl _IMAGE_ARM64EC_CODE_MAP_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Type_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Type_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn AddressBits(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
    }
@@ -43975,6 +59917,28 @@ impl _IMAGE_ARM64EC_CODE_MAP_ENTRY__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 30u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AddressBits_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            30u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AddressBits_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            30u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -44047,6 +60011,28 @@ impl _IMAGE_DVRT_ARM64X_FIXUP_RECORD {
       }
    }
    #[inline]
+   pub unsafe fn Offset_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            12u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Offset_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            12u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Type(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(12usize, 2u8) as u16) }
    }
@@ -44058,6 +60044,28 @@ impl _IMAGE_DVRT_ARM64X_FIXUP_RECORD {
       }
    }
    #[inline]
+   pub unsafe fn Type_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            2u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Type_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Size(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(14usize, 2u8) as u16) }
    }
@@ -44066,6 +60074,28 @@ impl _IMAGE_DVRT_ARM64X_FIXUP_RECORD {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(14usize, 2u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Size_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            14usize,
+            2u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Size_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            14usize,
+            2u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -44111,6 +60141,28 @@ impl _IMAGE_DVRT_ARM64X_DELTA_FIXUP_RECORD {
       }
    }
    #[inline]
+   pub unsafe fn Offset_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            12u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Offset_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            12u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Type(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(12usize, 2u8) as u16) }
    }
@@ -44119,6 +60171,28 @@ impl _IMAGE_DVRT_ARM64X_DELTA_FIXUP_RECORD {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(12usize, 2u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Type_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            2u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Type_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            2u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -44133,6 +60207,28 @@ impl _IMAGE_DVRT_ARM64X_DELTA_FIXUP_RECORD {
       }
    }
    #[inline]
+   pub unsafe fn Sign_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            14usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Sign_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            14usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Scale(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(15usize, 1u8) as u16) }
    }
@@ -44141,6 +60237,28 @@ impl _IMAGE_DVRT_ARM64X_DELTA_FIXUP_RECORD {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(15usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Scale_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            15usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Scale_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            15usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -44406,10 +60524,10 @@ pub struct _TP_ALPC {
 pub type TP_ALPC = _TP_ALPC;
 pub type PTP_ALPC = *mut _TP_ALPC;
 pub type PTP_ALPC_CALLBACK = ::core::option::Option<
-   unsafe extern "C" fn(Instance: PTP_CALLBACK_INSTANCE, Context: PVOID, Alpc: PTP_ALPC),
+   unsafe extern "stdcall" fn(Instance: PTP_CALLBACK_INSTANCE, Context: PVOID, Alpc: PTP_ALPC),
 >;
 pub type PTP_ALPC_CALLBACK_EX = ::core::option::Option<
-   unsafe extern "C" fn(
+   unsafe extern "stdcall" fn(
       Instance: PTP_CALLBACK_INSTANCE,
       Context: PVOID,
       Alpc: PTP_ALPC,
@@ -44417,7 +60535,7 @@ pub type PTP_ALPC_CALLBACK_EX = ::core::option::Option<
    ),
 >;
 pub type PTP_IO_CALLBACK = ::core::option::Option<
-   unsafe extern "C" fn(
+   unsafe extern "stdcall" fn(
       Instance: PTP_CALLBACK_INSTANCE,
       Context: PVOID,
       ApcContext: PVOID,
@@ -44537,6 +60655,28 @@ impl _RTL_BALANCED_NODE32__bindgen_ty_2 {
       }
    }
    #[inline]
+   pub unsafe fn Red_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Red_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Balance(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 2u8) as u32) }
    }
@@ -44545,6 +60685,28 @@ impl _RTL_BALANCED_NODE32__bindgen_ty_2 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 2u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Balance_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Balance_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            2u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -44737,6 +60899,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn PackagedBinary_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_PackagedBinary_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn MarkedForRemoval(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -44745,6 +60929,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn MarkedForRemoval_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_MarkedForRemoval_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -44759,6 +60965,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ImageDll_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageDll_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn LoadNotificationsSent(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -44767,6 +60995,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn LoadNotificationsSent_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_LoadNotificationsSent_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -44781,6 +61031,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn TelemetryEntryProcessed_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_TelemetryEntryProcessed_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ProcessStaticImport(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u32) }
    }
@@ -44789,6 +61061,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ProcessStaticImport_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessStaticImport_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -44803,6 +61097,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn InLegacyLists_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_InLegacyLists_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn InIndexes(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u32) }
    }
@@ -44811,6 +61127,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn InIndexes_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_InIndexes_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -44825,6 +61163,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ShimDll_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ShimDll_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn InExceptionTable(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 1u8) as u32) }
    }
@@ -44833,6 +61193,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(9usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn InExceptionTable_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_InExceptionTable_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -44847,6 +61229,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ReservedFlags1_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags1_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn LoadInProgress(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(12usize, 1u8) as u32) }
    }
@@ -44855,6 +61259,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(12usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn LoadInProgress_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_LoadInProgress_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -44869,6 +61295,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn LoadConfigProcessed_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            13usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_LoadConfigProcessed_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            13usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn EntryProcessed(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(14usize, 1u8) as u32) }
    }
@@ -44877,6 +61325,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(14usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn EntryProcessed_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            14usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_EntryProcessed_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            14usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -44891,6 +61361,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ProtectDelayLoad_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            15usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProtectDelayLoad_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            15usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags3(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(16usize, 2u8) as u32) }
    }
@@ -44899,6 +61391,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(16usize, 2u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedFlags3_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            16usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags3_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            16usize,
+            2u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -44913,6 +61427,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DontCallForThreads_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            18usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DontCallForThreads_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            18usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ProcessAttachCalled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(19usize, 1u8) as u32) }
    }
@@ -44921,6 +61457,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(19usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ProcessAttachCalled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            19usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessAttachCalled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            19usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -44935,6 +61493,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ProcessAttachFailed_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            20usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessAttachFailed_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            20usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn CorDeferredValidate(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(21usize, 1u8) as u32) }
    }
@@ -44943,6 +61523,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(21usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn CorDeferredValidate_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            21usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CorDeferredValidate_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            21usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -44957,6 +61559,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn CorImage_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            22usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CorImage_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            22usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DontRelocate(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(23usize, 1u8) as u32) }
    }
@@ -44965,6 +61589,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(23usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DontRelocate_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            23usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DontRelocate_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            23usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -44979,6 +61625,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn CorILOnly_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            24usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CorILOnly_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            24usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ChpeImage(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(25usize, 1u8) as u32) }
    }
@@ -44987,6 +61655,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(25usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ChpeImage_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            25usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ChpeImage_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            25usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -45001,6 +61691,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ReservedFlags5_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            26usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags5_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            26usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Redirected(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(28usize, 1u8) as u32) }
    }
@@ -45009,6 +61721,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(28usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Redirected_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            28usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Redirected_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            28usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -45023,6 +61757,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ReservedFlags6_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            29usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedFlags6_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            29usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn CompatDatabaseProcessed(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(31usize, 1u8) as u32) }
    }
@@ -45031,6 +61787,28 @@ impl _LDR_DATA_TABLE_ENTRY32__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(31usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn CompatDatabaseProcessed_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            31usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CompatDatabaseProcessed_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            31usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -45391,6 +62169,28 @@ impl _PEB32__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ImageUsesLargePages_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ImageUsesLargePages_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IsProtectedProcess(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
    }
@@ -45399,6 +62199,28 @@ impl _PEB32__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IsProtectedProcess_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsProtectedProcess_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -45413,6 +62235,28 @@ impl _PEB32__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IsImageDynamicallyRelocated_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsImageDynamicallyRelocated_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SkipPatchingUser32Forwarders(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u8) }
    }
@@ -45421,6 +62265,28 @@ impl _PEB32__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SkipPatchingUser32Forwarders_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SkipPatchingUser32Forwarders_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -45435,6 +62301,28 @@ impl _PEB32__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IsPackagedProcess_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsPackagedProcess_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IsAppContainer(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u8) }
    }
@@ -45443,6 +62331,28 @@ impl _PEB32__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IsAppContainer_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsAppContainer_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -45457,6 +62367,28 @@ impl _PEB32__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IsProtectedProcessLight_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsProtectedProcessLight_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn IsLongPathAwareProcess(&self) -> BOOLEAN {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u8) }
    }
@@ -45465,6 +62397,28 @@ impl _PEB32__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn IsLongPathAwareProcess_raw(this: *const Self) -> BOOLEAN {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IsLongPathAwareProcess_raw(this: *mut Self, val: BOOLEAN) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -45551,6 +62505,28 @@ impl _PEB32__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ProcessInJob_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessInJob_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ProcessInitializing(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -45559,6 +62535,28 @@ impl _PEB32__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ProcessInitializing_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessInitializing_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -45573,6 +62571,28 @@ impl _PEB32__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ProcessUsingVEH_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessUsingVEH_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ProcessUsingVCH(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
    }
@@ -45581,6 +62601,28 @@ impl _PEB32__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ProcessUsingVCH_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessUsingVCH_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -45595,6 +62637,28 @@ impl _PEB32__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ProcessUsingFTH_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessUsingFTH_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedBits0(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 27u8) as u32) }
    }
@@ -45603,6 +62667,28 @@ impl _PEB32__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 27u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReservedBits0_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            27u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReservedBits0_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            27u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -45707,6 +62793,28 @@ impl _PEB32__bindgen_ty_5__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn HeapTracingEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HeapTracingEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn CritSecTracingEnabled(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -45715,6 +62823,28 @@ impl _PEB32__bindgen_ty_5__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn CritSecTracingEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CritSecTracingEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -45729,6 +62859,28 @@ impl _PEB32__bindgen_ty_5__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn LibLoaderTracingEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_LibLoaderTracingEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SpareTracingBits(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 29u8) as u32) }
    }
@@ -45737,6 +62889,28 @@ impl _PEB32__bindgen_ty_5__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 29u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SpareTracingBits_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            29u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpareTracingBits_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            29u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -45801,6 +62975,28 @@ impl _PEB32__bindgen_ty_6__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SixtySecondEnabled_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SixtySecondEnabled_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 31u8) as u32) }
    }
@@ -45809,6 +63005,28 @@ impl _PEB32__bindgen_ty_6__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 31u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            31u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            31u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -46013,6 +63231,28 @@ impl _TEB32__bindgen_ty_2 {
       }
    }
    #[inline]
+   pub unsafe fn SpareCrossTebBits_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            16u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpareCrossTebBits_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            16u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn new_bitfield_1(SpareCrossTebBits: USHORT) -> __BindgenBitfieldUnit<[u8; 2usize]> {
       let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 2usize]> = Default::default();
       __bindgen_bitfield_unit.set(0usize, 16u8, {
@@ -46048,6 +63288,28 @@ impl _TEB32__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn SafeThunkCall_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SafeThunkCall_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn InDebugPrint(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u16) }
    }
@@ -46056,6 +63318,28 @@ impl _TEB32__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn InDebugPrint_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_InDebugPrint_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -46070,6 +63354,28 @@ impl _TEB32__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn HasFiberData_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_HasFiberData_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SkipThreadAttach(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u16) }
    }
@@ -46078,6 +63384,28 @@ impl _TEB32__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SkipThreadAttach_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SkipThreadAttach_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -46092,6 +63420,28 @@ impl _TEB32__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn WerInShipAssertCode_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_WerInShipAssertCode_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn RanProcessInit(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 1u8) as u16) }
    }
@@ -46100,6 +63450,28 @@ impl _TEB32__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn RanProcessInit_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_RanProcessInit_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -46114,6 +63486,28 @@ impl _TEB32__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ClonedThread_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ClonedThread_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SuppressDebugMsg(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u16) }
    }
@@ -46122,6 +63516,28 @@ impl _TEB32__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SuppressDebugMsg_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SuppressDebugMsg_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -46136,6 +63552,28 @@ impl _TEB32__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DisableUserStackWalk_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DisableUserStackWalk_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn RtlExceptionAttached(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 1u8) as u16) }
    }
@@ -46144,6 +63582,28 @@ impl _TEB32__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(9usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn RtlExceptionAttached_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_RtlExceptionAttached_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -46158,6 +63618,28 @@ impl _TEB32__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn InitialThread_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            10usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_InitialThread_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            10usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SessionAware(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(11usize, 1u8) as u16) }
    }
@@ -46166,6 +63648,28 @@ impl _TEB32__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(11usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SessionAware_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            11usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SessionAware_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            11usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -46180,6 +63684,28 @@ impl _TEB32__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn LoadOwner_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_LoadOwner_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn LoaderWorker(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(13usize, 1u8) as u16) }
    }
@@ -46191,6 +63717,28 @@ impl _TEB32__bindgen_ty_3__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn LoaderWorker_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            13usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_LoaderWorker_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            13usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn SpareSameTebBits(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(14usize, 2u8) as u16) }
    }
@@ -46199,6 +63747,28 @@ impl _TEB32__bindgen_ty_3__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(14usize, 2u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn SpareSameTebBits_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            14usize,
+            2u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_SpareSameTebBits_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            14usize,
+            2u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -46329,6 +63899,28 @@ impl _WOW64_EXECUTE_OPTIONS__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn StackReserveSize_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            8u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_StackReserveSize_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            8u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn StackCommitSize(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(8usize, 4u8) as u32) }
    }
@@ -46337,6 +63929,28 @@ impl _WOW64_EXECUTE_OPTIONS__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(8usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn StackCommitSize_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            8usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_StackCommitSize_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            8usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -46351,6 +63965,28 @@ impl _WOW64_EXECUTE_OPTIONS__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Deprecated0_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            12usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Deprecated0_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            12usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DisableWowAssert(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(13usize, 1u8) as u32) }
    }
@@ -46359,6 +63995,28 @@ impl _WOW64_EXECUTE_OPTIONS__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(13usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DisableWowAssert_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            13usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DisableWowAssert_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            13usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -46373,6 +64031,28 @@ impl _WOW64_EXECUTE_OPTIONS__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DisableTurboDispatch_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            14usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DisableTurboDispatch_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            14usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Unused(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(15usize, 13u8) as u32) }
    }
@@ -46381,6 +64061,28 @@ impl _WOW64_EXECUTE_OPTIONS__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(15usize, 13u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Unused_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            15usize,
+            13u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Unused_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            15usize,
+            13u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -46395,6 +64097,28 @@ impl _WOW64_EXECUTE_OPTIONS__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Reserved0_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            28usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved0_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            28usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved1(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(29usize, 1u8) as u32) }
    }
@@ -46403,6 +64127,28 @@ impl _WOW64_EXECUTE_OPTIONS__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(29usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved1_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            29usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved1_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            29usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -46417,6 +64163,28 @@ impl _WOW64_EXECUTE_OPTIONS__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Reserved2_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            30usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved2_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            30usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved3(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(31usize, 1u8) as u32) }
    }
@@ -46425,6 +64193,28 @@ impl _WOW64_EXECUTE_OPTIONS__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(31usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved3_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            31usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved3_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            31usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -48005,7 +65795,7 @@ impl Default for _SAM_DELTA_DATA {
 pub type SAM_DELTA_DATA = _SAM_DELTA_DATA;
 pub type PSAM_DELTA_DATA = *mut _SAM_DELTA_DATA;
 pub type PSAM_DELTA_NOTIFICATION_ROUTINE = ::core::option::Option<
-   unsafe extern "C" fn(
+   unsafe extern "stdcall" fn(
       DomainSid: PSID,
       DeltaType: SECURITY_DB_DELTA_TYPE,
       ObjectType: SECURITY_DB_OBJECT_TYPE,
@@ -48297,8 +66087,6 @@ pub enum _PROCESS_ACTIVITY_TYPE {
    ProcessActivityTypeMax = 1,
 }
 pub use self::_PROCESS_ACTIVITY_TYPE as PROCESS_ACTIVITY_TYPE;
-pub type PROCESSTRACE_HANDLE = ULONG64;
-pub type CONTROLTRACE_ID = ULONG64;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _WMI_TRACE_PACKET {
@@ -48766,6 +66554,28 @@ impl _WMI_BUFFER_HEADER__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ClockType_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            3u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ClockType_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            3u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Frequency(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 61u8) as u64) }
    }
@@ -48774,6 +66584,28 @@ impl _WMI_BUFFER_HEADER__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 61u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Frequency_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            61u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Frequency_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            61u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -49893,6 +67725,28 @@ impl _WMI_SPINLOCK__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn AcquireMode_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            6u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AcquireMode_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            6u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ExecuteDpc(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(6usize, 1u8) as u8) }
    }
@@ -49904,6 +67758,28 @@ impl _WMI_SPINLOCK__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ExecuteDpc_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ExecuteDpc_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ExecuteIsr(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(7usize, 1u8) as u8) }
    }
@@ -49912,6 +67788,28 @@ impl _WMI_SPINLOCK__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(7usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ExecuteIsr_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            7usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ExecuteIsr_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            7usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -50111,6 +68009,28 @@ impl _ETW_READY_THREAD_EVENT__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ExecutingDpc_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ExecutingDpc_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn KernelStackNotResident(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
    }
@@ -50119,6 +68039,28 @@ impl _ETW_READY_THREAD_EVENT__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn KernelStackNotResident_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_KernelStackNotResident_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -50133,6 +68075,28 @@ impl _ETW_READY_THREAD_EVENT__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ProcessOutOfMemory_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ProcessOutOfMemory_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DirectSwitchAttempt(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u8) }
    }
@@ -50144,6 +68108,28 @@ impl _ETW_READY_THREAD_EVENT__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DirectSwitchAttempt_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DirectSwitchAttempt_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 4u8) as u8) }
    }
@@ -50152,6 +68138,28 @@ impl _ETW_READY_THREAD_EVENT__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            4u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -50286,6 +68294,28 @@ impl _ETW_AUTOBOOST_SET_PRIORITY_FLOOR_EVENT__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn NewIoPriorityFloor_raw(this: *const Self) -> SCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            4u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NewIoPriorityFloor_raw(this: *mut Self, val: SCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn OldIoPriority(&self) -> SCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 4u8) as u8) }
    }
@@ -50294,6 +68324,28 @@ impl _ETW_AUTOBOOST_SET_PRIORITY_FLOOR_EVENT__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn OldIoPriority_raw(this: *const Self) -> SCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            4u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_OldIoPriority_raw(this: *mut Self, val: SCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -50347,6 +68399,28 @@ impl _ETW_AUTOBOOST_SET_PRIORITY_FLOOR_EVENT__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ExecutingDpc_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ExecutingDpc_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn WakeupBoost(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
    }
@@ -50355,6 +68429,28 @@ impl _ETW_AUTOBOOST_SET_PRIORITY_FLOOR_EVENT__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn WakeupBoost_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_WakeupBoost_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -50369,6 +68465,28 @@ impl _ETW_AUTOBOOST_SET_PRIORITY_FLOOR_EVENT__bindgen_ty_2__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn BoostedOutstandingIrps_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_BoostedOutstandingIrps_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 5u8) as u8) }
    }
@@ -50377,6 +68495,28 @@ impl _ETW_AUTOBOOST_SET_PRIORITY_FLOOR_EVENT__bindgen_ty_2__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 5u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            5u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            5u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -50459,6 +68599,28 @@ impl _ETW_AUTOBOOST_CLEAR_PRIORITY_FLOOR_EVENT__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn IoBoost_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_IoBoost_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn CpuBoostsBitmap(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 15u8) as u16) }
    }
@@ -50467,6 +68629,28 @@ impl _ETW_AUTOBOOST_CLEAR_PRIORITY_FLOOR_EVENT__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 15u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn CpuBoostsBitmap_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            15u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_CpuBoostsBitmap_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            15u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -52587,6 +70771,28 @@ impl _PERFINFO_SAMPLED_PROFILE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ExecutingDpc_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ExecutingDpc_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ExecutingIsr(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
    }
@@ -52595,6 +70801,28 @@ impl _PERFINFO_SAMPLED_PROFILE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ExecutingIsr_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ExecutingIsr_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -52609,6 +70837,28 @@ impl _PERFINFO_SAMPLED_PROFILE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Priority(&self) -> UCHAR {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 5u8) as u8) }
    }
@@ -52617,6 +70867,28 @@ impl _PERFINFO_SAMPLED_PROFILE_INFORMATION__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u8 = ::core::mem::transmute(val);
          self._bitfield_1.set(3usize, 5u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Priority_raw(this: *const Self) -> UCHAR {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            5u8,
+         ) as u8)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Priority_raw(this: *mut Self, val: UCHAR) {
+      unsafe {
+         let val: u8 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            5u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -52847,6 +71119,28 @@ impl _PERFINFO_PAGE_RANGE_IDENTITY__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn UseDescription_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            4u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_UseDescription_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn UniqueKey(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 48u8) as u64) }
    }
@@ -52858,6 +71152,28 @@ impl _PERFINFO_PAGE_RANGE_IDENTITY__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn UniqueKey_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            48u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_UniqueKey_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            48u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Reserved(&self) -> ULONGLONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(52usize, 12u8) as u64) }
    }
@@ -52866,6 +71182,28 @@ impl _PERFINFO_PAGE_RANGE_IDENTITY__bindgen_ty_1 {
       unsafe {
          let val: u64 = ::core::mem::transmute(val);
          self._bitfield_1.set(52usize, 12u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Reserved_raw(this: *const Self) -> ULONGLONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            52usize,
+            12u8,
+         ) as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Reserved_raw(this: *mut Self, val: ULONGLONG) {
+      unsafe {
+         let val: u64 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            52usize,
+            12u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -52956,6 +71294,28 @@ impl _PERFINFO_KERNELMEMORY_RANGE_USAGE {
       }
    }
    #[inline]
+   pub unsafe fn UsageType_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            5u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_UsageType_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            5u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(5usize, 27u8) as u32) }
    }
@@ -52964,6 +71324,28 @@ impl _PERFINFO_KERNELMEMORY_RANGE_USAGE {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(5usize, 27u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            5usize,
+            27u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            5usize,
+            27u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -53017,6 +71399,28 @@ impl _PERFINFO_PAGECOMBINE_AGGREGATE_STAT {
       }
    }
    #[inline]
+   pub unsafe fn StatType_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            6u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_StatType_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            6u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(6usize, 26u8) as u32) }
    }
@@ -53025,6 +71429,28 @@ impl _PERFINFO_PAGECOMBINE_AGGREGATE_STAT {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(6usize, 26u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            26u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            26u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -53064,6 +71490,28 @@ impl _PERFINFO_PAGECOMBINE_ITERATION_STAT {
       }
    }
    #[inline]
+   pub unsafe fn StatType_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            6u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_StatType_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            6u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(6usize, 26u8) as u32) }
    }
@@ -53072,6 +71520,28 @@ impl _PERFINFO_PAGECOMBINE_ITERATION_STAT {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(6usize, 26u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            26u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            26u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -53161,6 +71631,28 @@ impl _PERFINFO_VAD_ROTATE_INFO__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn Direction_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Direction_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 28u8) as u32) }
    }
@@ -53169,6 +71661,28 @@ impl _PERFINFO_VAD_ROTATE_INFO__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(4usize, 28u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            4usize,
+            28u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            4usize,
+            28u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -53248,6 +71762,28 @@ impl _PERFINFO_MEM_RESET_INFO__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn TypeInfo_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_TypeInfo_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn Spare(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
    }
@@ -53256,6 +71792,28 @@ impl _PERFINFO_MEM_RESET_INFO__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 30u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn Spare_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            30u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_Spare_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            30u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -53369,6 +71927,28 @@ impl _PERFINFO_CC_SCHEDULE_READ_AHEAD {
       }
    }
    #[inline]
+   pub unsafe fn ReadAheadSettingsChanged_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReadAheadSettingsChanged_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReadAheadActive(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u32) }
    }
@@ -53377,6 +71957,28 @@ impl _PERFINFO_CC_SCHEDULE_READ_AHEAD {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(1usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn ReadAheadActive_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ReadAheadActive_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -53518,6 +72120,28 @@ impl _PERFINFO_IMAGELOAD_IN_PAGEFILE_INFO__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn ActiveDataReference_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_ActiveDataReference_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn DeviceEjectable(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u16) }
    }
@@ -53529,6 +72153,28 @@ impl _PERFINFO_IMAGELOAD_IN_PAGEFILE_INFO__bindgen_ty_1__bindgen_ty_1 {
       }
    }
    #[inline]
+   pub unsafe fn DeviceEjectable_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            1usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DeviceEjectable_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            1usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn WritableHandles(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 1u8) as u16) }
    }
@@ -53537,6 +72183,28 @@ impl _PERFINFO_IMAGELOAD_IN_PAGEFILE_INFO__bindgen_ty_1__bindgen_ty_1 {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn WritableHandles_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_WritableHandles_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -53923,6 +72591,28 @@ impl _PERFINFO_CCSWAP_IDLE_SHORT {
       }
    }
    #[inline]
+   pub unsafe fn DataType_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            2u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DataType_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn TimeDelta(&self) -> USHORT {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 14u8) as u16) }
    }
@@ -53931,6 +72621,28 @@ impl _PERFINFO_CCSWAP_IDLE_SHORT {
       unsafe {
          let val: u16 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 14u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn TimeDelta_raw(this: *const Self) -> USHORT {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 2usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            14u8,
+         ) as u16)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_TimeDelta_raw(this: *mut Self, val: USHORT) {
+      unsafe {
+         let val: u16 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 2usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            14u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -53971,6 +72683,28 @@ impl _PERFINFO_CCSWAP_IDLE {
       }
    }
    #[inline]
+   pub unsafe fn DataType_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DataType_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn TimeDelta(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
    }
@@ -53979,6 +72713,28 @@ impl _PERFINFO_CCSWAP_IDLE {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 30u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn TimeDelta_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            30u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_TimeDelta_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            30u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -54016,6 +72772,28 @@ impl _PERFINFO_CCSWAP_LITE {
       }
    }
    #[inline]
+   pub unsafe fn DataType_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DataType_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn OldThreadIdIndex(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 4u8) as u32) }
    }
@@ -54024,6 +72802,28 @@ impl _PERFINFO_CCSWAP_LITE {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 4u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn OldThreadIdIndex_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_OldThreadIdIndex_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            4u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -54038,6 +72838,28 @@ impl _PERFINFO_CCSWAP_LITE {
       }
    }
    #[inline]
+   pub unsafe fn OldThreadPriInc_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            6usize,
+            3u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_OldThreadPriInc_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            6usize,
+            3u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn OldThreadStateWr(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(9usize, 6u8) as u32) }
    }
@@ -54049,6 +72871,28 @@ impl _PERFINFO_CCSWAP_LITE {
       }
    }
    #[inline]
+   pub unsafe fn OldThreadStateWr_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            9usize,
+            6u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_OldThreadStateWr_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            9usize,
+            6u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn TimeDelta(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(15usize, 17u8) as u32) }
    }
@@ -54057,6 +72901,28 @@ impl _PERFINFO_CCSWAP_LITE {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(15usize, 17u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn TimeDelta_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            15usize,
+            17u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_TimeDelta_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            15usize,
+            17u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -54112,6 +72978,28 @@ impl _PERFINFO_CCSWAP {
       }
    }
    #[inline]
+   pub unsafe fn DataType_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            0usize,
+            2u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DataType_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            0usize,
+            2u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn TimeDelta(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
    }
@@ -54120,6 +73008,28 @@ impl _PERFINFO_CCSWAP {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(2usize, 30u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn TimeDelta_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            30u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_TimeDelta_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            30u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -54134,6 +73044,28 @@ impl _PERFINFO_CCSWAP {
       }
    }
    #[inline]
+   pub unsafe fn OldThreadIdIndex_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            32usize,
+            4u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_OldThreadIdIndex_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            32usize,
+            4u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn OldThreadStateWr(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(36usize, 6u8) as u32) }
    }
@@ -54142,6 +73074,28 @@ impl _PERFINFO_CCSWAP {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(36usize, 6u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn OldThreadStateWr_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            36usize,
+            6u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_OldThreadStateWr_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            36usize,
+            6u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -54156,6 +73110,28 @@ impl _PERFINFO_CCSWAP {
       }
    }
    #[inline]
+   pub unsafe fn OldThreadPriority_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            42usize,
+            5u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_OldThreadPriority_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            42usize,
+            5u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn NewThreadWaitTime(&self) -> ULONG {
       unsafe { ::core::mem::transmute(self._bitfield_1.get(47usize, 17u8) as u32) }
    }
@@ -54164,6 +73140,28 @@ impl _PERFINFO_CCSWAP {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
          self._bitfield_1.set(47usize, 17u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn NewThreadWaitTime_raw(this: *const Self) -> ULONG {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 8usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            47usize,
+            17u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_NewThreadWaitTime_raw(this: *mut Self, val: ULONG) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 8usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            47usize,
+            17u8,
+            val as u64,
+         )
       }
    }
    #[inline]
@@ -54560,7 +73558,10 @@ impl Default for _ETW_NOTIFICATION_HEADER {
 pub type ETW_NOTIFICATION_HEADER = _ETW_NOTIFICATION_HEADER;
 pub type PETW_NOTIFICATION_HEADER = *mut _ETW_NOTIFICATION_HEADER;
 pub type PETW_NOTIFICATION_CALLBACK = ::core::option::Option<
-   unsafe extern "C" fn(NotificationHeader: PETW_NOTIFICATION_HEADER, Context: PVOID) -> ULONG,
+   unsafe extern "stdcall" fn(
+      NotificationHeader: PETW_NOTIFICATION_HEADER,
+      Context: PVOID,
+   ) -> ULONG,
 >;
 #[repr(i32)]
 #[non_exhaustive]
@@ -54708,7 +73709,7 @@ impl Default for _TELEMETRY_COVERAGE_POINT {
 pub type TELEMETRY_COVERAGE_POINT = _TELEMETRY_COVERAGE_POINT;
 pub type PTELEMETRY_COVERAGE_POINT = *mut _TELEMETRY_COVERAGE_POINT;
 pub type PNOTIFICATIONCALLBACK =
-   ::core::option::Option<unsafe extern "C" fn(arg1: PWNODE_HEADER, arg2: ULONG_PTR)>;
+   ::core::option::Option<unsafe extern "stdcall" fn(arg1: PWNODE_HEADER, arg2: ULONG_PTR)>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _MOFRESOURCEINFOA {
@@ -55028,11 +74029,196 @@ pub struct _KERNEL_CALLBACK_TABLE {
 }
 pub type KERNEL_CALLBACK_TABLE = _KERNEL_CALLBACK_TABLE;
 pub type PKERNEL_CALLBACK_TABLE = *mut _KERNEL_CALLBACK_TABLE;
-extern "C" {
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _DYNAMIC_FUNCTION_TABLE {
+   pub _address: u8,
+}
+unsafe extern "C" {
    pub static GUID_NULL: GUID;
    pub static mut NlsAnsiCodePage: USHORT;
    pub static mut NlsMbCodePageTag: BOOLEAN;
    pub static mut NlsMbOemCodePageTag: BOOLEAN;
+   pub static mut LdrSystemDllInitBlock: PS_SYSTEM_DLL_INIT_BLOCK;
+   pub static mut RtlpScpCfgNtdllExports: RTL_SCPCFG_NTDLL_EXPORTS;
+   pub static mut LdrpChildNtdll: BOOLEAN;
+   pub fn NtGetTickCount64() -> ULONGLONG;
+   pub fn NtGetTickCount() -> ULONG;
+   pub static GUID_BAD_MEMORY_GROUP: GUID;
+   pub static GUID_BOOT_LOADER_SETTINGS_GROUP: GUID;
+   pub static GUID_CURRENT_BOOT_ENTRY: GUID;
+   pub static GUID_DEBUGGER_SETTINGS_GROUP: GUID;
+   pub static GUID_DEFAULT_BOOT_ENTRY: GUID;
+   pub static GUID_EMS_SETTINGS_GROUP: GUID;
+   pub static GUID_FIRMWARE_BOOTMGR: GUID;
+   pub static GUID_GLOBAL_SETTINGS_GROUP: GUID;
+   pub static GUID_HYPERVISOR_SETTINGS_GROUP: GUID;
+   pub static GUID_KERNEL_DEBUGGER_SETTINGS_GROUP: GUID;
+   pub static GUID_RESUME_LOADER_SETTINGS_GROUP: GUID;
+   pub static GUID_WINDOWS_BOOTMGR: GUID;
+   pub static GUID_WINDOWS_LEGACY_NTLDR: GUID;
+   pub static GUID_WINDOWS_MEMORY_TESTER: GUID;
+   pub static GUID_WINDOWS_OS_TARGET_TEMPLATE_EFI: GUID;
+   pub static GUID_WINDOWS_OS_TARGET_TEMPLATE_PCAT: GUID;
+   pub static GUID_WINDOWS_RESUME_TARGET_TEMPLATE_EFI: GUID;
+   pub static GUID_WINDOWS_RESUME_TARGET_TEMPLATE_PCAT: GUID;
+   pub static GUID_WINDOWS_SETUP_EFI: GUID;
+   pub static GUID_WINDOWS_SETUP_PCAT: GUID;
+   pub static GUID_WINDOWS_SETUP_RAMDISK_OPTIONS: GUID;
+   pub static GUID_WINDOWS_SETUP_BOOT_ENTRY: GUID;
+   pub static GUID_VHD_BOOT_OPTIONS: GUID;
+   pub static PARTITION_BASIC_DATA_GUID: GUID;
+   pub static PARTITION_CLUSTER_GUID: GUID;
+   pub static PARTITION_ENTRY_UNUSED_GUID: GUID;
+   pub static PARTITION_LDM_DATA_GUID: GUID;
+   pub static PARTITION_LDM_METADATA_GUID: GUID;
+   pub static PARTITION_MSFT_RECOVERY_GUID: GUID;
+   pub static PARTITION_MSFT_RESERVED_GUID: GUID;
+   pub static PARTITION_MSFT_SNAPSHOT_GUID: GUID;
+   pub static PARTITION_SPACES_GUID: GUID;
+   pub static PARTITION_SYSTEM_GUID: GUID;
+   pub static mut __ImageBase: IMAGE_DOS_HEADER;
+   pub fn DbgPrint(Format: PCCH, ...) -> ULONG;
+   pub fn DbgPrintEx(ComponentId: ULONG, Level: ULONG, Format: PCCH, ...) -> ULONG;
+   pub fn DbgPrintReturnControlC(Format: PCCH, ...) -> ULONG;
+   #[doc = " Creates a registry transaction.\n\n @param RegistryTransactionHandle Pointer to a variable to receive the handle.\n @param DesiredAccess Desired access mask.\n @param ObjAttributes Optional pointer to object attributes.\n @param CreateOptions Reserved for future use.\n @return NTSTATUS Successful or errant status."]
+   pub fn NtCreateRegistryTransaction(
+      RegistryTransactionHandle: *mut HANDLE,
+      DesiredAccess: ACCESS_MASK,
+      ObjAttributes: POBJECT_ATTRIBUTES,
+      CreateOptions: ULONG,
+   ) -> NTSTATUS;
+   #[doc = " Opens a registry transaction.\n\n @param RegistryTransactionHandle Pointer to a variable to receive the handle.\n @param DesiredAccess Desired access mask.\n @param ObjAttributes Pointer to object attributes.\n @return NTSTATUS Successful or errant status."]
+   pub fn NtOpenRegistryTransaction(
+      RegistryTransactionHandle: *mut HANDLE,
+      DesiredAccess: ACCESS_MASK,
+      ObjAttributes: POBJECT_ATTRIBUTES,
+   ) -> NTSTATUS;
+   #[doc = " Commits a registry transaction.\n\n @param RegistryTransactionHandle Handle to the registry transaction.\n @param Flags Reserved for future use.\n @return NTSTATUS Successful or errant status."]
+   pub fn NtCommitRegistryTransaction(RegistryTransactionHandle: HANDLE, Flags: ULONG) -> NTSTATUS;
+   #[doc = " Rolls back a registry transaction.\n\n @param RegistryTransactionHandle Handle to the registry transaction.\n @param Flags Reserved for future use.\n @return NTSTATUS Successful or errant status."]
+   pub fn NtRollbackRegistryTransaction(
+      RegistryTransactionHandle: HANDLE,
+      Flags: ULONG,
+   ) -> NTSTATUS;
+   pub fn InitializeListHead(ListHead: PLIST_ENTRY);
+   pub fn InitializeListHead32(ListHead: PLIST_ENTRY32);
+   pub fn IsListEmpty(ListHead: PLIST_ENTRY) -> BOOLEAN;
+   pub fn RemoveEntryList(Entry: PLIST_ENTRY) -> BOOLEAN;
+   pub fn RemoveHeadList(ListHead: PLIST_ENTRY) -> PLIST_ENTRY;
+   pub fn RemoveTailList(ListHead: PLIST_ENTRY) -> PLIST_ENTRY;
+   pub fn InsertTailList(ListHead: PLIST_ENTRY, Entry: PLIST_ENTRY);
+   pub fn InsertHeadList(ListHead: PLIST_ENTRY, Entry: PLIST_ENTRY);
+   pub fn AppendTailList(ListHead: PLIST_ENTRY, ListToAppend: PLIST_ENTRY);
+   pub fn PopEntryList(ListHead: PSINGLE_LIST_ENTRY) -> PSINGLE_LIST_ENTRY;
+   pub fn PushEntryList(ListHead: PSINGLE_LIST_ENTRY, Entry: PSINGLE_LIST_ENTRY);
+   pub fn RtlInitHashTableContext(Context: PRTL_DYNAMIC_HASH_TABLE_CONTEXT);
+   pub fn RtlInitHashTableContextFromEnumerator(
+      Context: PRTL_DYNAMIC_HASH_TABLE_CONTEXT,
+      Enumerator: PRTL_DYNAMIC_HASH_TABLE_ENUMERATOR,
+   );
+   pub fn RtlReleaseHashTableContext(Context: PRTL_DYNAMIC_HASH_TABLE_CONTEXT);
+   pub fn RtlTotalBucketsHashTable(HashTable: PRTL_DYNAMIC_HASH_TABLE) -> ULONG;
+   pub fn RtlNonEmptyBucketsHashTable(HashTable: PRTL_DYNAMIC_HASH_TABLE) -> ULONG;
+   pub fn RtlEmptyBucketsHashTable(HashTable: PRTL_DYNAMIC_HASH_TABLE) -> ULONG;
+   pub fn RtlTotalEntriesHashTable(HashTable: PRTL_DYNAMIC_HASH_TABLE) -> ULONG;
+   pub fn RtlActiveEnumeratorsHashTable(HashTable: PRTL_DYNAMIC_HASH_TABLE) -> ULONG;
+   pub fn RtlInitString(DestinationString: PSTRING, SourceString: PCSTR);
+   pub fn RtlInitAnsiString(DestinationString: PANSI_STRING, SourceString: PCSTR);
+   pub fn RtlIsNullOrEmptyUnicodeString(String: PUNICODE_STRING) -> BOOLEAN;
+   pub fn RtlInitUnicodeString(DestinationString: PUNICODE_STRING, SourceString: PCWSTR);
+   pub fn RtlInitUnicodeStringEx(
+      DestinationString: PUNICODE_STRING,
+      SourceString: PCWSTR,
+   ) -> NTSTATUS;
+   pub fn RtlSetProcessIsCritical(
+      NewValue: BOOLEAN,
+      OldValue: PBOOLEAN,
+      CheckFlag: BOOLEAN,
+   ) -> NTSTATUS;
+   pub fn RtlSetThreadIsCritical(
+      NewValue: BOOLEAN,
+      OldValue: PBOOLEAN,
+      CheckFlag: BOOLEAN,
+   ) -> NTSTATUS;
+   pub static mut RtlDosPathSeperatorsString: UNICODE_STRING;
+   pub static mut RtlAlternateDosPathSeperatorString: UNICODE_STRING;
+   pub static mut RtlNtPathSeperatorString: UNICODE_STRING;
+   pub fn RtlIsEqualLuid(L1: PLUID, L2: PLUID) -> BOOLEAN;
+   pub fn RtlIsZeroLuid(L1: PLUID) -> BOOLEAN;
+   pub fn RtlCheckBit(BitMapHeader: PRTL_BITMAP, BitPosition: ULONG) -> BOOLEAN;
+   pub fn RtlInitializeSidEx(
+      Sid: PSID,
+      IdentifierAuthority: PSID_IDENTIFIER_AUTHORITY,
+      SubAuthorityCount: UCHAR,
+      ...
+   ) -> NTSTATUS;
+   pub fn RtlRestoreContext(ContextRecord: PCONTEXT, ExceptionRecord: *mut _EXCEPTION_RECORD);
+   pub fn UStr32ToUStr(Destination: PUNICODE_STRING, Source: PUNICODE_STRING32);
+   pub fn UStrToUStr32(Destination: PUNICODE_STRING32, Source: PUNICODE_STRING);
+   pub fn PerfIsGroupOnInGroupMask(Group: ULONG, GroupMask: PPERFINFO_GROUPMASK) -> BOOLEAN;
+   pub static EtwSecondaryDumpDataGuid: GUID;
+   pub static CKCLGuid: GUID;
+   pub static AuditLoggerGuid: GUID;
+   pub static SecurityProviderGuid: GUID;
+   pub static PrivateLoggerSecurityGuid: GUID;
+   pub static GlobalLoggerGuid: GUID;
+   pub static GenericMessageGuid: GUID;
+   pub static TraceErrorGuid: GUID;
+   pub static HardFaultGuid: GUID;
+   pub static WmiEventLoggerGuid: GUID;
+   pub static DbgPrintGuid: GUID;
+   pub static DriverVerifierGuid: GUID;
+   pub static ApplicationVerifierGuid: GUID;
+   pub static JobGuid: GUID;
+   pub static EventTraceSpare1: GUID;
+   pub static WnfGuid: GUID;
+   pub static UmglThreadGuid: GUID;
+   pub static DiskIoGuid: GUID;
+   pub static ImageIdGuid: GUID;
+   pub static PoolGuid: GUID;
+   pub static PerfinfoGuid: GUID;
+   pub static HeapGuid: GUID;
+   pub static HeapRangeGuid: GUID;
+   pub static HeapSummaryGuid: GUID;
+   pub static CritSecGuid: GUID;
+   pub static StackWalkGuid: GUID;
+   pub static ALPCGuid: GUID;
+   pub static RTLostEventsGuid: GUID;
+   pub static NtdllTraceGuid: GUID;
+   pub static UserLoaderGuid: GUID;
+   pub static LoadMUIDllGuid: GUID;
+   pub static ObjectGuid: GUID;
+   pub static ModBoundGuid: GUID;
+   pub static ProcessGuid: GUID;
+   pub static PowerGuid: GUID;
+   pub static MmcssGuid: GUID;
+   pub static DpcGuid: GUID;
+   pub static SplitIoGuid: GUID;
+   pub static ThreadPoolGuid: GUID;
+   pub static UmsTraceGuid: GUID;
+   pub static UmsEventGuid: GUID;
+   pub static HypervisorTraceGuid: GUID;
+   pub static HypervisorXTraceGuid: GUID;
+   pub static LegacyEventLogGuid: GUID;
+   pub static KernelRundownGuid: GUID;
+   pub static SessionNotificationGuid: GUID;
+   pub static CcGuid: GUID;
+   pub static NullGuid: GUID;
+   pub static UserDiagnosticGuid: GUID;
+   pub static WerSvcTriggerGuid: GUID;
+   pub static FileIoGuid: GUID;
+   pub static ImageLoadGuid: GUID;
+   pub static PageFaultGuid: GUID;
+   pub static RegistryGuid: GUID;
+   pub static TcpIpGuid: GUID;
+   pub static ThreadGuid: GUID;
+   pub static UdpIpGuid: GUID;
+   pub static GUID_REGISTRATION_CHANGE_NOTIFICATION: GUID;
+   pub static GUID_MOF_RESOURCE_ADDED_NOTIFICATION: GUID;
+   pub static GUID_MOF_RESOURCE_REMOVED_NOTIFICATION: GUID;
+}
+unsafe extern "stdcall" {
    pub fn NtCallbackReturn(OutputBuffer: PVOID, OutputLength: ULONG, Status: NTSTATUS) -> NTSTATUS;
    pub fn NtFlushProcessWriteBuffers() -> NTSTATUS;
    pub fn NtQueryDebugFilterState(ComponentId: ULONG, Level: ULONG) -> NTSTATUS;
@@ -55159,8 +74345,6 @@ extern "C" {
    pub fn LdrUnregisterDllNotification(Cookie: PVOID) -> NTSTATUS;
    pub fn LdrStandardizeSystemPath(SystemPath: PUNICODE_STRING) -> PUNICODE_STRING;
    pub fn LdrGetFailureData() -> PLDR_FAILURE_DATA;
-   pub static mut LdrSystemDllInitBlock: PS_SYSTEM_DLL_INIT_BLOCK;
-   pub static mut RtlpScpCfgNtdllExports: RTL_SCPCFG_NTDLL_EXPORTS;
    pub fn LdrAddLoadAsDataTable(
       Module: PVOID,
       FilePath: PCWSTR,
@@ -55389,7 +74573,6 @@ extern "C" {
       EffectiveDllPath: *mut PCWSTR,
    ) -> NTSTATUS;
    pub fn LdrSetDllManifestProber(Routine: PVOID);
-   pub static mut LdrpChildNtdll: BOOLEAN;
    pub fn LdrpResGetMappingSize(
       BaseAddress: PVOID,
       Size: PSIZE_T,
@@ -55818,8 +75001,6 @@ extern "C" {
       ValidResponseOptions: ULONG,
       Response: PULONG,
    ) -> NTSTATUS;
-   pub fn NtGetTickCount64() -> ULONGLONG;
-   pub fn NtGetTickCount() -> ULONG;
    pub fn NtQueryDefaultLocale(UserProfile: BOOLEAN, DefaultLocaleId: PLCID) -> NTSTATUS;
    pub fn NtSetDefaultLocale(UserProfile: BOOLEAN, DefaultLocaleId: LCID) -> NTSTATUS;
    pub fn NtQueryInstallUILanguage(InstallUILanguageId: *mut LANGID) -> NTSTATUS;
@@ -55871,39 +75052,6 @@ extern "C" {
    pub fn NtShutdownSystem(Action: SHUTDOWN_ACTION) -> NTSTATUS;
    pub fn NtDisplayString(String: PUNICODE_STRING) -> NTSTATUS;
    pub fn NtDrawText(Text: PUNICODE_STRING) -> NTSTATUS;
-   pub static GUID_BAD_MEMORY_GROUP: GUID;
-   pub static GUID_BOOT_LOADER_SETTINGS_GROUP: GUID;
-   pub static GUID_CURRENT_BOOT_ENTRY: GUID;
-   pub static GUID_DEBUGGER_SETTINGS_GROUP: GUID;
-   pub static GUID_DEFAULT_BOOT_ENTRY: GUID;
-   pub static GUID_EMS_SETTINGS_GROUP: GUID;
-   pub static GUID_FIRMWARE_BOOTMGR: GUID;
-   pub static GUID_GLOBAL_SETTINGS_GROUP: GUID;
-   pub static GUID_HYPERVISOR_SETTINGS_GROUP: GUID;
-   pub static GUID_KERNEL_DEBUGGER_SETTINGS_GROUP: GUID;
-   pub static GUID_RESUME_LOADER_SETTINGS_GROUP: GUID;
-   pub static GUID_WINDOWS_BOOTMGR: GUID;
-   pub static GUID_WINDOWS_LEGACY_NTLDR: GUID;
-   pub static GUID_WINDOWS_MEMORY_TESTER: GUID;
-   pub static GUID_WINDOWS_OS_TARGET_TEMPLATE_EFI: GUID;
-   pub static GUID_WINDOWS_OS_TARGET_TEMPLATE_PCAT: GUID;
-   pub static GUID_WINDOWS_RESUME_TARGET_TEMPLATE_EFI: GUID;
-   pub static GUID_WINDOWS_RESUME_TARGET_TEMPLATE_PCAT: GUID;
-   pub static GUID_WINDOWS_SETUP_EFI: GUID;
-   pub static GUID_WINDOWS_SETUP_PCAT: GUID;
-   pub static GUID_WINDOWS_SETUP_RAMDISK_OPTIONS: GUID;
-   pub static GUID_WINDOWS_SETUP_BOOT_ENTRY: GUID;
-   pub static GUID_VHD_BOOT_OPTIONS: GUID;
-   pub static PARTITION_BASIC_DATA_GUID: GUID;
-   pub static PARTITION_CLUSTER_GUID: GUID;
-   pub static PARTITION_ENTRY_UNUSED_GUID: GUID;
-   pub static PARTITION_LDM_DATA_GUID: GUID;
-   pub static PARTITION_LDM_METADATA_GUID: GUID;
-   pub static PARTITION_MSFT_RECOVERY_GUID: GUID;
-   pub static PARTITION_MSFT_RESERVED_GUID: GUID;
-   pub static PARTITION_MSFT_SNAPSHOT_GUID: GUID;
-   pub static PARTITION_SPACES_GUID: GUID;
-   pub static PARTITION_SYSTEM_GUID: GUID;
    #[doc = " Sets the logging level and callback routine for BCD messages.\n\n @param BcdLoggingLevel The logging level to set.\n @param BcdMessageCallbackRoutine The callback routine for BCD messages.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdSetLogging(
       BcdLoggingLevel: BCD_MESSAGE_TYPE,
@@ -55914,26 +75062,26 @@ extern "C" {
    #[doc = " Retrieves the file name for the BCD.\n\n @param BcdSystemStorePath The pointer to receive the system store path.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdGetSystemStorePath(BcdSystemStorePath: *mut PWSTR) -> NTSTATUS;
    #[doc = " Sets the device for the system BCD store.\n\n @param SystemPartition The system partition to set.\n @return NTSTATUS Successful or errant status."]
-   pub fn BcdSetSystemStoreDevice(SystemPartition: UNICODE_STRING) -> NTSTATUS;
+   pub fn BcdSetSystemStoreDevice(SystemPartition: PCUNICODE_STRING) -> NTSTATUS;
    #[doc = " Opens the BCD system store.\n\n @param BcdStoreHandle The handle to receive the system store.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdOpenSystemStore(BcdStoreHandle: PHANDLE) -> NTSTATUS;
    #[doc = " Opens a BCD store from a file.\n\n @param BcdFilePath The file path of the BCD store.\n @param BcdStoreHandle The handle to receive the BCD store.\n @return NTSTATUS Successful or errant status."]
-   pub fn BcdOpenStoreFromFile(BcdFilePath: UNICODE_STRING, BcdStoreHandle: PHANDLE) -> NTSTATUS;
+   pub fn BcdOpenStoreFromFile(BcdFilePath: PCUNICODE_STRING, BcdStoreHandle: PHANDLE) -> NTSTATUS;
    #[doc = " Creates a BCD store.\n\n @param BcdFilePath The file path to create the BCD store.\n @param BcdStoreHandle The handle to receive the BCD store.\n @return NTSTATUS Successful or errant status."]
-   pub fn BcdCreateStore(BcdFilePath: UNICODE_STRING, BcdStoreHandle: PHANDLE) -> NTSTATUS;
+   pub fn BcdCreateStore(BcdFilePath: PCUNICODE_STRING, BcdStoreHandle: PHANDLE) -> NTSTATUS;
    #[doc = " Exports the BCD store to a file.\n\n @param BcdFilePath The file path to export the BCD store.\n @return NTSTATUS Successful or errant status."]
-   pub fn BcdExportStore(BcdFilePath: UNICODE_STRING) -> NTSTATUS;
+   pub fn BcdExportStore(BcdFilePath: PCUNICODE_STRING) -> NTSTATUS;
    #[doc = " Exports the BCD store to a file with additional flags.\n\n @param BcdStoreHandle The handle to the BCD store.\n @param Flags The flags for exporting the store.\n @param BcdFilePath The file path to export the BCD store.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdExportStoreEx(
       BcdStoreHandle: HANDLE,
       Flags: ULONG,
-      BcdFilePath: UNICODE_STRING,
+      BcdFilePath: PCUNICODE_STRING,
    ) -> NTSTATUS;
    #[doc = " Imports a BCD store from a file.\n\n @param BcdFilePath The file path to import the BCD store.\n @return NTSTATUS Successful or errant status."]
-   pub fn BcdImportStore(BcdFilePath: UNICODE_STRING) -> NTSTATUS;
+   pub fn BcdImportStore(BcdFilePath: PCUNICODE_STRING) -> NTSTATUS;
    #[doc = " Imports a BCD store from a file with additional flags.\n\n @param BcdFilePath The file path to import the BCD store.\n @param BcdImportFlags The flags for importing the store.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdImportStoreWithFlags(
-      BcdFilePath: UNICODE_STRING,
+      BcdFilePath: PCUNICODE_STRING,
       BcdImportFlags: BCD_IMPORT_FLAGS,
    ) -> NTSTATUS;
    #[doc = " Deletes object references in the BCD store.\n\n @param BcdStoreHandle The handle to the BCD store.\n @param Identifier The identifier of the object to delete references for.\n @return NTSTATUS Successful or errant status."]
@@ -55942,7 +75090,7 @@ extern "C" {
    pub fn BcdDeleteSystemStore() -> NTSTATUS;
    #[doc = " Opens a BCD store with additional flags.\n\n @param BcdFilePath The file path of the BCD store.\n @param BcdOpenFlags The flags for opening the store.\n @param BcdStoreHandle The handle to receive the BCD store.\n @return NTSTATUS Successful or errant status."]
    pub fn BcdOpenStore(
-      BcdFilePath: UNICODE_STRING,
+      BcdFilePath: PCUNICODE_STRING,
       BcdOpenFlags: BCD_OPEN_FLAGS,
       BcdStoreHandle: PHANDLE,
    ) -> NTSTATUS;
@@ -56065,7 +75213,7 @@ extern "C" {
       ZeroBits: ULONG_PTR,
       RegionSize: PSIZE_T,
       AllocationType: ULONG,
-      Protect: ULONG,
+      PageProtection: ULONG,
    ) -> NTSTATUS;
    pub fn NtAllocateVirtualMemoryEx(
       ProcessHandle: HANDLE,
@@ -56086,22 +75234,21 @@ extern "C" {
       ProcessHandle: HANDLE,
       BaseAddress: PVOID,
       Buffer: PVOID,
-      BufferSize: SIZE_T,
+      NumberOfBytesToRead: SIZE_T,
       NumberOfBytesRead: PSIZE_T,
    ) -> NTSTATUS;
    pub fn NtWow64ReadVirtualMemory64(
       ProcessHandle: HANDLE,
-      BaseAddress: PVOID,
+      BaseAddress: ULONGLONG,
       Buffer: PVOID,
-      BufferSize: ULONGLONG,
+      NumberOfBytesToRead: ULONGLONG,
       NumberOfBytesRead: PULONGLONG,
-      Flags: ULONG,
    ) -> NTSTATUS;
    pub fn NtReadVirtualMemoryEx(
       ProcessHandle: HANDLE,
       BaseAddress: PVOID,
       Buffer: PVOID,
-      BufferSize: SIZE_T,
+      NumberOfBytesToRead: SIZE_T,
       NumberOfBytesRead: PSIZE_T,
       Flags: ULONG,
    ) -> NTSTATUS;
@@ -56109,22 +75256,22 @@ extern "C" {
       ProcessHandle: HANDLE,
       BaseAddress: PVOID,
       Buffer: PVOID,
-      BufferSize: SIZE_T,
+      NumberOfBytesToWrite: SIZE_T,
       NumberOfBytesWritten: PSIZE_T,
    ) -> NTSTATUS;
    pub fn NtWow64WriteVirtualMemory64(
       ProcessHandle: HANDLE,
-      BaseAddress: PVOID,
+      BaseAddress: ULONGLONG,
       Buffer: PVOID,
-      BufferSize: ULONGLONG,
+      NumberOfBytesToWrite: ULONGLONG,
       NumberOfBytesWritten: PULONGLONG,
    ) -> NTSTATUS;
    pub fn NtProtectVirtualMemory(
       ProcessHandle: HANDLE,
       BaseAddress: *mut PVOID,
       RegionSize: PSIZE_T,
-      NewProtect: ULONG,
-      OldProtect: PULONG,
+      NewProtection: ULONG,
+      OldProtection: PULONG,
    ) -> NTSTATUS;
    pub fn NtQueryVirtualMemory(
       ProcessHandle: HANDLE,
@@ -56136,7 +75283,7 @@ extern "C" {
    ) -> NTSTATUS;
    pub fn NtWow64QueryVirtualMemory64(
       ProcessHandle: HANDLE,
-      BaseAddress: PVOID,
+      BaseAddress: ULONGLONG,
       MemoryInformationClass: MEMORY_INFORMATION_CLASS,
       MemoryInformation: PVOID,
       MemoryInformationLength: ULONGLONG,
@@ -56203,7 +75350,7 @@ extern "C" {
       ViewSize: PSIZE_T,
       InheritDisposition: SECTION_INHERIT,
       AllocationType: ULONG,
-      Win32Protect: ULONG,
+      PageProtection: ULONG,
    ) -> NTSTATUS;
    pub fn NtMapViewOfSectionEx(
       SectionHandle: HANDLE,
@@ -56503,7 +75650,6 @@ extern "C" {
    pub fn NtSuspendProcess(ProcessHandle: HANDLE) -> NTSTATUS;
    #[doc = " Resumes the specified process.\n\n @param ProcessHandle A handle to the process to be resumed.\n @return NTSTATUS Successful or errant status."]
    pub fn NtResumeProcess(ProcessHandle: HANDLE) -> NTSTATUS;
-   pub static mut __ImageBase: IMAGE_DOS_HEADER;
    #[doc = " Retrieves information about the specified process.\n\n @param ProcessHandle A handle to the process.\n @param ProcessInformationClass The type of process information to be retrieved.\n @param ProcessInformation A pointer to a buffer that receives the process information.\n @param ProcessInformationLength The size of the buffer pointed to by the ProcessInformation parameter.\n @param ReturnLength An optional pointer to a variable that receives the size of the data returned.\n @return NTSTATUS Successful or errant status."]
    pub fn NtQueryInformationProcess(
       ProcessHandle: HANDLE,
@@ -56794,8 +75940,6 @@ extern "C" {
    pub fn DbgUserBreakPoint();
    pub fn DbgBreakPoint();
    pub fn DbgBreakPointWithStatus(Status: ULONG);
-   pub fn DbgPrint(Format: PCCH, ...) -> ULONG;
-   pub fn DbgPrintEx(ComponentId: ULONG, Level: ULONG, Format: PCCH, ...) -> ULONG;
    pub fn vDbgPrintEx(ComponentId: ULONG, Level: ULONG, Format: PCCH, arglist: va_list) -> ULONG;
    pub fn vDbgPrintExWithPrefix(
       Prefix: PCCH,
@@ -56804,7 +75948,6 @@ extern "C" {
       Format: PCCH,
       arglist: va_list,
    ) -> ULONG;
-   pub fn DbgPrintReturnControlC(Format: PCCH, ...) -> ULONG;
    pub fn DbgQueryDebugFilterState(ComponentId: ULONG, Level: ULONG) -> NTSTATUS;
    pub fn DbgSetDebugFilterState(ComponentId: ULONG, Level: ULONG, State: BOOLEAN) -> NTSTATUS;
    pub fn DbgPrompt(Prompt: PCCH, Response: PCH, Length: ULONG) -> ULONG;
@@ -57792,37 +76935,6 @@ extern "C" {
    pub fn NtFreezeRegistry(TimeOutInSeconds: ULONG) -> NTSTATUS;
    #[doc = " Thaws the registry and enables flushing changes to disk.\n\n @return NTSTATUS Successful or errant status."]
    pub fn NtThawRegistry() -> NTSTATUS;
-   #[doc = " Creates a registry transaction.\n\n @param RegistryTransactionHandle Pointer to a variable to receive the handle.\n @param DesiredAccess Desired access mask.\n @param ObjAttributes Optional pointer to object attributes.\n @param CreateOptions Reserved for future use.\n @return NTSTATUS Successful or errant status."]
-   pub fn NtCreateRegistryTransaction(
-      RegistryTransactionHandle: *mut HANDLE,
-      DesiredAccess: ACCESS_MASK,
-      ObjAttributes: POBJECT_ATTRIBUTES,
-      CreateOptions: ULONG,
-   ) -> NTSTATUS;
-   #[doc = " Opens a registry transaction.\n\n @param RegistryTransactionHandle Pointer to a variable to receive the handle.\n @param DesiredAccess Desired access mask.\n @param ObjAttributes Pointer to object attributes.\n @return NTSTATUS Successful or errant status."]
-   pub fn NtOpenRegistryTransaction(
-      RegistryTransactionHandle: *mut HANDLE,
-      DesiredAccess: ACCESS_MASK,
-      ObjAttributes: POBJECT_ATTRIBUTES,
-   ) -> NTSTATUS;
-   #[doc = " Commits a registry transaction.\n\n @param RegistryTransactionHandle Handle to the registry transaction.\n @param Flags Reserved for future use.\n @return NTSTATUS Successful or errant status."]
-   pub fn NtCommitRegistryTransaction(RegistryTransactionHandle: HANDLE, Flags: ULONG) -> NTSTATUS;
-   #[doc = " Rolls back a registry transaction.\n\n @param RegistryTransactionHandle Handle to the registry transaction.\n @param Flags Reserved for future use.\n @return NTSTATUS Successful or errant status."]
-   pub fn NtRollbackRegistryTransaction(
-      RegistryTransactionHandle: HANDLE,
-      Flags: ULONG,
-   ) -> NTSTATUS;
-   pub fn InitializeListHead(ListHead: PLIST_ENTRY);
-   pub fn InitializeListHead32(ListHead: PLIST_ENTRY32);
-   pub fn IsListEmpty(ListHead: PLIST_ENTRY) -> BOOLEAN;
-   pub fn RemoveEntryList(Entry: PLIST_ENTRY) -> BOOLEAN;
-   pub fn RemoveHeadList(ListHead: PLIST_ENTRY) -> PLIST_ENTRY;
-   pub fn RemoveTailList(ListHead: PLIST_ENTRY) -> PLIST_ENTRY;
-   pub fn InsertTailList(ListHead: PLIST_ENTRY, Entry: PLIST_ENTRY);
-   pub fn InsertHeadList(ListHead: PLIST_ENTRY, Entry: PLIST_ENTRY);
-   pub fn AppendTailList(ListHead: PLIST_ENTRY, ListToAppend: PLIST_ENTRY);
-   pub fn PopEntryList(ListHead: PSINGLE_LIST_ENTRY) -> PSINGLE_LIST_ENTRY;
-   pub fn PushEntryList(ListHead: PSINGLE_LIST_ENTRY, Entry: PSINGLE_LIST_ENTRY);
    pub fn RtlInitializeGenericTableAvl(
       Table: PRTL_AVL_TABLE,
       CompareRoutine: PRTL_AVL_COMPARE_ROUTINE,
@@ -57933,17 +77045,6 @@ extern "C" {
    ) -> NTSTATUS;
    pub fn RtlQueryPointerMapping(Tree: PRTL_RB_TREE, Children: PRTL_BALANCED_NODE) -> NTSTATUS;
    pub fn RtlRemovePointerMapping(Tree: PRTL_RB_TREE, Children: PRTL_BALANCED_NODE) -> NTSTATUS;
-   pub fn RtlInitHashTableContext(Context: PRTL_DYNAMIC_HASH_TABLE_CONTEXT);
-   pub fn RtlInitHashTableContextFromEnumerator(
-      Context: PRTL_DYNAMIC_HASH_TABLE_CONTEXT,
-      Enumerator: PRTL_DYNAMIC_HASH_TABLE_ENUMERATOR,
-   );
-   pub fn RtlReleaseHashTableContext(Context: PRTL_DYNAMIC_HASH_TABLE_CONTEXT);
-   pub fn RtlTotalBucketsHashTable(HashTable: PRTL_DYNAMIC_HASH_TABLE) -> ULONG;
-   pub fn RtlNonEmptyBucketsHashTable(HashTable: PRTL_DYNAMIC_HASH_TABLE) -> ULONG;
-   pub fn RtlEmptyBucketsHashTable(HashTable: PRTL_DYNAMIC_HASH_TABLE) -> ULONG;
-   pub fn RtlTotalEntriesHashTable(HashTable: PRTL_DYNAMIC_HASH_TABLE) -> ULONG;
-   pub fn RtlActiveEnumeratorsHashTable(HashTable: PRTL_DYNAMIC_HASH_TABLE) -> ULONG;
    pub fn RtlCreateHashTable(
       HashTable: *mut PRTL_DYNAMIC_HASH_TABLE,
       Shift: ULONG,
@@ -58090,9 +77191,7 @@ extern "C" {
    pub fn RtlWakeAddressSingle(Address: PVOID);
    pub fn RtlWakeAddressSingleNoFence(Address: PVOID);
    pub fn RtlInitEmptyAnsiString(AnsiString: PANSI_STRING, Buffer: PCHAR, MaximumLength: USHORT);
-   pub fn RtlInitString(DestinationString: PSTRING, SourceString: PCSTR);
    pub fn RtlInitStringEx(DestinationString: PSTRING, SourceString: PCSZ) -> NTSTATUS;
-   pub fn RtlInitAnsiString(DestinationString: PANSI_STRING, SourceString: PCSTR);
    pub fn RtlInitAnsiStringEx(DestinationString: PANSI_STRING, SourceString: PCSZ) -> NTSTATUS;
    pub fn RtlFreeAnsiString(AnsiString: PANSI_STRING);
    pub fn RtlInitUTF8String(DestinationString: PUTF8_STRING, SourceString: PCSZ);
@@ -58107,17 +77206,11 @@ extern "C" {
    pub fn RtlAppendStringToString(Destination: PSTRING, Source: PSTRING) -> NTSTATUS;
    pub fn RtlAppendAsciizToString(Destination: PSTRING, Source: PCSTR) -> NTSTATUS;
    pub fn RtlUpperString(DestinationString: PSTRING, SourceString: *const STRING);
-   pub fn RtlIsNullOrEmptyUnicodeString(String: PUNICODE_STRING) -> BOOLEAN;
    pub fn RtlInitEmptyUnicodeString(
       DestinationString: PUNICODE_STRING,
       Buffer: PWCHAR,
       MaximumLength: USHORT,
    );
-   pub fn RtlInitUnicodeString(DestinationString: PUNICODE_STRING, SourceString: PCWSTR);
-   pub fn RtlInitUnicodeStringEx(
-      DestinationString: PUNICODE_STRING,
-      SourceString: PCWSTR,
-   ) -> NTSTATUS;
    pub fn RtlCreateUnicodeString(
       DestinationString: PUNICODE_STRING,
       SourceString: PCWSTR,
@@ -58693,16 +77786,6 @@ extern "C" {
       EventHandle: HANDLE,
       ReflectionInformation: PRTLP_PROCESS_REFLECTION_REFLECTION_INFORMATION,
    ) -> NTSTATUS;
-   pub fn RtlSetProcessIsCritical(
-      NewValue: BOOLEAN,
-      OldValue: PBOOLEAN,
-      CheckFlag: BOOLEAN,
-   ) -> NTSTATUS;
-   pub fn RtlSetThreadIsCritical(
-      NewValue: BOOLEAN,
-      OldValue: PBOOLEAN,
-      CheckFlag: BOOLEAN,
-   ) -> NTSTATUS;
    pub fn RtlSetThreadSubProcessTag(SubProcessTag: PVOID) -> PVOID;
    pub fn RtlValidProcessProtection(ProcessProtection: PS_PROTECTION) -> BOOLEAN;
    pub fn RtlTestProtectedAccess(Source: PS_PROTECTION, Target: PS_PROTECTION) -> BOOLEAN;
@@ -58732,12 +77815,12 @@ extern "C" {
    ) -> NTSTATUS;
    pub fn RtlFreeUserStack(AllocationBase: PVOID) -> NTSTATUS;
    pub fn RtlInitializeContext(
-      Reserved: HANDLE,
+      ProcessHandle: HANDLE,
       Context: PCONTEXT,
       Parameter: PVOID,
       InitialPc: PVOID,
       InitialSp: PVOID,
-   ) -> ULONG64;
+   ) -> NTSTATUS;
    pub fn RtlInitializeExtendedContext(
       Context: PCONTEXT,
       ContextFlags: ULONG,
@@ -58769,10 +77852,6 @@ extern "C" {
    ) -> PVOID;
    pub fn RtlLocateLegacyContext(ContextEx: PCONTEXT_EX, Length: PULONG) -> PCONTEXT;
    pub fn RtlSetExtendedFeaturesMask(ContextEx: PCONTEXT_EX, FeatureMask: ULONG64);
-   pub fn RtlWow64GetThreadContext(ThreadHandle: HANDLE, ThreadContext: PWOW64_CONTEXT)
-      -> NTSTATUS;
-   pub fn RtlWow64SetThreadContext(ThreadHandle: HANDLE, ThreadContext: PWOW64_CONTEXT)
-      -> NTSTATUS;
    pub fn RtlRemoteCall(
       ProcessHandle: HANDLE,
       ThreadHandle: HANDLE,
@@ -58805,7 +77884,6 @@ extern "C" {
       Flags: ULONG,
    ) -> LONG;
    pub fn RtlKnownExceptionFilter(ExceptionPointers: PEXCEPTION_POINTERS) -> LONG;
-   pub fn RtlGetFunctionTableListHead() -> PLIST_ENTRY;
    pub fn RtlInitializeSListHead(ListHead: PSLIST_HEADER);
    pub fn RtlFirstEntrySList(ListHead: *const SLIST_HEADER) -> PSLIST_ENTRY;
    pub fn RtlInterlockedPopEntrySList(ListHead: PSLIST_HEADER) -> PSLIST_ENTRY;
@@ -58932,6 +78010,7 @@ extern "C" {
    ) -> SIZE_T;
    pub fn RtlCompareMemoryUlong(Source: PVOID, Length: SIZE_T, Pattern: ULONG) -> SIZE_T;
    pub fn RtlFillMemoryUlong(Destination: PVOID, Length: SIZE_T, Pattern: ULONG);
+   pub fn RtlFillMemoryUlonglong(Destination: PVOID, Length: SIZE_T, Pattern: ULONGLONG);
    pub fn RtlIsZeroMemory(Buffer: PVOID, Length: SIZE_T) -> BOOLEAN;
    pub fn RtlCrc32(Buffer: *const cty::c_void, Size: usize, InitialCrc: DWORD) -> DWORD;
    pub fn RtlCrc64(Buffer: *const cty::c_void, Size: usize, InitialCrc: ULONGLONG) -> ULONGLONG;
@@ -58997,9 +78076,6 @@ extern "C" {
       ReturnedLength: PULONG,
    ) -> NTSTATUS;
    pub fn RtlSetEnvironmentStrings(NewEnvironment: PCWSTR, NewEnvironmentSize: SIZE_T) -> NTSTATUS;
-   pub static mut RtlDosPathSeperatorsString: UNICODE_STRING;
-   pub static mut RtlAlternateDosPathSeperatorString: UNICODE_STRING;
-   pub static mut RtlNtPathSeperatorString: UNICODE_STRING;
    pub fn RtlDetermineDosPathNameType_U(DosFileName: PCWSTR) -> RTL_PATH_TYPE;
    pub fn RtlIsDosDeviceName_U(DosFileName: PCWSTR) -> ULONG;
    pub fn RtlGetFullPathName_U(
@@ -59274,8 +78350,6 @@ extern "C" {
    pub fn RtlUnlockMemoryBlockLookaside(MemoryBlockLookaside: PVOID) -> NTSTATUS;
    pub fn RtlGetCurrentTransaction(ExistingFileName: PCWSTR, NewFileName: PCWSTR) -> HANDLE;
    pub fn RtlSetCurrentTransaction(TransactionHandle: HANDLE) -> LOGICAL;
-   pub fn RtlIsEqualLuid(L1: PLUID, L2: PLUID) -> BOOLEAN;
-   pub fn RtlIsZeroLuid(L1: PLUID) -> BOOLEAN;
    pub fn RtlConvertLongToLuid(Long: LONG) -> LUID;
    pub fn RtlConvertUlongToLuid(Ulong: ULONG) -> LUID;
    pub fn RtlConvertLuidToLonglong(Luid: LUID) -> LONGLONG;
@@ -59519,7 +78593,6 @@ extern "C" {
    ) -> ULONG;
    pub fn RtlFindLongestRunClear(BitMapHeader: PRTL_BITMAP, StartingIndex: PULONG) -> ULONG;
    pub fn RtlFindFirstRunClear(BitMapHeader: PRTL_BITMAP, StartingIndex: PULONG) -> ULONG;
-   pub fn RtlCheckBit(BitMapHeader: PRTL_BITMAP, BitPosition: ULONG) -> BOOLEAN;
    pub fn RtlNumberOfClearBits(BitMapHeader: PRTL_BITMAP) -> ULONG;
    pub fn RtlNumberOfSetBits(BitMapHeader: PRTL_BITMAP) -> ULONG;
    pub fn RtlAreBitsClear(
@@ -59658,12 +78731,6 @@ extern "C" {
       Sid: PSID,
       IdentifierAuthority: PSID_IDENTIFIER_AUTHORITY,
       SubAuthorityCount: UCHAR,
-   ) -> NTSTATUS;
-   pub fn RtlInitializeSidEx(
-      Sid: PSID,
-      IdentifierAuthority: PSID_IDENTIFIER_AUTHORITY,
-      SubAuthorityCount: UCHAR,
-      ...
    ) -> NTSTATUS;
    pub fn RtlIdentifierAuthoritySid(Sid: PSID) -> PSID_IDENTIFIER_AUTHORITY;
    pub fn RtlSubAuthoritySid(Sid: PSID, SubAuthority: ULONG) -> PULONG;
@@ -60322,7 +79389,6 @@ extern "C" {
    ) -> WORD;
    pub fn RtlCaptureContext(ContextRecord: PCONTEXT);
    pub fn RtlCaptureContext2(ContextRecord: PCONTEXT);
-   pub fn RtlRestoreContext(ContextRecord: PCONTEXT, ExceptionRecord: *mut _EXCEPTION_RECORD);
    pub fn RtlUnwind(
       TargetFrame: PVOID,
       TargetIp: PVOID,
@@ -61311,10 +80377,6 @@ extern "C" {
       LineNumber: ULONG,
       MutableMessage: PSTR,
    ) -> !;
-   pub fn UStr32ToUStr(Destination: PUNICODE_STRING, Source: PUNICODE_STRING32);
-   pub fn UStrToUStr32(Destination: PUNICODE_STRING32, Source: PUNICODE_STRING);
-   pub fn Wow64CurrentGuestTeb() -> *mut TEB32;
-   pub fn Wow64CurrentNativeTeb() -> *mut cty::c_void;
    pub fn SamFreeMemory(Buffer: PVOID) -> NTSTATUS;
    pub fn SamCloseHandle(SamHandle: SAM_HANDLE) -> NTSTATUS;
    pub fn SamSetSecurityObject(
@@ -61670,64 +80732,6 @@ extern "C" {
       ParentProcessHandle: HANDLE,
       Reserved: PROCESS_ACTIVITY_TYPE,
    ) -> NTSTATUS;
-   pub fn PerfIsGroupOnInGroupMask(Group: ULONG, GroupMask: PPERFINFO_GROUPMASK) -> BOOLEAN;
-   pub static EtwSecondaryDumpDataGuid: GUID;
-   pub static CKCLGuid: GUID;
-   pub static AuditLoggerGuid: GUID;
-   pub static SecurityProviderGuid: GUID;
-   pub static PrivateLoggerSecurityGuid: GUID;
-   pub static GlobalLoggerGuid: GUID;
-   pub static GenericMessageGuid: GUID;
-   pub static TraceErrorGuid: GUID;
-   pub static HardFaultGuid: GUID;
-   pub static WmiEventLoggerGuid: GUID;
-   pub static DbgPrintGuid: GUID;
-   pub static DriverVerifierGuid: GUID;
-   pub static ApplicationVerifierGuid: GUID;
-   pub static JobGuid: GUID;
-   pub static EventTraceSpare1: GUID;
-   pub static WnfGuid: GUID;
-   pub static UmglThreadGuid: GUID;
-   pub static DiskIoGuid: GUID;
-   pub static ImageIdGuid: GUID;
-   pub static PoolGuid: GUID;
-   pub static PerfinfoGuid: GUID;
-   pub static HeapGuid: GUID;
-   pub static HeapRangeGuid: GUID;
-   pub static HeapSummaryGuid: GUID;
-   pub static CritSecGuid: GUID;
-   pub static StackWalkGuid: GUID;
-   pub static ALPCGuid: GUID;
-   pub static RTLostEventsGuid: GUID;
-   pub static NtdllTraceGuid: GUID;
-   pub static UserLoaderGuid: GUID;
-   pub static LoadMUIDllGuid: GUID;
-   pub static ObjectGuid: GUID;
-   pub static ModBoundGuid: GUID;
-   pub static ProcessGuid: GUID;
-   pub static PowerGuid: GUID;
-   pub static MmcssGuid: GUID;
-   pub static DpcGuid: GUID;
-   pub static SplitIoGuid: GUID;
-   pub static ThreadPoolGuid: GUID;
-   pub static UmsTraceGuid: GUID;
-   pub static UmsEventGuid: GUID;
-   pub static HypervisorTraceGuid: GUID;
-   pub static HypervisorXTraceGuid: GUID;
-   pub static LegacyEventLogGuid: GUID;
-   pub static KernelRundownGuid: GUID;
-   pub static SessionNotificationGuid: GUID;
-   pub static CcGuid: GUID;
-   pub static NullGuid: GUID;
-   pub static UserDiagnosticGuid: GUID;
-   pub static WerSvcTriggerGuid: GUID;
-   pub static FileIoGuid: GUID;
-   pub static ImageLoadGuid: GUID;
-   pub static PageFaultGuid: GUID;
-   pub static RegistryGuid: GUID;
-   pub static TcpIpGuid: GUID;
-   pub static ThreadGuid: GUID;
-   pub static UdpIpGuid: GUID;
    pub fn EtwSetMark(
       TraceHandle: TRACEHANDLE,
       MarkInfo: PETW_SET_MARK_INFORMATION,
@@ -61946,9 +80950,6 @@ extern "C" {
       OutputBufferSize: PULONG,
       OutputBuffer: PVOID,
    ) -> ULONG;
-   pub static GUID_REGISTRATION_CHANGE_NOTIFICATION: GUID;
-   pub static GUID_MOF_RESOURCE_ADDED_NOTIFICATION: GUID;
-   pub static GUID_MOF_RESOURCE_REMOVED_NOTIFICATION: GUID;
    pub fn WmiNotificationRegistrationA(
       Guid: PCGUID,
       Enable: BOOLEAN,
@@ -62002,13 +81003,17 @@ extern "C" {
    pub fn WmiReceiveNotificationsW(
       HandleCount: ULONG,
       HandleList: PHANDLE,
-      Callback: ::core::option::Option<unsafe extern "C" fn(arg1: PWNODE_HEADER, arg2: ULONG_PTR)>,
+      Callback: ::core::option::Option<
+         unsafe extern "stdcall" fn(arg1: PWNODE_HEADER, arg2: ULONG_PTR),
+      >,
       DeliveryContext: ULONG_PTR,
    ) -> ULONG;
    pub fn WmiReceiveNotificationsA(
       HandleCount: ULONG,
       HandleList: PHANDLE,
-      Callback: ::core::option::Option<unsafe extern "C" fn(arg1: PWNODE_HEADER, arg2: ULONG_PTR)>,
+      Callback: ::core::option::Option<
+         unsafe extern "stdcall" fn(arg1: PWNODE_HEADER, arg2: ULONG_PTR),
+      >,
       DeliveryContext: ULONG_PTR,
    ) -> ULONG;
    pub fn WmiFreeBuffer(Buffer: PVOID);
