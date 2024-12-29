@@ -35,19 +35,25 @@
 pub mod ffi {
    // use vendored bindings (only available for `x86_64` arch)
    #[cfg_attr(docsrs, doc(cfg(not(feature = "regenerate"))))]
-   #[cfg(all(not(feature = "regenerate"), target_arch = "x86_64"))]
-   include!("ffi/x86_64_bindgen.rs");
-   #[cfg_attr(docsrs, doc(cfg(not(feature = "regenerate"))))]
    #[cfg(all(not(feature = "regenerate"), target_arch = "x86"))]
    include!("ffi/i686_bindgen.rs");
+   #[cfg_attr(docsrs, doc(cfg(not(feature = "regenerate"))))]
+   #[cfg(all(not(feature = "regenerate"), target_arch = "x86_64"))]
+   include!("ffi/x86_64_bindgen.rs");
    #[cfg_attr(docsrs, doc(cfg(not(feature = "regenerate"))))]
    #[cfg(all(not(feature = "regenerate"), target_arch = "aarch64"))]
    include!("ffi/aarch64_bindgen.rs");
 
    // use re-generated bindings
    #[cfg_attr(docsrs, doc(cfg(feature = "regenerate")))]
-   #[cfg(feature = "regenerate")]
-   include!(concat!(env!("OUT_DIR"), "\\generated.rs"));
+   #[cfg(all(not(feature = "regenerate"), target_arch = "x86"))]
+   include!("ffi/i686_bindgen.rs");
+   #[cfg_attr(docsrs, doc(cfg(feature = "regenerate")))]
+   #[cfg(all(not(feature = "regenerate"), target_arch = "x86_64"))]
+   include!("ffi/x86_64_bindgen.rs");
+   #[cfg_attr(docsrs, doc(cfg(feature = "regenerate")))]
+   #[cfg(all(not(feature = "regenerate"), target_arch = "aarch64"))]
+   include!("ffi/aarch64_bindgen.rs");
 }
 
 /// Extensions to the bindings (useful functions, macros, etc.)
