@@ -36,7 +36,13 @@ pub mod ffi {
    // use vendored bindings (only available for `x86_64` arch)
    #[cfg_attr(docsrs, doc(cfg(not(feature = "regenerate"))))]
    #[cfg(all(not(feature = "regenerate"), target_arch = "x86_64"))]
-   include!("ffi/generated.rs");
+   include!("ffi/x86_64_bindgen.rs");
+   #[cfg_attr(docsrs, doc(cfg(not(feature = "regenerate"))))]
+   #[cfg(all(not(feature = "regenerate"), target_arch = "x86"))]
+   include!("ffi/i686_bindgen.rs");
+   #[cfg_attr(docsrs, doc(cfg(not(feature = "regenerate"))))]
+   #[cfg(all(not(feature = "regenerate"), target_arch = "aarch64"))]
+   include!("ffi/aarch64_bindgen.rs");
 
    // use re-generated bindings
    #[cfg_attr(docsrs, doc(cfg(feature = "regenerate")))]
@@ -74,12 +80,21 @@ pub mod ext {
    }
 
    #[inline]
+   #[cfg(target_arch = "aarch64")]
+   pub unsafe fn __readgsqword(offset: u32) -> usize {
+      0usize
+   }
+
+   #[inline]
    pub unsafe fn NtCurrentTeb() -> *mut TEB {
       const TEB_OFFSET: u32 = mem::offset_of!(NT_TIB, Self_) as u32;
       if cfg!(target_arch = "x86_64") {
          __readgsqword(TEB_OFFSET) as *mut TEB
       } else if cfg!(target_arch = "x86") {
          __readfsdword(TEB_OFFSET) as *mut TEB
+      } else if cfg!(target_arch = "aarch64") {
+         let p: *mut TEB = core::ptr::null();
+         p
       } else {
          unimplemented!("target architecture not implemented yet")
       }
