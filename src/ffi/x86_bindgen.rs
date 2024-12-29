@@ -1,13 +1,13 @@
-// Generated at 2024-12-29 05:22:58.145287200 +00:00
+// Generated at 2024-12-29 05:50:00.757210800 +00:00
 #[cfg(not(target_arch = "x86"))]
 compile_error!("These bindings can only be used on `x86_64` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.");
 
 use cty;
+pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
 pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
 pub use windows_sys::Win32::Foundation::BOOL as BOOL;
-pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
-pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
 pub use windows_sys::Win32::Foundation::BOOLEAN as BOOLEAN;
+pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
 
 
 #[repr(C)]
