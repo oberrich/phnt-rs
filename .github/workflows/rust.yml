@@ -83,5 +83,5 @@ jobs:
             echo "No changes to commit."
           else
             git commit -m "chore: update vendored bindings"
-            git push
+            git push --force
           fi
