@@ -46,13 +46,13 @@ pub mod ffi {
 
    // use re-generated bindings
    #[cfg_attr(docsrs, doc(cfg(feature = "regenerate")))]
-   #[cfg(all(not(feature = "regenerate"), target_arch = "x86"))]
+   #[cfg(all(feature = "regenerate", target_arch = "x86"))]
    include!("ffi/i686_bindgen.rs");
    #[cfg_attr(docsrs, doc(cfg(feature = "regenerate")))]
-   #[cfg(all(not(feature = "regenerate"), target_arch = "x86_64"))]
+   #[cfg(all(feature = "regenerate", target_arch = "x86_64"))]
    include!("ffi/x86_64_bindgen.rs");
    #[cfg_attr(docsrs, doc(cfg(feature = "regenerate")))]
-   #[cfg(all(not(feature = "regenerate"), target_arch = "aarch64"))]
+   #[cfg(all(feature = "regenerate", target_arch = "aarch64"))]
    include!("ffi/aarch64_bindgen.rs");
 }
 
@@ -99,7 +99,7 @@ pub mod ext {
       } else if cfg!(target_arch = "x86") {
          __readfsdword(TEB_OFFSET) as *mut TEB
       } else if cfg!(target_arch = "aarch64") {
-         let p: *mut TEB = core::ptr::null();
+         let p: *mut TEB = core::ptr::null_mut();
          p
       } else {
          unimplemented!("target architecture not implemented yet")
