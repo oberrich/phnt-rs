@@ -116,6 +116,7 @@ pub mod ext {
       use super::*;
       use windows_sys::Win32::System::Threading::GetCurrentThreadId;
 
+      #[cfg(not(target_arch = "aarch64"))]
       #[test]
       fn test_teb() {
          let cur_thread = unsafe { (*NtCurrentTeb()).ClientId.UniqueThread as isize };
