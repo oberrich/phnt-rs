@@ -90,6 +90,6 @@ jobs:
           if git diff --quiet --exit-code --cached; then
             echo "No changes to commit."
           else
-            git commit -m "Update bindgen files"
+            git commit -m "chore: update vendored bindings"
             git push
           fi
