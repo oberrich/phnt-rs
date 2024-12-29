@@ -11,7 +11,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  bindgen:
     runs-on: windows-2025
     strategy:
       matrix:
@@ -19,13 +19,16 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with: { submodules: recursive }
+      
     - name: Install Rust
       uses: dtolnay/rust-toolchain@nightly
       with:
         targets: ${{ matrix.target }}
         components: rustfmt
+        
     - name: Build
       run: cargo build -v -F regenerate --target ${{ matrix.target }}
+      
     - name: Extract architecture from target triple and move bindings
       shell: bash
       run: |
@@ -51,35 +54,35 @@ jobs:
           # Move the generated file to the repository directory
           cp "$GENERATED_BINDING" "src/ffi/${ARCH}_bindgen.rs"
           echo "Moved $GENERATED_BINDING to src/ffi/${ARCH}_bindgen.rs"
-
     - name: Upload generated file as artifact
       uses: actions/upload-artifact@v4
       with:
         name: ${{ env.ARCH }}_bindgen.rs
         path: src/ffi/${{ env.ARCH }}_bindgen.rs
-  
+        
     - name: Run tests
       run: cargo test --verbose
+      
   commit-and-push:
     runs-on: ubuntu-latest
-    needs: build
+    needs: bindgen
     if: success() # Run only if the generate-bindgen job succeeds
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
+        
       - name: Download generated files
         uses: actions/download-artifact@v4
         with:
           pattern: "*bindgen.rs"
           path: src/ffi
           merge-multiple: true
-
+          
       - name: Configure Git
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-
+          
       - name: Commit and push changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
