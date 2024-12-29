@@ -94,7 +94,7 @@ mod regen {
          let mut raw_lines = vec![
             format!("// Generated at {}", chrono::offset::Local::now()),
             format!("#[cfg(not(target_arch = \"{}\"))]", std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()),
-            format!("compile_error!(\"These bindings can only be used on `{}` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.\");", std::env::consts::ARCH),
+            format!("compile_error!(\"These bindings can only be used on `{}` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.\");", std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()),
             "".into(),
             "use cty;".into(),
          ];
