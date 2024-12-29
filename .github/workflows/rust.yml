@@ -1,6 +1,7 @@
 name: "cargo"
 
 on:
+  workflow_dispatch: 
   push:
     branches: [ "master" ]
   pull_request:
@@ -11,13 +12,19 @@ env:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2025
+    strategy:
+      matrix:
+        target: [x86_64-pc-windows-msvc, i686-pc-windows-msvc, aarch64-pc-windows-msvc]
     steps:
     - uses: actions/checkout@v4
       with: { submodules: recursive }
     - name: Install Rust
       uses: dtolnay/rust-toolchain@nightly
+      with:
+        targets: ${{ matrix.target }}
+        components: rustfmt
     - name: Build
-      run: cargo build --verbose
+      run: cargo build -v -F regenerate --target ${{ matrix.target }}
     - name: Run tests
       run: cargo test --verbose
