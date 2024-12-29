@@ -87,13 +87,32 @@ pub mod ext {
 
    #[inline]
    #[cfg(target_arch = "aarch64")]
-   pub unsafe fn __readfsdword(offset: u32) -> usize {
-      0usize
+   pub unsafe fn read_x18() -> usize {
+      let out: usize;
+      asm!(
+          "mov {}, x18",
+          lateout(reg) out,
+          options(nostack, pure, readonly),
+      );
+      out
    }
+
+   #[inline]
+   #[cfg(not(target_arch = "aarch64"))]
+   pub unsafe fn read_x18() -> usize {
+      unimplemented!("not implemented on this arch")
+   }
+
+   #[inline]
+   #[cfg(target_arch = "aarch64")]
+   pub unsafe fn __readfsdword(offset: u32) -> ! {
+      unimplemented!("not implemented on this arch")
+   }
+
    #[inline]
    #[cfg(any(target_arch = "aarch64", target_arch = "x86"))]
-   pub unsafe fn __readgsqword(offset: u32) -> usize {
-      0usize
+   pub unsafe fn __readgsqword(offset: u32) -> ! {
+      unimplemented!("not implemented on this arch")
    }
 
    #[inline]
@@ -104,8 +123,7 @@ pub mod ext {
       } else if cfg!(target_arch = "x86") {
          __readfsdword(TEB_OFFSET) as *mut TEB
       } else if cfg!(target_arch = "aarch64") {
-         let p: *mut TEB = core::ptr::null_mut();
-         p
+         ((read_x18() + TEB_OFFSET as usize) as *mut *mut TEB).read()
       } else {
          unimplemented!("target architecture not implemented yet")
       }
@@ -116,7 +134,7 @@ pub mod ext {
       use super::*;
       use windows_sys::Win32::System::Threading::GetCurrentThreadId;
 
-      #[cfg(not(target_arch = "aarch64"))]
+      //#[cfg(not(target_arch = "aarch64"))]
       #[test]
       fn test_teb() {
          let cur_thread = unsafe { (*NtCurrentTeb()).ClientId.UniqueThread as isize };
