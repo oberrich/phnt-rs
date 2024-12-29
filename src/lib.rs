@@ -87,6 +87,11 @@ pub mod ext {
 
    #[inline]
    #[cfg(target_arch = "aarch64")]
+   pub unsafe fn __readfsdword(offset: u32) -> usize {
+      0usize
+   }
+   #[inline]
+   #[cfg(target_arch = "aarch64")]
    pub unsafe fn __readgsqword(offset: u32) -> usize {
       0usize
    }
