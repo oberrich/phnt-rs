@@ -36,7 +36,7 @@ pub mod ffi {
    // use vendored bindings (only available for `x86_64` arch)
    #[cfg_attr(docsrs, doc(cfg(not(feature = "regenerate"))))]
    #[cfg(all(not(feature = "regenerate"), target_arch = "x86"))]
-   include!("ffi/i686_bindgen.rs");
+   include!("ffi/x86_bindgen.rs");
    #[cfg_attr(docsrs, doc(cfg(not(feature = "regenerate"))))]
    #[cfg(all(not(feature = "regenerate"), target_arch = "x86_64"))]
    include!("ffi/x86_64_bindgen.rs");
@@ -47,7 +47,7 @@ pub mod ffi {
    // use re-generated bindings
    #[cfg_attr(docsrs, doc(cfg(feature = "regenerate")))]
    #[cfg(all(feature = "regenerate", target_arch = "x86"))]
-   include!("ffi/i686_bindgen.rs");
+   include!("ffi/x86_bindgen.rs");
    #[cfg_attr(docsrs, doc(cfg(feature = "regenerate")))]
    #[cfg(all(feature = "regenerate", target_arch = "x86_64"))]
    include!("ffi/x86_64_bindgen.rs");
