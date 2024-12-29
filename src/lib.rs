@@ -86,7 +86,7 @@ pub mod ext {
    }
 
    #[inline]
-   #[cfg(target_arch = "aarch64")]
+   #[cfg(any(target_arch = "aarch64", target_arch = "x86"))]
    pub unsafe fn __readfsdword(offset: u32) -> usize {
       0usize
    }
