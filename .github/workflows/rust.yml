@@ -32,7 +32,10 @@ jobs:
           # Extract architecture (i686, x86_64 or aarch64) from target triple
           ARCH=$(echo "${{ matrix.target }}" | cut -d'-' -f1)
           echo "Extracted architecture: $ARCH"
-
+          # Map i686 to x86
+          if [ "$ARCH" == "i686" ]; then
+            ARCH="x86"
+          fi
           # Set the architecture as an environment variable
           echo "ARCH=$ARCH" >> $GITHUB_ENV
 
