@@ -45,16 +45,15 @@ pub mod ffi {
    include!("ffi/aarch64_bindgen.rs");
 
    // use regenerated bindings
-   // TODO: Make sure regenerated bindings actually get used
    #[cfg_attr(docsrs, doc(cfg(feature = "regenerate")))]
    #[cfg(all(feature = "regenerate", target_arch = "x86"))]
-   include!("ffi/x86_bindgen.rs");
+   include!(concat!(env!("OUT_DIR"), "/x86_bindgen.rs"));
    #[cfg_attr(docsrs, doc(cfg(feature = "regenerate")))]
    #[cfg(all(feature = "regenerate", target_arch = "x86_64"))]
-   include!("ffi/x86_64_bindgen.rs");
+   include!(concat!(env!("OUT_DIR"), "/x86_64_bindgen.rs"));
    #[cfg_attr(docsrs, doc(cfg(feature = "regenerate")))]
    #[cfg(all(feature = "regenerate", target_arch = "aarch64"))]
-   include!("ffi/aarch64_bindgen.rs");
+   include!(concat!(env!("OUT_DIR"), "/aarch64_bindgen.rs"));
 }
 
 /// Extensions to the bindings (useful functions, macros, etc.)
