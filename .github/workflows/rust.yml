@@ -48,6 +48,9 @@ jobs:
           # Move the generated file to the repository directory
           cp "$GENERATED_BINDING" "src/ffi/${ARCH}_bindgen.rs"
           echo "Moved $GENERATED_BINDING to src/ffi/${ARCH}_bindgen.rs"
+          
+    - name: Run tests
+      run: cargo test -v -F regenerate --target ${{ matrix.target }}
     - name: Upload generated file as artifact
       uses: actions/upload-artifact@v4
       with:
@@ -66,8 +69,6 @@ jobs:
           pattern: "*bindgen.rs"
           path: src/ffi
           merge-multiple: true
-      - name: Run tests
-        run: cargo test --verbose
       - name: Configure Git
         run: |
           git config user.name "GitHub Actions"
