@@ -21,12 +21,17 @@ jobs:
           - os: windows-2025
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: msys2 {0}
     steps:
-    - name: Install winget
-      uses: Cyberboss/install-winget@v1
+    - name: Install msys2
+      uses: msys2/setup-msys2@v2
       with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        wget_release_id: latest
+        update: true
+        install: >-
+          curl
+          git
     - name: Install Build Tools
       run: |
         winget install -e --id Git.Git --disable-interactivity --accept-source-agreements
