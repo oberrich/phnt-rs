@@ -55,8 +55,7 @@ jobs:
         name: ${{ env.ARCH }}_bindgen.rs
         path: src/ffi/${{ env.ARCH }}_bindgen.rs
     - name: Run tests
-      if: ${{ matrix.target }} == 'x86_64-pc-windows-msvc'
-      run: cargo test -vv
+      run: cargo test -vv -F regenerate --target ${{ matrix.target }}
       
   commit-and-push:
     runs-on: ubuntu-latest
