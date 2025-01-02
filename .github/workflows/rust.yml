@@ -31,8 +31,8 @@ jobs:
           git
           bash
     - uses: actions/checkout@v4
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        submodules: recursive
     - name: Install Rust
       uses: dtolnay/rust-toolchain@nightly
       with:
