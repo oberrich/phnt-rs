@@ -26,7 +26,7 @@ jobs:
       shell: powershell
       run: |
         irm https://github.com/asheroto/winget-install/releases/latest/download/winget-install.ps1 | iex
-        winget install -e --id Cygwin.Cygwin --disable-interactivity --accept-source-agreements
+        winget install -e --id Git.Git --disable-interactivity --accept-source-agreements
     - uses: actions/checkout@v4
       with:
         submodules: recursive
