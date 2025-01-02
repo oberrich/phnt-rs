@@ -11,7 +11,6 @@ jobs:
   bindgen:
     strategy:
       matrix:
-        group: [windows-all]
         os: [windows-11_aarch64, windows-2025]
         target: [aarch64-pc-windows-msvc, x86_64-pc-windows-msvc, i686-pc-windows-msvc]
         exclude:
@@ -21,7 +20,7 @@ jobs:
             target: i686-pc-windows-msvc
           - os: windows-2025
             target: aarch64-pc-windows-msvc
-    runs-on: "${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
       with: { submodules: recursive }
