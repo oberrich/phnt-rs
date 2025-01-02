@@ -9,17 +9,18 @@ env:
   CARGO_TERM_COLOR: always
 jobs:
   bindgen:
-    runs-on: windows-2025
     strategy:
       matrix:
+        os: windows-2025
         target: [x86_64-pc-windows-msvc, i686-pc-windows-msvc, aarch64-pc-windows-msvc]
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
       with: { submodules: recursive }
     - name: Install Rust
       uses: dtolnay/rust-toolchain@nightly
       with:
-        targets: 'x86_64-pc-windows-msvc,i686-pc-windows-msvc,aarch64-pc-windows-msvc'
+        targets: ${{ matrix.target }}
         components: rustfmt
     - name: Build
       run: cargo build -vv -F regenerate --target ${{ matrix.target }}
