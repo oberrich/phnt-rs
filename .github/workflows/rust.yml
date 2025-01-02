@@ -21,12 +21,18 @@ jobs:
           - os: windows-2025
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: msys2 {0}
     steps:
+    - name: Update Git for Windows
+      shell: cmd
+      run: git update-git-for-windows --yes
     - name: Install msys2
       uses: msys2/setup-msys2@v2
       with:
         update: true
-        install: >-
+        install: >
           curl
           git
           bash
