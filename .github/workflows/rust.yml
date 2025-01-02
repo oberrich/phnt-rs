@@ -27,9 +27,9 @@ jobs:
       run: |
         Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
     - name: Install Git
-      shell: cmd
+      shell: powershell
       run: |
-        choco install git
+        choco install git.install --params "'/GitAndUnixToolsOnPath /WindowsTerminal /NoAutoCrlf'"
         git update-git-for-windows --yes
     - uses: actions/checkout@v4
       with:
