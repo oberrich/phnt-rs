@@ -11,12 +11,15 @@ jobs:
   bindgen:
     strategy:
       matrix:
-        os: [windows-aarch64, windows-2025]
+        os: [windows-11-preview_aarch64, windows-2025]
         target: [aarch64-pc-windows-msvc, x86_64-pc-windows-msvc, i686-pc-windows-msvc]
+        include:
+          - os: windows-11-preview_aarch64
+            group: windows_11_aarch64
         exclude:
-          - os: windows-aarch64
+          - group: windows_11_aarch64
             target: x86_64-pc-windows-msvc
-          - os: windows-aarch64
+          - group: windows_11_aarch64
             target: i686-pc-windows-msvc
           - os: windows-2025
             target: aarch64-pc-windows-msvc
