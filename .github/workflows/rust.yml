@@ -20,7 +20,7 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@nightly
       with:
-        targets: 'aarch64-pc-windows-msvc,x86_64-pc-windows-msvc,i686-pc-windows-msvc'
+        targets: ${{ matrix.target }}
         components: rustfmt
     - name: Build
       run: cargo build -vv -F regenerate --target ${{ matrix.target }}
