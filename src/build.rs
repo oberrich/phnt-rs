@@ -30,7 +30,7 @@ pub use regen::main;
 #[cfg_attr(docsrs, doc(cfg(not(feature = "regenerate"))))]
 #[cfg(not(feature = "regenerate"))]
 fn main() {
-   println!("Using vendored bindings, build script skipped.");
+   println!("Using vsendored bindings, build script skipped.");
 }
 
 #[cfg_attr(docsrs, doc(cfg(feature = "regenerate")))]
@@ -41,7 +41,33 @@ mod regen {
    use std::env;
    use std::path::PathBuf;
 
-   pub struct BindgenConfig {
+   use bindgen::callbacks::ParseCallbacks;
+
+   #[derive(Debug)]
+   struct ProcessComments;
+
+   impl ParseCallbacks for ProcessComments {
+      fn process_comment(&self, comment: &str) -> Option<String> {
+         match std::panic::catch_unwind(|| doxygen_rs::transform(comment)) {
+            Ok(res) => Some(res),
+            Err(err) => {
+               println!(
+                  "cargo:warning=Problem processing comment: {}",
+                  if let Some(msg) = err.downcast_ref::<String>() {
+                     msg
+                  } else if let Some(msg) = err.downcast_ref::<&str>() {
+                     msg
+                  } else {
+                     "Unknown panic type"
+                  }
+               );
+               None
+            }
+         }
+      }
+   }
+
+   struct BindgenConfig {
       pub blocklist_types: Vec<String>,
       pub raw_lines: Vec<String>,
    }
@@ -132,7 +158,7 @@ mod regen {
             .type_alias("NTSTATUS")
             .opaque_type("std::.*")
             .ctypes_prefix("cty")
-            .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
+            .parse_callbacks(Box::new(ProcessComments))
             .default_enum_style(bindgen::EnumVariation::Rust {
                non_exhaustive: true,
             })

@@ -1,14 +1,13 @@
-// Generated at 2024-12-29 08:13:58.049250800 +00:00
+// Generated at 2025-01-02 01:24:13.243054500 +01:00
 #[cfg(not(target_arch = "x86_64"))]
 compile_error!("These bindings can only be used on `x86_64` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.");
 
 use cty;
-pub use windows_sys::Win32::Foundation::BOOLEAN as BOOLEAN;
-pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
-pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
-pub use windows_sys::Win32::Foundation::BOOL as BOOL;
 pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
-
+pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
+pub use windows_sys::Win32::Foundation::BOOL;
+pub use windows_sys::Win32::Foundation::BOOLEAN;
+pub use windows_sys::Win32::Foundation::NTSTATUS;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -518,6 +517,7 @@ pub const MEM_EXECUTE_OPTION_EXECUTE_DISPATCH_ENABLE: u32 = 16;
 pub const MEM_EXECUTE_OPTION_IMAGE_DISPATCH_ENABLE: u32 = 32;
 pub const MEM_EXECUTE_OPTION_DISABLE_EXCEPTION_CHAIN_VALIDATION: u32 = 64;
 pub const MEM_EXECUTE_OPTION_VALID_FLAGS: u32 = 127;
+pub const VM_PREFETCH_TO_WORKING_SET: u32 = 1;
 pub const MAP_PROCESS: u32 = 1;
 pub const MAP_SYSTEM: u32 = 2;
 pub const TERMINATE_ENCLAVE_VALID_FLAGS: u32 = 5;
@@ -967,6 +967,11 @@ pub const FILE_RENAME_FORCE_RESIZE_SOURCE_SR: u32 = 256;
 pub const FILE_RENAME_FORCE_RESIZE_SR: u32 = 384;
 pub const FILE_SKIP_SET_USER_EVENT_ON_FAST_IO: u32 = 4;
 pub const CHECKSUM_ENFORCEMENT_OFF: u32 = 1;
+pub const LX_FILE_METADATA_HAS_UID: u32 = 1;
+pub const LX_FILE_METADATA_HAS_GID: u32 = 2;
+pub const LX_FILE_METADATA_HAS_MODE: u32 = 4;
+pub const LX_FILE_METADATA_HAS_DEVICE_ID: u32 = 8;
+pub const LX_FILE_CASE_SENSITIVE_DIR: u32 = 16;
 pub const FILE_ID_GLOBAL_TX_DIR_INFO_FLAG_WRITELOCKED: u32 = 1;
 pub const FILE_ID_GLOBAL_TX_DIR_INFO_FLAG_VISIBLE_TO_TX: u32 = 2;
 pub const FILE_ID_GLOBAL_TX_DIR_INFO_FLAG_VISIBLE_OUTSIDE_TX: u32 = 4;
@@ -988,6 +993,7 @@ pub const SSINFO_FLAGS_NO_SEEK_PENALTY: u32 = 4;
 pub const SSINFO_FLAGS_TRIM_ENABLED: u32 = 8;
 pub const SSINFO_FLAGS_BYTE_ADDRESSABLE: u32 = 16;
 pub const SSINFO_OFFSET_UNKNOWN: u32 = 4294967295;
+pub const FLUSH_FLAGS_FLUSH_AND_PURGE: u32 = 8;
 pub const FILE_QUERY_RESTART_SCAN: u32 = 1;
 pub const FILE_QUERY_RETURN_SINGLE_ENTRY: u32 = 2;
 pub const FILE_QUERY_INDEX_SPECIFIED: u32 = 4;
@@ -1457,6 +1463,9 @@ pub const HASH_STRING_ALGORITHM_INVALID: u32 = 4294967295;
 pub const RTL_FIND_CHAR_IN_UNICODE_STRING_START_AT_END: u32 = 1;
 pub const RTL_FIND_CHAR_IN_UNICODE_STRING_COMPLEMENT_CHAR_SET: u32 = 2;
 pub const RTL_FIND_CHAR_IN_UNICODE_STRING_CASE_INSENSITIVE: u32 = 4;
+pub const COMPRESSION_FORMAT_LZ4: u32 = 6;
+pub const COMPRESSION_FORMAT_DEFLATE: u32 = 7;
+pub const COMPRESSION_FORMAT_ZLIB: u32 = 8;
 pub const COMPRESSION_FORMAT_MAX: u32 = 8;
 pub const COMPRESSION_ENGINE_MAX: u32 = 512;
 pub const COMPRESSION_FORMAT_MASK: u32 = 255;
@@ -1666,6 +1675,8 @@ pub const IMAGE_DVRT_ARM64X_FIXUP_SIZE_4BYTES: u32 = 2;
 pub const IMAGE_DVRT_ARM64X_FIXUP_SIZE_8BYTES: u32 = 3;
 pub const IMAGE_DYNAMIC_RELOCATION_ARM64X: u32 = 6;
 pub const IMAGE_DYNAMIC_RELOCATION_MM_SHARED_USER_DATA_VA: u32 = 2147352576;
+pub const IMAGE_DLLCHARACTERISTICS_EX_FORWARD_CFI_COMPAT: u32 = 64;
+pub const IMAGE_DLLCHARACTERISTICS_EX_HOTPATCH_COMPATIBLE: u32 = 128;
 pub const SE_MIN_WELL_KNOWN_PRIVILEGE: u32 = 2;
 pub const SE_CREATE_TOKEN_PRIVILEGE: u32 = 2;
 pub const SE_ASSIGNPRIMARYTOKEN_PRIVILEGE: u32 = 3;
@@ -5048,80 +5059,14 @@ impl _PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY__bindgen_ty_1__bindgen_ty_1 
       }
    }
    #[inline]
-   pub fn DisallowFsctlSystemCalls(&self) -> DWORD {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 1u8) as u32) }
-   }
-   #[inline]
-   pub fn set_DisallowFsctlSystemCalls(&mut self, val: DWORD) {
-      unsafe {
-         let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(2usize, 1u8, val as u64)
-      }
-   }
-   #[inline]
-   pub unsafe fn DisallowFsctlSystemCalls_raw(this: *const Self) -> DWORD {
-      unsafe {
-         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
-            ::core::ptr::addr_of!((*this)._bitfield_1),
-            2usize,
-            1u8,
-         ) as u32)
-      }
-   }
-   #[inline]
-   pub unsafe fn set_DisallowFsctlSystemCalls_raw(this: *mut Self, val: DWORD) {
-      unsafe {
-         let val: u32 = ::core::mem::transmute(val);
-         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
-            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
-            2usize,
-            1u8,
-            val as u64,
-         )
-      }
-   }
-   #[inline]
-   pub fn AuditDisallowFsctlSystemCalls(&self) -> DWORD {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
-   }
-   #[inline]
-   pub fn set_AuditDisallowFsctlSystemCalls(&mut self, val: DWORD) {
-      unsafe {
-         let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(3usize, 1u8, val as u64)
-      }
-   }
-   #[inline]
-   pub unsafe fn AuditDisallowFsctlSystemCalls_raw(this: *const Self) -> DWORD {
-      unsafe {
-         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
-            ::core::ptr::addr_of!((*this)._bitfield_1),
-            3usize,
-            1u8,
-         ) as u32)
-      }
-   }
-   #[inline]
-   pub unsafe fn set_AuditDisallowFsctlSystemCalls_raw(this: *mut Self, val: DWORD) {
-      unsafe {
-         let val: u32 = ::core::mem::transmute(val);
-         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
-            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
-            3usize,
-            1u8,
-            val as u64,
-         )
-      }
-   }
-   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 28u8) as u32) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
    }
    #[inline]
    pub fn set_ReservedFlags(&mut self, val: DWORD) {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(4usize, 28u8, val as u64)
+         self._bitfield_1.set(2usize, 30u8, val as u64)
       }
    }
    #[inline]
@@ -5129,8 +5074,8 @@ impl _PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY__bindgen_ty_1__bindgen_ty_1 
       unsafe {
          ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
             ::core::ptr::addr_of!((*this)._bitfield_1),
-            4usize,
-            28u8,
+            2usize,
+            30u8,
          ) as u32)
       }
    }
@@ -5140,8 +5085,8 @@ impl _PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY__bindgen_ty_1__bindgen_ty_1 
          let val: u32 = ::core::mem::transmute(val);
          <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
             ::core::ptr::addr_of_mut!((*this)._bitfield_1),
-            4usize,
-            28u8,
+            2usize,
+            30u8,
             val as u64,
          )
       }
@@ -5150,8 +5095,6 @@ impl _PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY__bindgen_ty_1__bindgen_ty_1 
    pub fn new_bitfield_1(
       DisallowWin32kSystemCalls: DWORD,
       AuditDisallowWin32kSystemCalls: DWORD,
-      DisallowFsctlSystemCalls: DWORD,
-      AuditDisallowFsctlSystemCalls: DWORD,
       ReservedFlags: DWORD,
    ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
       let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
@@ -5165,17 +5108,7 @@ impl _PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY__bindgen_ty_1__bindgen_ty_1 
             unsafe { ::core::mem::transmute(AuditDisallowWin32kSystemCalls) };
          AuditDisallowWin32kSystemCalls as u64
       });
-      __bindgen_bitfield_unit.set(2usize, 1u8, {
-         let DisallowFsctlSystemCalls: u32 =
-            unsafe { ::core::mem::transmute(DisallowFsctlSystemCalls) };
-         DisallowFsctlSystemCalls as u64
-      });
-      __bindgen_bitfield_unit.set(3usize, 1u8, {
-         let AuditDisallowFsctlSystemCalls: u32 =
-            unsafe { ::core::mem::transmute(AuditDisallowFsctlSystemCalls) };
-         AuditDisallowFsctlSystemCalls as u64
-      });
-      __bindgen_bitfield_unit.set(4usize, 28u8, {
+      __bindgen_bitfield_unit.set(2usize, 30u8, {
          let ReservedFlags: u32 = unsafe { ::core::mem::transmute(ReservedFlags) };
          ReservedFlags as u64
       });
@@ -8529,9 +8462,7 @@ pub enum _JOBOBJECTINFOCLASS {
    JobObjectReserved25Information = 47,
    JobObjectReserved26Information = 48,
    JobObjectReserved27Information = 49,
-   JobObjectReserved28Information = 50,
-   JobObjectNetworkAccountingInformation = 51,
-   MaxJobObjectInfoClass = 52,
+   MaxJobObjectInfoClass = 50,
 }
 pub use self::_JOBOBJECTINFOCLASS as JOBOBJECTINFOCLASS;
 #[repr(i32)]
@@ -8566,8 +8497,7 @@ pub struct _XSTATE_CONFIGURATION {
    pub EnabledUserVisibleSupervisorFeatures: DWORD64,
    pub ExtendedFeatureDisableFeatures: DWORD64,
    pub AllNonLargeFeatureSize: DWORD,
-   pub MaxSveVectorLength: WORD,
-   pub Spare1: WORD,
+   pub Spare: DWORD,
 }
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -9102,10 +9032,7 @@ pub enum POWER_MONITOR_REQUEST_REASON {
    MonitorRequestReasonPdcSignalSensorsHumanPresence = 52,
    MonitorRequestReasonBatteryPreCritical = 53,
    MonitorRequestReasonUserInputTouch = 54,
-   MonitorRequestReasonAusterityBatteryDrain = 55,
-   MonitorRequestReasonDozeRestrictedStandby = 56,
-   MonitorRequestReasonSmartRestrictedStandby = 57,
-   MonitorRequestReasonMax = 58,
+   MonitorRequestReasonMax = 55,
 }
 #[repr(C, packed(2))]
 #[derive(Debug, Default, Copy, Clone)]
@@ -9793,9 +9720,10 @@ pub enum _RTL_SYSTEM_GLOBAL_DATA_ID {
    GlobalDataIdLastSystemRITEventTickCount = 13,
    GlobalDataIdConsoleSharedDataFlags = 14,
    GlobalDataIdNtSystemRootDrive = 15,
-   GlobalDataIdQpcBypassEnabled = 16,
-   GlobalDataIdQpcData = 17,
-   GlobalDataIdQpcBias = 18,
+   GlobalDataIdQpcShift = 16,
+   GlobalDataIdQpcBypassEnabled = 17,
+   GlobalDataIdQpcData = 18,
+   GlobalDataIdQpcBias = 19,
 }
 pub use self::_RTL_SYSTEM_GLOBAL_DATA_ID as RTL_SYSTEM_GLOBAL_DATA_ID;
 #[repr(C)]
@@ -10069,7 +9997,7 @@ pub struct _TP_CALLBACK_INSTANCE {
 }
 pub type PTP_CALLBACK_INSTANCE = *mut _TP_CALLBACK_INSTANCE;
 pub type PTP_SIMPLE_CALLBACK =
-   ::core::option::Option<unsafe extern "C" fn(arg1: PTP_CALLBACK_INSTANCE, arg2: PVOID)>;
+   ::core::option::Option<unsafe extern "C" fn(Instance: PTP_CALLBACK_INSTANCE, Context: PVOID)>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _TP_POOL {
@@ -10104,7 +10032,7 @@ pub struct _TP_CLEANUP_GROUP {
 }
 pub type PTP_CLEANUP_GROUP = *mut _TP_CLEANUP_GROUP;
 pub type PTP_CLEANUP_GROUP_CANCEL_CALLBACK =
-   ::core::option::Option<unsafe extern "C" fn(arg1: PVOID, arg2: PVOID)>;
+   ::core::option::Option<unsafe extern "C" fn(ObjectContext: PVOID, CleanupContext: PVOID)>;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _TP_CALLBACK_ENVIRON_V3 {
@@ -10280,7 +10208,7 @@ pub struct _TP_WORK {
 }
 pub type PTP_WORK = *mut _TP_WORK;
 pub type PTP_WORK_CALLBACK = ::core::option::Option<
-   unsafe extern "C" fn(arg1: PTP_CALLBACK_INSTANCE, arg2: PVOID, arg3: PTP_WORK),
+   unsafe extern "C" fn(Instance: PTP_CALLBACK_INSTANCE, Context: PVOID, Work: PTP_WORK),
 >;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -10289,7 +10217,7 @@ pub struct _TP_TIMER {
 }
 pub type PTP_TIMER = *mut _TP_TIMER;
 pub type PTP_TIMER_CALLBACK = ::core::option::Option<
-   unsafe extern "C" fn(arg1: PTP_CALLBACK_INSTANCE, arg2: PVOID, arg3: PTP_TIMER),
+   unsafe extern "C" fn(Instance: PTP_CALLBACK_INSTANCE, Context: PVOID, Timer: PTP_TIMER),
 >;
 pub type TP_WAIT_RESULT = DWORD;
 #[repr(C)]
@@ -10300,10 +10228,10 @@ pub struct _TP_WAIT {
 pub type PTP_WAIT = *mut _TP_WAIT;
 pub type PTP_WAIT_CALLBACK = ::core::option::Option<
    unsafe extern "C" fn(
-      arg1: PTP_CALLBACK_INSTANCE,
-      arg2: PVOID,
-      arg3: PTP_WAIT,
-      arg4: TP_WAIT_RESULT,
+      Instance: PTP_CALLBACK_INSTANCE,
+      Context: PVOID,
+      Wait: PTP_WAIT,
+      WaitResult: TP_WAIT_RESULT,
    ),
 >;
 #[repr(C)]
@@ -10583,7 +10511,7 @@ impl Default for _DEBUG_EVENT {
    }
 }
 pub type LPDEBUG_EVENT = *mut _DEBUG_EVENT;
-#[doc = " The PROC_THREAD_ATTRIBUTE_LIST structure contains the list of attributes for process and thread creation."]
+#[doc = "The PROC_THREAD_ATTRIBUTE_LIST structure contains the list of attributes for process and thread creation."]
 pub type PPROC_THREAD_ATTRIBUTE_LIST = *mut _PROC_THREAD_ATTRIBUTE_LIST;
 pub type DLL_DIRECTORY_COOKIE = PVOID;
 pub type PDLL_DIRECTORY_COOKIE = *mut PVOID;
@@ -11210,8 +11138,6 @@ impl Default for _WNODE_HEADER {
 pub type WNODE_HEADER = _WNODE_HEADER;
 pub type PWNODE_HEADER = *mut _WNODE_HEADER;
 pub type TRACEHANDLE = ULONG64;
-pub type PROCESSTRACE_HANDLE = ULONG64;
-pub type CONTROLTRACE_ID = ULONG64;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _EVENT_TRACE_HEADER {
@@ -13894,7 +13820,7 @@ impl Default for _LDR_SOFTWARE_ENCLAVE {
 }
 pub type LDR_SOFTWARE_ENCLAVE = _LDR_SOFTWARE_ENCLAVE;
 pub type PLDR_SOFTWARE_ENCLAVE = *mut _LDR_SOFTWARE_ENCLAVE;
-#[doc = " Thread Environment Block (TEB) structure.\n\n This structure contains information about the currently executing thread."]
+#[doc = "Thread Environment Block (TEB) structure.\n\n This structure contains information about the currently executing thread."]
 pub type PTEB = *mut _TEB;
 pub type PCOUNTED_REASON_CONTEXT = *mut _COUNTED_REASON_CONTEXT;
 pub type PFILE_IO_COMPLETION_INFORMATION = *mut _FILE_IO_COMPLETION_INFORMATION;
@@ -31784,66 +31710,66 @@ pub enum _BCD_FLAGS {
 pub use self::_BCD_FLAGS as BCD_FLAGS;
 #[repr(i32)]
 #[non_exhaustive]
-#[doc = " BCD configuration elements for the Boot Manager types."]
+#[doc = "BCD configuration elements for the Boot Manager types."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdBootMgrElementTypes {
-   #[doc = " The order in which BCD objects should be displayed. [0x24000001]\n Objects are displayed using the string specified by the BcdLibraryString_Description element."]
+   #[doc = "The order in which BCD objects should be displayed. [0x24000001]\n Objects are displayed using the string specified by the BcdLibraryString_Description element."]
    BcdBootMgrObjectList_DisplayOrder = 603979777,
-   #[doc = " List of boot environment applications the boot manager should execute. [0x24000002]\n The applications are executed in the order they appear in this list.\n If the firmware boot manager does not support loading multiple applications, this list cannot contain more than one entry."]
+   #[doc = "List of boot environment applications the boot manager should execute. [0x24000002]\n The applications are executed in the order they appear in this list.\n If the firmware boot manager does not support loading multiple applications, this list cannot contain more than one entry."]
    BcdBootMgrObjectList_BootSequence = 603979778,
-   #[doc = " The default boot environment application to load if the user does not select one. [0x23000003]"]
+   #[doc = "The default boot environment application to load if the user does not select one. [0x23000003]"]
    BcdBootMgrObject_DefaultObject = 587202563,
-   #[doc = " The maximum number of seconds a boot selection menu is to be displayed to the user. [0x25000004]\n The menu is displayed until the user selects an option or the time-out expires.\n If this value is not specified, the boot manager waits for the user to make a selection."]
+   #[doc = "The maximum number of seconds a boot selection menu is to be displayed to the user. [0x25000004]\n The menu is displayed until the user selects an option or the time-out expires.\n If this value is not specified, the boot manager waits for the user to make a selection."]
    BcdBootMgrInteger_Timeout = 620756996,
-   #[doc = " Indicates that a resume operation should be attempted during a system restart. [0x26000005]"]
+   #[doc = "Indicates that a resume operation should be attempted during a system restart. [0x26000005]"]
    BcdBootMgrBoolean_AttemptResume = 637534213,
-   #[doc = " The resume application object. [0x23000006]"]
+   #[doc = "The resume application object. [0x23000006]"]
    BcdBootMgrObject_ResumeObject = 587202566,
-   #[doc = " The startup sequence. [0x24000007]"]
+   #[doc = "The startup sequence. [0x24000007]"]
    BcdBootMgrObjectList_StartupSequence = 603979783,
-   #[doc = " The boot manager tools display order list. [0x24000010]"]
+   #[doc = "The boot manager tools display order list. [0x24000010]"]
    BcdBootMgrObjectList_ToolsDisplayOrder = 603979792,
-   #[doc = " Forces the display of the legacy boot menu, regardless of the number of OS entries in the BCD store and their BcdOSLoaderInteger_BootMenuPolicy. [0x26000020]"]
+   #[doc = "Forces the display of the legacy boot menu, regardless of the number of OS entries in the BCD store and their BcdOSLoaderInteger_BootMenuPolicy. [0x26000020]"]
    BcdBootMgrBoolean_DisplayBootMenu = 637534240,
-   #[doc = " Indicates whether the display of errors should be suppressed. If this setting is enabled, the boot manager exits to the multi-OS menu on OS launch error. [0x26000021]"]
+   #[doc = "Indicates whether the display of errors should be suppressed. If this setting is enabled, the boot manager exits to the multi-OS menu on OS launch error. [0x26000021]"]
    BcdBootMgrBoolean_NoErrorDisplay = 637534241,
-   #[doc = " The device on which the boot application resides. [0x21000022]"]
+   #[doc = "The device on which the boot application resides. [0x21000022]"]
    BcdBootMgrDevice_BcdDevice = 553648162,
-   #[doc = " The boot application. [0x22000023] (BCDE_BOOTMGR_TYPE_BCD_FILEPATH)"]
+   #[doc = "The boot application. [0x22000023] (BCDE_BOOTMGR_TYPE_BCD_FILEPATH)"]
    BcdBootMgrString_BcdFilePath = 570425379,
-   #[doc = " Indicates whether HORM (Hibernate Once/Resume Many) is enabled. [0x26000024]"]
+   #[doc = "Indicates whether HORM (Hibernate Once/Resume Many) is enabled. [0x26000024]"]
    BcdBootMgrBoolean_HormEnabled = 637534244,
-   #[doc = " Indicates whether the system is in hibernation root mode. [0x26000025]"]
+   #[doc = "Indicates whether the system is in hibernation root mode. [0x26000025]"]
    BcdBootMgrBoolean_HiberRoot = 637534245,
-   #[doc = " The password override string. [0x22000026]"]
+   #[doc = "The password override string. [0x22000026]"]
    BcdBootMgrString_PasswordOverride = 570425382,
-   #[doc = " The PIN/passphrase override string. [0x22000027]"]
+   #[doc = "The PIN/passphrase override string. [0x22000027]"]
    BcdBootMgrString_PinpassPhraseOverride = 570425383,
-   #[doc = " Controls whether custom actions are processed before a boot sequence. Note This value is supported starting in Windows 8 and Windows Server 2012. [0x26000028]"]
+   #[doc = "Controls whether custom actions are processed before a boot sequence. Note This value is supported starting in Windows 8 and Windows Server 2012. [0x26000028]"]
    BcdBootMgrBoolean_ProcessCustomActionsFirst = 637534248,
-   #[doc = " Custom Bootstrap Actions. [0x27000030] (BCDE_BOOTMGR_TYPE_CUSTOM_ACTIONS_LIST)"]
+   #[doc = "Custom Bootstrap Actions. [0x27000030] (BCDE_BOOTMGR_TYPE_CUSTOM_ACTIONS_LIST)"]
    BcdBootMgrIntegerList_CustomActionsList = 654311472,
-   #[doc = " Controls whether a boot sequence persists across multiple boots. Note This value is supported starting in Windows 8 and Windows Server 2012. [0x26000031]"]
+   #[doc = "Controls whether a boot sequence persists across multiple boots. Note This value is supported starting in Windows 8 and Windows Server 2012. [0x26000031]"]
    BcdBootMgrBoolean_PersistBootSequence = 637534257,
-   #[doc = " Indicates whether to skip the startup sequence. [0x26000032]"]
+   #[doc = "Indicates whether to skip the startup sequence. [0x26000032]"]
    BcdBootMgrBoolean_SkipStartupSequence = 637534258,
 }
-#[doc = " BCD configuration elements for the Boot Manager types."]
+#[doc = "BCD configuration elements for the Boot Manager types."]
 pub use self::_BcdBootMgrElementTypes as BcdBootMgrElementTypes;
 #[repr(i32)]
 #[non_exhaustive]
-#[doc = " Specifies the policy for using the first megabyte of memory."]
+#[doc = "Specifies the policy for using the first megabyte of memory."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdLibrary_FirstMegabytePolicy {
    FirstMegabytePolicyUseNone = 0,
    FirstMegabytePolicyUseAll = 1,
    FirstMegabytePolicyUsePrivate = 2,
 }
-#[doc = " Specifies the policy for using the first megabyte of memory."]
+#[doc = "Specifies the policy for using the first megabyte of memory."]
 pub use self::_BcdLibrary_FirstMegabytePolicy as BcdLibrary_FirstMegabytePolicy;
 #[repr(i32)]
 #[non_exhaustive]
-#[doc = " Specifies the type of debugger."]
+#[doc = "Specifies the type of debugger."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdLibrary_DebuggerType {
    DebuggerSerial = 0,
@@ -31852,36 +31778,36 @@ pub enum _BcdLibrary_DebuggerType {
    DebuggerNet = 3,
    DebuggerLocal = 4,
 }
-#[doc = " Specifies the type of debugger."]
+#[doc = "Specifies the type of debugger."]
 pub use self::_BcdLibrary_DebuggerType as BcdLibrary_DebuggerType;
 #[repr(i32)]
 #[non_exhaustive]
-#[doc = " Specifies the start policy for the debugger."]
+#[doc = "Specifies the start policy for the debugger."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdLibrary_DebuggerStartPolicy {
    DebuggerStartActive = 0,
-   #[doc = " The debugger will start in the auto-enabled state.\n If a debugger is attached it will be used; otherwise the debugger port will be available for other applications."]
+   #[doc = "The debugger will start in the auto-enabled state.\n If a debugger is attached it will be used; otherwise the debugger port will be available for other applications."]
    DebuggerStartAutoEnable = 1,
-   #[doc = " The debugger will start in the auto-enabled state.\n If a debugger is attached it will be used; otherwise the debugger port will be available for other applications."]
+   #[doc = "The debugger will start in the auto-enabled state.\n If a debugger is attached it will be used; otherwise the debugger port will be available for other applications."]
    DebuggerStartDisable = 2,
 }
-#[doc = " Specifies the start policy for the debugger."]
+#[doc = "Specifies the start policy for the debugger."]
 pub use self::_BcdLibrary_DebuggerStartPolicy as BcdLibrary_DebuggerStartPolicy;
 #[repr(i32)]
 #[non_exhaustive]
-#[doc = " Specifies the access policy for PCI configuration space."]
+#[doc = "Specifies the access policy for PCI configuration space."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdLibrary_ConfigAccessPolicy {
-   #[doc = " Access to PCI configuration space through the memory-mapped region is allowed."]
+   #[doc = "Access to PCI configuration space through the memory-mapped region is allowed."]
    ConfigAccessPolicyDefault = 0,
-   #[doc = " Access to PCI configuration space through the memory-mapped region is not allowed.\n This setting is used for platforms that implement memory-mapped configuration space incorrectly.\n The CFC/CF8 access mechanism can be used to access configuration space on these platforms."]
+   #[doc = "Access to PCI configuration space through the memory-mapped region is not allowed.\n This setting is used for platforms that implement memory-mapped configuration space incorrectly.\n The CFC/CF8 access mechanism can be used to access configuration space on these platforms."]
    ConfigAccessPolicyDisallowMmConfig = 1,
 }
-#[doc = " Specifies the access policy for PCI configuration space."]
+#[doc = "Specifies the access policy for PCI configuration space."]
 pub use self::_BcdLibrary_ConfigAccessPolicy as BcdLibrary_ConfigAccessPolicy;
 #[repr(i32)]
 #[non_exhaustive]
-#[doc = " Enumeration for UX Display Message Types in the Boot Configuration Data (BCD) library.\n This enumeration defines the different UX display message types that can be specified in the BCD library."]
+#[doc = "Enumeration for UX Display Message Types in the Boot Configuration Data (BCD) library.\n This enumeration defines the different UX display message types that can be specified in the BCD library."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdLibrary_UxDisplayMessageType {
    #[doc = "< Default display message type."]
@@ -31903,18 +31829,18 @@ pub enum _BcdLibrary_UxDisplayMessageType {
    #[doc = "< Display message type for push button reset."]
    DisplayMessageTypePushButtonReset = 8,
 }
-#[doc = " Enumeration for UX Display Message Types in the Boot Configuration Data (BCD) library.\n This enumeration defines the different UX display message types that can be specified in the BCD library."]
+#[doc = "Enumeration for UX Display Message Types in the Boot Configuration Data (BCD) library.\n This enumeration defines the different UX display message types that can be specified in the BCD library."]
 pub use self::_BcdLibrary_UxDisplayMessageType as BcdLibrary_UxDisplayMessageType;
 #[repr(i32)]
 #[non_exhaustive]
-#[doc = " Enumeration for Safe Boot options in the Boot Configuration Data (BCD) library.\n This enumeration defines the different safe boot modes that can be specified in the BCD library."]
+#[doc = "Enumeration for Safe Boot options in the Boot Configuration Data (BCD) library.\n This enumeration defines the different safe boot modes that can be specified in the BCD library."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum BcdLibrary_SafeBoot {
-   #[doc = " Load the drivers and services specified by name or group under the following registry key:\n HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\SafeBoot\\Minimal."]
+   #[doc = "Load the drivers and services specified by name or group under the following registry key:\n HKEY_LOCAL_MACHINE"]
    SafemodeMinimal = 0,
-   #[doc = " Load the drivers and services specified by name or group under the following registry key:\n HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\SafeBoot\\Network."]
+   #[doc = "Load the drivers and services specified by name or group under the following registry key:\n HKEY_LOCAL_MACHINE"]
    SafemodeNetwork = 1,
-   #[doc = " Boot the system into a repair mode that restores the Active Directory service from backup medium."]
+   #[doc = "Boot the system into a repair mode that restores the Active Directory service from backup medium."]
    SafemodeDsRepair = 2,
 }
 #[repr(i32)]
@@ -31930,175 +31856,175 @@ pub use self::_BcdLibrary_BootUxPolicy as BcdLibrary_BootUxPolicy;
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdLibraryElementTypes {
-   #[doc = " <summary>\n Device on which a boot environment application resides.\n </summary>\n <remarks>0x11000001</remarks>"]
+   #[doc = "<summary>\n Device on which a boot environment application resides.\n </summary>\n <remarks>0x11000001</remarks>"]
    BcdLibraryDevice_ApplicationDevice = 285212673,
-   #[doc = " <summary>\n Path to a boot environment application.\n </summary>\n <remarks>0x12000002</remarks>"]
+   #[doc = "<summary>\n Path to a boot environment application.\n </summary>\n <remarks>0x12000002</remarks>"]
    BcdLibraryString_ApplicationPath = 301989890,
-   #[doc = " <summary>\n Display name of the boot environment application.\n </summary>\n <remarks>0x12000004</remarks>"]
+   #[doc = "<summary>\n Display name of the boot environment application.\n </summary>\n <remarks>0x12000004</remarks>"]
    BcdLibraryString_Description = 301989892,
-   #[doc = " <summary>\n Preferred locale, in RFC 3066 format.\n </summary>\n <remarks>0x12000005</remarks>"]
+   #[doc = "<summary>\n Preferred locale, in RFC 3066 format.\n </summary>\n <remarks>0x12000005</remarks>"]
    BcdLibraryString_PreferredLocale = 301989893,
-   #[doc = " <summary>\n List of BCD objects from which the current object should inherit elements.\n </summary>\n <remarks>0x14000006</remarks>"]
+   #[doc = "<summary>\n List of BCD objects from which the current object should inherit elements.\n </summary>\n <remarks>0x14000006</remarks>"]
    BcdLibraryObjectList_InheritedObjects = 335544326,
-   #[doc = " <summary>\n Maximum physical address a boot environment application should recognize. All memory above this address is ignored.\n </summary>\n <remarks>0x15000007</remarks>"]
+   #[doc = "<summary>\n Maximum physical address a boot environment application should recognize. All memory above this address is ignored.\n </summary>\n <remarks>0x15000007</remarks>"]
    BcdLibraryInteger_TruncatePhysicalMemory = 352321543,
-   #[doc = " <summary>\n List of boot environment applications to be executed if the associated application fails. The applications are executed in the order they appear in this list.\n </summary>\n <remarks>0x14000008</remarks>"]
+   #[doc = "<summary>\n List of boot environment applications to be executed if the associated application fails. The applications are executed in the order they appear in this list.\n </summary>\n <remarks>0x14000008</remarks>"]
    BcdLibraryObjectList_RecoverySequence = 335544328,
-   #[doc = " <summary>\n Indicates whether the recovery sequence executes automatically if the boot application fails. Otherwise, the recovery sequence only runs on demand.\n </summary>\n <remarks>0x16000009</remarks>"]
+   #[doc = "<summary>\n Indicates whether the recovery sequence executes automatically if the boot application fails. Otherwise, the recovery sequence only runs on demand.\n </summary>\n <remarks>0x16000009</remarks>"]
    BcdLibraryBoolean_AutoRecoveryEnabled = 369098761,
-   #[doc = " <summary>\n List of page frame numbers describing faulty memory in the system.\n </summary>\n <remarks>0x1700000A</remarks>"]
+   #[doc = "<summary>\n List of page frame numbers describing faulty memory in the system.\n </summary>\n <remarks>0x1700000A</remarks>"]
    BcdLibraryIntegerList_BadMemoryList = 385875978,
-   #[doc = " <summary>\n If TRUE, indicates that a boot application can use memory listed in the BcdLibraryIntegerList_BadMemoryList.\n </summary>\n <remarks>0x1600000B</remarks>"]
+   #[doc = "<summary>\n If TRUE, indicates that a boot application can use memory listed in the BcdLibraryIntegerList_BadMemoryList.\n </summary>\n <remarks>0x1600000B</remarks>"]
    BcdLibraryBoolean_AllowBadMemoryAccess = 369098763,
-   #[doc = " <summary>\n Indicates how the first megabyte of memory is to be used. The Integer property is one of the values from the BcdLibrary_FirstMegabytePolicy enumeration. (BCDE_POLICY_LIBRARY_TYPE_FIRST_MEGABYTE_POLICY)\n </summary>\n <remarks>0x1500000C</remarks>"]
+   #[doc = "<summary>\n Indicates how the first megabyte of memory is to be used. The Integer property is one of the values from the BcdLibrary_FirstMegabytePolicy enumeration. (BCDE_POLICY_LIBRARY_TYPE_FIRST_MEGABYTE_POLICY)\n </summary>\n <remarks>0x1500000C</remarks>"]
    BcdLibraryInteger_FirstMegabytePolicy = 352321548,
-   #[doc = " <summary>\n Relocates physical memory on certain AMD processors.\n This value is not used in Windows 8 or Windows Server 2012.\n </summary>\n <remarks>0x1500000D</remarks>"]
+   #[doc = "<summary>\n Relocates physical memory on certain AMD processors.\n This value is not used in Windows 8 or Windows Server 2012.\n </summary>\n <remarks>0x1500000D</remarks>"]
    BcdLibraryInteger_RelocatePhysicalMemory = 352321549,
-   #[doc = " <summary>\n Specifies a minimum physical address to use in the boot environment.\n </summary>\n <remarks>0x1500000E</remarks>"]
+   #[doc = "<summary>\n Specifies a minimum physical address to use in the boot environment.\n </summary>\n <remarks>0x1500000E</remarks>"]
    BcdLibraryInteger_AvoidLowPhysicalMemory = 352321550,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x1600000F</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x1600000F</remarks>"]
    BcdLibraryBoolean_TraditionalKsegMappings = 369098767,
-   #[doc = " <summary>\n Indicates whether the boot debugger should be enabled.\n </summary>\n <remarks>0x16000010</remarks>"]
+   #[doc = "<summary>\n Indicates whether the boot debugger should be enabled.\n </summary>\n <remarks>0x16000010</remarks>"]
    BcdLibraryBoolean_DebuggerEnabled = 369098768,
-   #[doc = " <summary>\n Debugger type. The Integer property is one of the values from the BcdLibrary_DebuggerType enumeration.\n </summary>\n <remarks>0x15000011</remarks>"]
+   #[doc = "<summary>\n Debugger type. The Integer property is one of the values from the BcdLibrary_DebuggerType enumeration.\n </summary>\n <remarks>0x15000011</remarks>"]
    BcdLibraryInteger_DebuggerType = 352321553,
-   #[doc = " <summary>\n I/O port address for the serial debugger.\n </summary>\n <remarks>0x15000012</remarks>"]
+   #[doc = "<summary>\n I/O port address for the serial debugger.\n </summary>\n <remarks>0x15000012</remarks>"]
    BcdLibraryInteger_SerialDebuggerPortAddress = 352321554,
-   #[doc = " <summary>\n Serial port number for serial debugging.\n If this value is not specified, the default is specified by the DBGP ACPI table settings.\n </summary>\n <remarks>0x15000013</remarks>"]
+   #[doc = "<summary>\n Serial port number for serial debugging.\n If this value is not specified, the default is specified by the DBGP ACPI table settings.\n </summary>\n <remarks>0x15000013</remarks>"]
    BcdLibraryInteger_SerialDebuggerPort = 352321555,
-   #[doc = " <summary>\n Baud rate for serial debugging.\n </summary>\n <remarks>0x15000014</remarks>"]
+   #[doc = "<summary>\n Baud rate for serial debugging.\n </summary>\n <remarks>0x15000014</remarks>"]
    BcdLibraryInteger_SerialDebuggerBaudRate = 352321556,
-   #[doc = " <summary>\n Channel number for 1394 debugging.\n </summary>\n <remarks>0x15000015</remarks>"]
+   #[doc = "<summary>\n Channel number for 1394 debugging.\n </summary>\n <remarks>0x15000015</remarks>"]
    BcdLibraryInteger_1394DebuggerChannel = 352321557,
-   #[doc = " <summary>\n The target name for the USB debugger. The target name is arbitrary but must match between the debugger and the debug target.\n </summary>\n <remarks>0x12000016</remarks>"]
+   #[doc = "<summary>\n The target name for the USB debugger. The target name is arbitrary but must match between the debugger and the debug target.\n </summary>\n <remarks>0x12000016</remarks>"]
    BcdLibraryString_UsbDebuggerTargetName = 301989910,
-   #[doc = " <summary>\n If TRUE, the debugger will ignore user mode exceptions and only stop for kernel mode exceptions.\n </summary>\n <remarks>0x16000017</remarks>"]
+   #[doc = "<summary>\n If TRUE, the debugger will ignore user mode exceptions and only stop for kernel mode exceptions.\n </summary>\n <remarks>0x16000017</remarks>"]
    BcdLibraryBoolean_DebuggerIgnoreUsermodeExceptions = 369098775,
-   #[doc = " <summary>\n Indicates the debugger start policy. The Integer property is one of the values from the BcdLibrary_DebuggerStartPolicy enumeration.\n </summary>\n <remarks>0x15000018</remarks>"]
+   #[doc = "<summary>\n Indicates the debugger start policy. The Integer property is one of the values from the BcdLibrary_DebuggerStartPolicy enumeration.\n </summary>\n <remarks>0x15000018</remarks>"]
    BcdLibraryInteger_DebuggerStartPolicy = 352321560,
-   #[doc = " <summary>\n Defines the PCI bus, device, and function numbers of the debugging device. For example, 1.5.0 describes the debugging device on bus 1, device 5, function 0.\n </summary>\n <remarks>0x12000019</remarks>"]
+   #[doc = "<summary>\n Defines the PCI bus, device, and function numbers of the debugging device. For example, 1.5.0 describes the debugging device on bus 1, device 5, function 0.\n </summary>\n <remarks>0x12000019</remarks>"]
    BcdLibraryString_DebuggerBusParameters = 301989913,
-   #[doc = " <summary>\n Defines the host IP address for the network debugger.\n </summary>\n <remarks>0x1500001A</remarks>"]
+   #[doc = "<summary>\n Defines the host IP address for the network debugger.\n </summary>\n <remarks>0x1500001A</remarks>"]
    BcdLibraryInteger_DebuggerNetHostIP = 352321562,
-   #[doc = " <summary>\n Defines the network port for the network debugger.\n </summary>\n <remarks>0x1500001B</remarks>"]
+   #[doc = "<summary>\n Defines the network port for the network debugger.\n </summary>\n <remarks>0x1500001B</remarks>"]
    BcdLibraryInteger_DebuggerNetPort = 352321563,
-   #[doc = " <summary>\n Controls the use of DHCP by the network debugger. Setting this to false causes the OS to only use link-local addresses.\n This value is supported starting in Windows 8 and Windows Server 2012.\n </summary>\n <remarks>0x1600001C</remarks>"]
+   #[doc = "<summary>\n Controls the use of DHCP by the network debugger. Setting this to false causes the OS to only use link-local addresses.\n This value is supported starting in Windows 8 and Windows Server 2012.\n </summary>\n <remarks>0x1600001C</remarks>"]
    BcdLibraryBoolean_DebuggerNetDhcp = 369098780,
-   #[doc = " <summary>\n Holds the key used to encrypt the network debug connection.\n This value is supported starting in Windows 8 and Windows Server 2012.\n </summary>\n <remarks>0x1200001D</remarks>"]
+   #[doc = "<summary>\n Holds the key used to encrypt the network debug connection.\n This value is supported starting in Windows 8 and Windows Server 2012.\n </summary>\n <remarks>0x1200001D</remarks>"]
    BcdLibraryString_DebuggerNetKey = 301989917,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x1600001E</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x1600001E</remarks>"]
    BcdLibraryBoolean_DebuggerNetVM = 369098782,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x1200001F</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x1200001F</remarks>"]
    BcdLibraryString_DebuggerNetHostIpv6 = 301989919,
-   #[doc = " <summary>\n Indicates whether EMS redirection should be enabled.\n </summary>\n <remarks>0x16000020</remarks>"]
+   #[doc = "<summary>\n Indicates whether EMS redirection should be enabled.\n </summary>\n <remarks>0x16000020</remarks>"]
    BcdLibraryBoolean_EmsEnabled = 369098784,
-   #[doc = " <summary>\n COM port number for EMS redirection.\n </summary>\n <remarks>0x15000022</remarks>"]
+   #[doc = "<summary>\n COM port number for EMS redirection.\n </summary>\n <remarks>0x15000022</remarks>"]
    BcdLibraryInteger_EmsPort = 352321570,
-   #[doc = " <summary>\n Baud rate for EMS redirection.\n </summary>\n <remarks>0x15000023</remarks>"]
+   #[doc = "<summary>\n Baud rate for EMS redirection.\n </summary>\n <remarks>0x15000023</remarks>"]
    BcdLibraryInteger_EmsBaudRate = 352321571,
-   #[doc = " <summary>\n String that is appended to the load options string passed to the kernel to be consumed by kernel-mode components.\n This is useful for communicating with kernel-mode components that are not BCD-aware.\n </summary>\n <remarks>0x12000030</remarks>"]
+   #[doc = "<summary>\n String that is appended to the load options string passed to the kernel to be consumed by kernel-mode components.\n This is useful for communicating with kernel-mode components that are not BCD-aware.\n </summary>\n <remarks>0x12000030</remarks>"]
    BcdLibraryString_LoadOptionsString = 301989936,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x16000031</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x16000031</remarks>"]
    BcdLibraryBoolean_AttemptNonBcdStart = 369098801,
-   #[doc = " <summary>\n Indicates whether the advanced options boot menu (F8) is displayed.\n </summary>\n <remarks>0x16000040</remarks>"]
+   #[doc = "<summary>\n Indicates whether the advanced options boot menu (F8) is displayed.\n </summary>\n <remarks>0x16000040</remarks>"]
    BcdLibraryBoolean_DisplayAdvancedOptions = 369098816,
-   #[doc = " <summary>\n Indicates whether the boot options editor is enabled.\n </summary>\n <remarks>0x16000041</remarks>"]
+   #[doc = "<summary>\n Indicates whether the boot options editor is enabled.\n </summary>\n <remarks>0x16000041</remarks>"]
    BcdLibraryBoolean_DisplayOptionsEdit = 369098817,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x15000042</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x15000042</remarks>"]
    BcdLibraryInteger_FVEKeyRingAddress = 352321602,
-   #[doc = " <summary>\n Allows a device override for the bootstat.dat log in the boot manager and winload.exe.\n </summary>\n <remarks>0x11000043</remarks>"]
+   #[doc = "<summary>\n Allows a device override for the bootstat.dat log in the boot manager and winload.exe.\n </summary>\n <remarks>0x11000043</remarks>"]
    BcdLibraryDevice_BsdLogDevice = 285212739,
-   #[doc = " <summary>\n Allows a path override for the bootstat.dat log file in the boot manager and winload.exe.\n </summary>\n <remarks>0x12000044</remarks>"]
+   #[doc = "<summary>\n Allows a path override for the bootstat.dat log file in the boot manager and winload.exe.\n </summary>\n <remarks>0x12000044</remarks>"]
    BcdLibraryString_BsdLogPath = 301989956,
-   #[doc = " <summary>\n Indicates whether graphics mode is disabled and boot applications must use text mode display.\n </summary>\n <remarks>0x16000045</remarks>"]
+   #[doc = "<summary>\n Indicates whether graphics mode is disabled and boot applications must use text mode display.\n </summary>\n <remarks>0x16000045</remarks>"]
    BcdLibraryBoolean_BsdPreserveLog = 369098821,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x16000046</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x16000046</remarks>"]
    BcdLibraryBoolean_GraphicsModeDisabled = 369098822,
-   #[doc = " <summary>\n Indicates the access policy for PCI configuration space.\n </summary>\n <remarks>0x15000047</remarks>"]
+   #[doc = "<summary>\n Indicates the access policy for PCI configuration space.\n </summary>\n <remarks>0x15000047</remarks>"]
    BcdLibraryInteger_ConfigAccessPolicy = 352321607,
-   #[doc = " <summary>\n Disables integrity checks.\n Cannot be set when secure boot is enabled.\n This value is ignored by Windows 7 and Windows 8.\n </summary>\n <remarks>0x16000048</remarks>"]
+   #[doc = "<summary>\n Disables integrity checks.\n Cannot be set when secure boot is enabled.\n This value is ignored by Windows 7 and Windows 8.\n </summary>\n <remarks>0x16000048</remarks>"]
    BcdLibraryBoolean_DisableIntegrityChecks = 369098824,
-   #[doc = " <summary>\n Indicates whether the test code signing certificate is supported.\n </summary>\n <remarks>0x16000049</remarks>"]
+   #[doc = "<summary>\n Indicates whether the test code signing certificate is supported.\n </summary>\n <remarks>0x16000049</remarks>"]
    BcdLibraryBoolean_AllowPrereleaseSignatures = 369098825,
-   #[doc = " <summary>\n Overrides the default location of the boot fonts.\n </summary>\n <remarks>0x1200004A</remarks>"]
+   #[doc = "<summary>\n Overrides the default location of the boot fonts.\n </summary>\n <remarks>0x1200004A</remarks>"]
    BcdLibraryString_FontPath = 301989962,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x1500004B</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x1500004B</remarks>"]
    BcdLibraryInteger_SiPolicy = 352321611,
-   #[doc = " <summary>\n This value (if present) should not be modified.\n </summary>\n <remarks>0x1500004C</remarks>"]
+   #[doc = "<summary>\n This value (if present) should not be modified.\n </summary>\n <remarks>0x1500004C</remarks>"]
    BcdLibraryInteger_FveBandId = 352321612,
-   #[doc = " <summary>\n Specifies that legacy BIOS systems should use INT 16h Function 10h for console input instead of INT 16h Function 0h.\n </summary>\n <remarks>0x16000050</remarks>"]
+   #[doc = "<summary>\n Specifies that legacy BIOS systems should use INT 16h Function 10h for console input instead of INT 16h Function 0h.\n </summary>\n <remarks>0x16000050</remarks>"]
    BcdLibraryBoolean_ConsoleExtendedInput = 369098832,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x15000051</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x15000051</remarks>"]
    BcdLibraryInteger_InitialConsoleInput = 352321617,
-   #[doc = " <summary>\n Forces a specific graphics resolution at boot.\n Possible values include GraphicsResolution1024x768 (0), GraphicsResolution800x600 (1), and GraphicsResolution1024x600 (2).\n </summary>\n <remarks>0x15000052</remarks>"]
+   #[doc = "<summary>\n Forces a specific graphics resolution at boot.\n Possible values include GraphicsResolution1024x768 (0), GraphicsResolution800x600 (1), and GraphicsResolution1024x600 (2).\n </summary>\n <remarks>0x15000052</remarks>"]
    BcdLibraryInteger_GraphicsResolution = 352321618,
-   #[doc = " <summary>\n If enabled, specifies that boot error screens are not shown when OS launch errors occur, and the system is reset rather than exiting directly back to the firmware.\n </summary>\n <remarks>0x16000053</remarks>"]
+   #[doc = "<summary>\n If enabled, specifies that boot error screens are not shown when OS launch errors occur, and the system is reset rather than exiting directly back to the firmware.\n </summary>\n <remarks>0x16000053</remarks>"]
    BcdLibraryBoolean_RestartOnFailure = 369098835,
-   #[doc = " <summary>\n Forces highest available graphics resolution at boot.\n This value can only be used on UEFI systems.\n This value is supported starting in Windows 8 and Windows Server 2012.\n </summary>\n <remarks>0x16000054</remarks>"]
+   #[doc = "<summary>\n Forces highest available graphics resolution at boot.\n This value can only be used on UEFI systems.\n This value is supported starting in Windows 8 and Windows Server 2012.\n </summary>\n <remarks>0x16000054</remarks>"]
    BcdLibraryBoolean_GraphicsForceHighestMode = 369098836,
-   #[doc = " <summary>\n This setting is used to differentiate between the Windows 7 and Windows 8 implementations of UEFI.\n Do not modify this setting.\n If this setting is removed from a Windows 8 installation, it will not boot.\n If this setting is added to a Windows 7 installation, it will not boot.\n </summary>\n <remarks>0x16000060</remarks>"]
+   #[doc = "<summary>\n This setting is used to differentiate between the Windows 7 and Windows 8 implementations of UEFI.\n Do not modify this setting.\n If this setting is removed from a Windows 8 installation, it will not boot.\n If this setting is added to a Windows 7 installation, it will not boot.\n </summary>\n <remarks>0x16000060</remarks>"]
    BcdLibraryBoolean_IsolatedExecutionContext = 369098848,
-   #[doc = " <summary>\n This setting disables the progress bar and default Windows logo. If a custom text string has been defined, it is also disabled by this setting.\n The Integer property is one of the values from the BcdLibrary_UxDisplayMessageType enumeration.\n </summary>\n <remarks>0x15000065</remarks>"]
+   #[doc = "<summary>\n This setting disables the progress bar and default Windows logo. If a custom text string has been defined, it is also disabled by this setting.\n The Integer property is one of the values from the BcdLibrary_UxDisplayMessageType enumeration.\n </summary>\n <remarks>0x15000065</remarks>"]
    BcdLibraryInteger_BootUxDisplayMessage = 352321637,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x15000066</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x15000066</remarks>"]
    BcdLibraryInteger_BootUxDisplayMessageOverride = 352321638,
-   #[doc = " <summary>\n This setting disables the boot logo.\n </summary>\n <remarks>0x16000067</remarks>"]
+   #[doc = "<summary>\n This setting disables the boot logo.\n </summary>\n <remarks>0x16000067</remarks>"]
    BcdLibraryBoolean_BootUxLogoDisable = 369098855,
-   #[doc = " <summary>\n This setting disables the boot status text.\n </summary>\n <remarks>0x16000068</remarks>"]
+   #[doc = "<summary>\n This setting disables the boot status text.\n </summary>\n <remarks>0x16000068</remarks>"]
    BcdLibraryBoolean_BootUxTextDisable = 369098856,
-   #[doc = " <summary>\n This setting disables the boot progress bar.\n </summary>\n <remarks>0x16000069</remarks>"]
+   #[doc = "<summary>\n This setting disables the boot progress bar.\n </summary>\n <remarks>0x16000069</remarks>"]
    BcdLibraryBoolean_BootUxProgressDisable = 369098857,
-   #[doc = " <summary>\n This setting disables the boot transition fading.\n </summary>\n <remarks>0x1600006A</remarks>"]
+   #[doc = "<summary>\n This setting disables the boot transition fading.\n </summary>\n <remarks>0x1600006A</remarks>"]
    BcdLibraryBoolean_BootUxFadeDisable = 369098858,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x1600006B</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x1600006B</remarks>"]
    BcdLibraryBoolean_BootUxReservePoolDebug = 369098859,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x1600006C</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x1600006C</remarks>"]
    BcdLibraryBoolean_BootUxDisable = 369098860,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x1500006D</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x1500006D</remarks>"]
    BcdLibraryInteger_BootUxFadeFrames = 352321645,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x1600006E</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x1600006E</remarks>"]
    BcdLibraryBoolean_BootUxDumpStats = 369098862,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x1600006F</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x1600006F</remarks>"]
    BcdLibraryBoolean_BootUxShowStats = 369098863,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x16000071</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x16000071</remarks>"]
    BcdLibraryBoolean_MultiBootSystem = 369098865,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x16000072</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x16000072</remarks>"]
    BcdLibraryBoolean_ForceNoKeyboard = 369098866,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x15000073</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x15000073</remarks>"]
    BcdLibraryInteger_AliasWindowsKey = 352321651,
-   #[doc = " <summary>\n Disables the 1-minute timer that triggers shutdown on boot error screens, and the F8 menu, on UEFI systems.\n </summary>\n <remarks>0x16000074</remarks>"]
+   #[doc = "<summary>\n Disables the 1-minute timer that triggers shutdown on boot error screens, and the F8 menu, on UEFI systems.\n </summary>\n <remarks>0x16000074</remarks>"]
    BcdLibraryBoolean_BootShutdownDisabled = 369098868,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x15000075</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x15000075</remarks>"]
    BcdLibraryInteger_PerformanceFrequency = 352321653,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x15000076</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x15000076</remarks>"]
    BcdLibraryInteger_SecurebootRawPolicy = 352321654,
-   #[doc = " <summary>\n Indicates whether or not an in-memory BCD setting passed between boot apps will trigger BitLocker recovery.\n This value should not be modified as it could trigger a BitLocker recovery action.\n </summary>\n <remarks>0x17000077</remarks>"]
+   #[doc = "<summary>\n Indicates whether or not an in-memory BCD setting passed between boot apps will trigger BitLocker recovery.\n This value should not be modified as it could trigger a BitLocker recovery action.\n </summary>\n <remarks>0x17000077</remarks>"]
    BcdLibraryIntegerList_AllowedInMemorySettings = 352321655,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x15000079</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x15000079</remarks>"]
    BcdLibraryInteger_BootUxBitmapTransitionTime = 352321657,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x1600007A</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x1600007A</remarks>"]
    BcdLibraryBoolean_TwoBootImages = 369098874,
-   #[doc = " <summary>\n Force the use of FIPS cryptography checks on boot applications.\n BcdLibraryBoolean_ForceFipsCrypto is documented with wrong value 0x16000079\n </summary>\n <remarks>0x1600007B</remarks>"]
+   #[doc = "<summary>\n Force the use of FIPS cryptography checks on boot applications.\n BcdLibraryBoolean_ForceFipsCrypto is documented with wrong value 0x16000079\n </summary>\n <remarks>0x1600007B</remarks>"]
    BcdLibraryBoolean_ForceFipsCrypto = 369098875,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x1500007D</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x1500007D</remarks>"]
    BcdLibraryInteger_BootErrorUx = 352321661,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x1600007E</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x1600007E</remarks>"]
    BcdLibraryBoolean_AllowFlightSignatures = 369098878,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x1500007F</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x1500007F</remarks>"]
    BcdLibraryInteger_BootMeasurementLogFormat = 352321663,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x15000080</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x15000080</remarks>"]
    BcdLibraryInteger_DisplayRotation = 352321664,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x15000081</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x15000081</remarks>"]
    BcdLibraryInteger_LogControl = 352321665,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x16000082</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x16000082</remarks>"]
    BcdLibraryBoolean_NoFirmwareSync = 369098882,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x11000084</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x11000084</remarks>"]
    BcdLibraryDevice_WindowsSystemDevice = 285212804,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x16000087</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x16000087</remarks>"]
    BcdLibraryBoolean_NumLockOn = 369098887,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x12000088</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x12000088</remarks>"]
    BcdLibraryString_AdditionalCiPolicy = 301990024,
-   #[doc = " <summary>\n Enabling the 5-Level Paging feature. 0 = Disabled, 1 = Optout, 2 = Optin\n </summary>\n <remarks>0x15000088</remarks>"]
+   #[doc = "<summary>\n Enabling the 5-Level Paging feature. 0 = Disabled, 1 = Optout, 2 = Optin\n </summary>\n <remarks>0x15000088</remarks>"]
    BcdLibraryInteger_LinearAddress57 = 352321672,
 }
 pub use self::_BcdLibraryElementTypes as BcdLibraryElementTypes;
@@ -32106,333 +32032,333 @@ pub use self::_BcdLibraryElementTypes as BcdLibraryElementTypes;
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdTemplateElementTypes {
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x45000001</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x45000001</remarks>"]
    BcdSetupInteger_DeviceType = 1157627905,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x42000002</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x42000002</remarks>"]
    BcdSetupString_ApplicationRelativePath = 1107296258,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x42000003</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x42000003</remarks>"]
    BcdSetupString_RamdiskDeviceRelativePath = 1107296259,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x46000004</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x46000004</remarks>"]
    BcdSetupBoolean_OmitOsLoaderElements = 1174405124,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x47000006</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x47000006</remarks>"]
    BcdSetupIntegerList_ElementsToMigrateList = 1191182342,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x46000010</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x46000010</remarks>"]
    BcdSetupBoolean_RecoveryOs = 1174405136,
 }
 pub use self::_BcdTemplateElementTypes as BcdTemplateElementTypes;
 #[repr(i32)]
 #[non_exhaustive]
-#[doc = " @brief Specifies the no-execute page protection policies."]
+#[doc = "Specifies the no-execute page protection policies."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdOSLoader_NxPolicy {
-   #[doc = " @brief The no-execute page protection is off by default."]
+   #[doc = "The no-execute page protection is off by default."]
    NxPolicyOptIn = 0,
-   #[doc = " @brief The no-execute page protection is on by default."]
+   #[doc = "The no-execute page protection is on by default."]
    NxPolicyOptOut = 1,
-   #[doc = " @brief The no-execute page protection is always off."]
+   #[doc = "The no-execute page protection is always off."]
    NxPolicyAlwaysOff = 2,
-   #[doc = " @brief The no-execute page protection is always on."]
+   #[doc = "The no-execute page protection is always on."]
    NxPolicyAlwaysOn = 3,
 }
-#[doc = " @brief Specifies the no-execute page protection policies."]
+#[doc = "Specifies the no-execute page protection policies."]
 pub use self::_BcdOSLoader_NxPolicy as BcdOSLoader_NxPolicy;
 #[repr(i32)]
 #[non_exhaustive]
-#[doc = " @brief Specifies the Physical Address Extension (PAE) policies."]
+#[doc = "Specifies the Physical Address Extension (PAE) policies."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdOSLoader_PAEPolicy {
-   #[doc = " @brief Enable PAE if hot-pluggable memory is defined above 4GB."]
+   #[doc = "Enable PAE if hot-pluggable memory is defined above 4GB."]
    PaePolicyDefault = 0,
-   #[doc = " @brief PAE is enabled."]
+   #[doc = "PAE is enabled."]
    PaePolicyForceEnable = 1,
-   #[doc = " @brief PAE is disabled."]
+   #[doc = "PAE is disabled."]
    PaePolicyForceDisable = 2,
 }
-#[doc = " @brief Specifies the Physical Address Extension (PAE) policies."]
+#[doc = "Specifies the Physical Address Extension (PAE) policies."]
 pub use self::_BcdOSLoader_PAEPolicy as BcdOSLoader_PAEPolicy;
 #[repr(i32)]
 #[non_exhaustive]
-#[doc = " @brief Specifies the boot status policies."]
+#[doc = "Specifies the boot status policies."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdOSLoader_BootStatusPolicy {
-   #[doc = " @brief Display all boot failures."]
+   #[doc = "Display all boot failures."]
    BootStatusPolicyDisplayAllFailures = 0,
-   #[doc = " @brief Ignore all boot failures."]
+   #[doc = "Ignore all boot failures."]
    BootStatusPolicyIgnoreAllFailures = 1,
-   #[doc = " @brief Ignore all shutdown failures."]
+   #[doc = "Ignore all shutdown failures."]
    BootStatusPolicyIgnoreShutdownFailures = 2,
-   #[doc = " @brief Ignore all boot failures."]
+   #[doc = "Ignore all boot failures."]
    BootStatusPolicyIgnoreBootFailures = 3,
-   #[doc = " @brief Ignore checkpoint failures."]
+   #[doc = "Ignore checkpoint failures."]
    BootStatusPolicyIgnoreCheckpointFailures = 4,
-   #[doc = " @brief Display shutdown failures."]
+   #[doc = "Display shutdown failures."]
    BootStatusPolicyDisplayShutdownFailures = 5,
-   #[doc = " @brief Display boot failures."]
+   #[doc = "Display boot failures."]
    BootStatusPolicyDisplayBootFailures = 6,
-   #[doc = " @brief Display checkpoint failures."]
+   #[doc = "Display checkpoint failures."]
    BootStatusPolicyDisplayCheckpointFailures = 7,
-   #[doc = " @brief Always display startup failures."]
+   #[doc = "Always display startup failures."]
    BootStatusPolicyAlwaysDisplayStartupFailures = 8,
 }
-#[doc = " @brief Specifies the boot status policies."]
+#[doc = "Specifies the boot status policies."]
 pub use self::_BcdOSLoader_BootStatusPolicy as BcdOSLoaderBootStatusPolicy;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _BcdOSLoaderElementTypes {
-   #[doc = " <summary>\n The device on which the operating system resides.\n </summary>\n <remarks>0x21000001</remarks>"]
+   #[doc = "<summary>\n The device on which the operating system resides.\n </summary>\n <remarks>0x21000001</remarks>"]
    BcdOSLoaderDevice_OSDevice = 553648129,
-   #[doc = " <summary>\n The file path to the operating system (%SystemRoot% minus the volume).\n </summary>\n <remarks>0x22000002</remarks>"]
+   #[doc = "<summary>\n The file path to the operating system (%SystemRoot% minus the volume).\n </summary>\n <remarks>0x22000002</remarks>"]
    BcdOSLoaderString_SystemRoot = 570425346,
-   #[doc = " <summary>\n The resume application associated with the operating system.\n </summary>\n <remarks>0x23000003</remarks>"]
+   #[doc = "<summary>\n The resume application associated with the operating system.\n </summary>\n <remarks>0x23000003</remarks>"]
    BcdOSLoaderObject_AssociatedResumeObject = 587202563,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x26000004</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x26000004</remarks>"]
    BcdOSLoaderBoolean_StampDisks = 637534212,
-   #[doc = " <summary>\n Indicates whether the operating system loader should determine the kernel and HAL to load based on the platform features.\n </summary>\n <remarks>0x26000010</remarks>"]
+   #[doc = "<summary>\n Indicates whether the operating system loader should determine the kernel and HAL to load based on the platform features.\n </summary>\n <remarks>0x26000010</remarks>"]
    BcdOSLoaderBoolean_DetectKernelAndHal = 637534224,
-   #[doc = " <summary>\n The kernel to be loaded by the operating system loader. This value overrides the default kernel.\n </summary>\n <remarks>0x22000011</remarks>"]
+   #[doc = "<summary>\n The kernel to be loaded by the operating system loader. This value overrides the default kernel.\n </summary>\n <remarks>0x22000011</remarks>"]
    BcdOSLoaderString_KernelPath = 570425361,
-   #[doc = " <summary>\n The HAL to be loaded by the operating system loader. This value overrides the default HAL.\n </summary>\n <remarks>0x22000012</remarks>"]
+   #[doc = "<summary>\n The HAL to be loaded by the operating system loader. This value overrides the default HAL.\n </summary>\n <remarks>0x22000012</remarks>"]
    BcdOSLoaderString_HalPath = 570425362,
-   #[doc = " <summary>\n The transport DLL to be loaded by the operating system loader. This value overrides the default Kdcom.dll.\n </summary>\n <remarks>0x22000013</remarks>"]
+   #[doc = "<summary>\n The transport DLL to be loaded by the operating system loader. This value overrides the default Kdcom.dll.\n </summary>\n <remarks>0x22000013</remarks>"]
    BcdOSLoaderString_DbgTransportPath = 570425363,
-   #[doc = " <summary>\n The no-execute page protection policy. The Integer property is one of the values from the BcdOSLoader_NxPolicy enumeration.\n </summary>\n <remarks>0x25000020</remarks>"]
+   #[doc = "<summary>\n The no-execute page protection policy. The Integer property is one of the values from the BcdOSLoader_NxPolicy enumeration.\n </summary>\n <remarks>0x25000020</remarks>"]
    BcdOSLoaderInteger_NxPolicy = 620757024,
-   #[doc = " <summary>\n The Physical Address Extension (PAE) policy. The Integer property is one of the values from the BcdOSLoader_PAEPolicy enumeration.\n </summary>\n <remarks>0x25000021</remarks>"]
+   #[doc = "<summary>\n The Physical Address Extension (PAE) policy. The Integer property is one of the values from the BcdOSLoader_PAEPolicy enumeration.\n </summary>\n <remarks>0x25000021</remarks>"]
    BcdOSLoaderInteger_PAEPolicy = 620757025,
-   #[doc = " <summary>\n Indicates that the system should be started in Windows Preinstallation Environment (Windows PE) mode.\n </summary>\n <remarks>0x26000022</remarks>"]
+   #[doc = "<summary>\n Indicates that the system should be started in Windows Preinstallation Environment (Windows PE) mode.\n </summary>\n <remarks>0x26000022</remarks>"]
    BcdOSLoaderBoolean_WinPEMode = 637534242,
-   #[doc = " <summary>\n Indicates that the system should not automatically reboot when it crashes.\n </summary>\n <remarks>0x26000024</remarks>"]
+   #[doc = "<summary>\n Indicates that the system should not automatically reboot when it crashes.\n </summary>\n <remarks>0x26000024</remarks>"]
    BcdOSLoaderBoolean_DisableCrashAutoReboot = 637534244,
-   #[doc = " <summary>\n Indicates that the system should use the last-known good settings.\n </summary>\n <remarks>0x26000025</remarks>"]
+   #[doc = "<summary>\n Indicates that the system should use the last-known good settings.\n </summary>\n <remarks>0x26000025</remarks>"]
    BcdOSLoaderBoolean_UseLastGoodSettings = 637534245,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x26000026</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x26000026</remarks>"]
    BcdOSLoaderBoolean_DisableCodeIntegrityChecks = 637534246,
-   #[doc = " <summary>\n Indicates whether the test code signing certificate is supported.\n </summary>\n <remarks>0x26000027</remarks>"]
+   #[doc = "<summary>\n Indicates whether the test code signing certificate is supported.\n </summary>\n <remarks>0x26000027</remarks>"]
    BcdOSLoaderBoolean_AllowPrereleaseSignatures = 637534247,
-   #[doc = " <summary>\n Indicates whether the system should utilize the first 4GB of physical memory.\n This option requires 5GB of physical memory, and on x86 systems it requires PAE to be enabled.\n </summary>\n <remarks>0x26000030</remarks>"]
+   #[doc = "<summary>\n Indicates whether the system should utilize the first 4GB of physical memory.\n This option requires 5GB of physical memory, and on x86 systems it requires PAE to be enabled.\n </summary>\n <remarks>0x26000030</remarks>"]
    BcdOSLoaderBoolean_NoLowMemory = 637534256,
-   #[doc = " <summary>\n The amount of memory the system should ignore.\n </summary>\n <remarks>0x25000031</remarks>"]
+   #[doc = "<summary>\n The amount of memory the system should ignore.\n </summary>\n <remarks>0x25000031</remarks>"]
    BcdOSLoaderInteger_RemoveMemory = 620757041,
-   #[doc = " <summary>\n The amount of memory that should be utilized by the process address space, in bytes.\n This value should be between 2GB and 3GB.\n Increasing this value from the default 2GB decreases the amount of virtual address space available to the system and device drivers.\n </summary>\n <remarks>0x25000032</remarks>"]
+   #[doc = "<summary>\n The amount of memory that should be utilized by the process address space, in bytes.\n This value should be between 2GB and 3GB.\n Increasing this value from the default 2GB decreases the amount of virtual address space available to the system and device drivers.\n </summary>\n <remarks>0x25000032</remarks>"]
    BcdOSLoaderInteger_IncreaseUserVa = 620757042,
-   #[doc = " <summary>\n BCDE_OSLOADER_TYPE_PERFORMANCE_DATA_MEMORY\n </summary>\n <remarks>0x25000033</remarks>"]
+   #[doc = "<summary>\n BCDE_OSLOADER_TYPE_PERFORMANCE_DATA_MEMORY\n </summary>\n <remarks>0x25000033</remarks>"]
    BcdOSLoaderInteger_PerformaceDataMemory = 620757043,
-   #[doc = " <summary>\n Indicates whether the system should use the standard VGA display driver instead of a high-performance display driver.\n </summary>\n <remarks>0x26000040</remarks>"]
+   #[doc = "<summary>\n Indicates whether the system should use the standard VGA display driver instead of a high-performance display driver.\n </summary>\n <remarks>0x26000040</remarks>"]
    BcdOSLoaderBoolean_UseVgaDriver = 637534272,
-   #[doc = " <summary>\n Indicates whether the system should initialize the VGA driver responsible for displaying simple graphics during the boot process.\n If not, there is no display is presented during the boot process.\n </summary>\n <remarks>0x26000041</remarks>"]
+   #[doc = "<summary>\n Indicates whether the system should initialize the VGA driver responsible for displaying simple graphics during the boot process.\n If not, there is no display is presented during the boot process.\n </summary>\n <remarks>0x26000041</remarks>"]
    BcdOSLoaderBoolean_DisableBootDisplay = 637534273,
-   #[doc = " <summary>\n Indicates whether the VGA driver should avoid VESA BIOS calls.\n Note This value is ignored by Windows 8 and Windows Server 2012.\n </summary>\n <remarks>0x26000042</remarks>"]
+   #[doc = "<summary>\n Indicates whether the VGA driver should avoid VESA BIOS calls.\n Note This value is ignored by Windows 8 and Windows Server 2012.\n </summary>\n <remarks>0x26000042</remarks>"]
    BcdOSLoaderBoolean_DisableVesaBios = 637534274,
-   #[doc = " <summary>\n Disables the use of VGA modes in the OS.\n </summary>\n <remarks>0x26000043</remarks>"]
+   #[doc = "<summary>\n Disables the use of VGA modes in the OS.\n </summary>\n <remarks>0x26000043</remarks>"]
    BcdOSLoaderBoolean_DisableVgaMode = 637534275,
-   #[doc = " <summary>\n Indicates that cluster-mode APIC addressing should be utilized, and the value is the maximum number of processors per cluster.\n </summary>\n <remarks>0x25000050</remarks>"]
+   #[doc = "<summary>\n Indicates that cluster-mode APIC addressing should be utilized, and the value is the maximum number of processors per cluster.\n </summary>\n <remarks>0x25000050</remarks>"]
    BcdOSLoaderInteger_ClusterModeAddressing = 620757072,
-   #[doc = " <summary>\n Indicates whether to enable physical-destination mode for all APIC messages.\n </summary>\n <remarks>0x26000051</remarks>"]
+   #[doc = "<summary>\n Indicates whether to enable physical-destination mode for all APIC messages.\n </summary>\n <remarks>0x26000051</remarks>"]
    BcdOSLoaderBoolean_UsePhysicalDestination = 637534289,
-   #[doc = " <summary>\n The maximum number of APIC clusters that should be used by cluster-mode addressing.\n </summary>\n <remarks>0x25000052</remarks>"]
+   #[doc = "<summary>\n The maximum number of APIC clusters that should be used by cluster-mode addressing.\n </summary>\n <remarks>0x25000052</remarks>"]
    BcdOSLoaderInteger_RestrictApicCluster = 620757074,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x22000053</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x22000053</remarks>"]
    BcdOSLoaderString_OSLoaderTypeEVStore = 570425427,
-   #[doc = " <summary>\n Used to force legacy APIC mode, even if the processors and chipset support extended APIC mode.\n </summary>\n <remarks>0x26000054</remarks>"]
+   #[doc = "<summary>\n Used to force legacy APIC mode, even if the processors and chipset support extended APIC mode.\n </summary>\n <remarks>0x26000054</remarks>"]
    BcdOSLoaderBoolean_UseLegacyApicMode = 637534292,
-   #[doc = " <summary>\n Enables the use of extended APIC mode, if supported.\n Zero (0) indicates default behavior, one (1) indicates that extended APIC mode is disabled, and two (2) indicates that extended APIC mode is enabled.\n The system defaults to using extended APIC mode if available.\n </summary>\n <remarks>0x25000055</remarks>"]
+   #[doc = "<summary>\n Enables the use of extended APIC mode, if supported.\n Zero (0) indicates default behavior, one (1) indicates that extended APIC mode is disabled, and two (2) indicates that extended APIC mode is enabled.\n The system defaults to using extended APIC mode if available.\n </summary>\n <remarks>0x25000055</remarks>"]
    BcdOSLoaderInteger_X2ApicPolicy = 620757077,
-   #[doc = " <summary>\n Indicates whether the operating system should initialize or start non-boot processors.\n </summary>\n <remarks>0x26000060</remarks>"]
+   #[doc = "<summary>\n Indicates whether the operating system should initialize or start non-boot processors.\n </summary>\n <remarks>0x26000060</remarks>"]
    BcdOSLoaderBoolean_UseBootProcessorOnly = 637534304,
-   #[doc = " <summary>\n The maximum number of processors that can be utilized by the system; all other processors are ignored.\n </summary>\n <remarks>0x25000061</remarks>"]
+   #[doc = "<summary>\n The maximum number of processors that can be utilized by the system; all other processors are ignored.\n </summary>\n <remarks>0x25000061</remarks>"]
    BcdOSLoaderInteger_NumberOfProcessors = 620757089,
-   #[doc = " <summary>\n Indicates whether the system should use the maximum number of processors.\n </summary>\n <remarks>0x26000062</remarks>"]
+   #[doc = "<summary>\n Indicates whether the system should use the maximum number of processors.\n </summary>\n <remarks>0x26000062</remarks>"]
    BcdOSLoaderBoolean_ForceMaximumProcessors = 637534306,
-   #[doc = " <summary>\n Indicates whether processor specific configuration flags are to be used.\n </summary>\n <remarks>0x25000063</remarks>"]
+   #[doc = "<summary>\n Indicates whether processor specific configuration flags are to be used.\n </summary>\n <remarks>0x25000063</remarks>"]
    BcdOSLoaderBoolean_ProcessorConfigurationFlags = 620757091,
-   #[doc = " <summary>\n Maximizes the number of groups created when assigning nodes to processor groups.\n </summary>\n <remarks>0x26000064</remarks>"]
+   #[doc = "<summary>\n Maximizes the number of groups created when assigning nodes to processor groups.\n </summary>\n <remarks>0x26000064</remarks>"]
    BcdOSLoaderBoolean_MaximizeGroupsCreated = 637534308,
-   #[doc = " <summary>\n This setting makes drivers group aware and can be used to determine improper group usage.\n </summary>\n <remarks>0x26000065</remarks>"]
+   #[doc = "<summary>\n This setting makes drivers group aware and can be used to determine improper group usage.\n </summary>\n <remarks>0x26000065</remarks>"]
    BcdOSLoaderBoolean_ForceGroupAwareness = 637534309,
-   #[doc = " <summary>\n Specifies the size of all processor groups. Must be set to a power of 2.\n </summary>\n <remarks>0x25000066</remarks>"]
+   #[doc = "<summary>\n Specifies the size of all processor groups. Must be set to a power of 2.\n </summary>\n <remarks>0x25000066</remarks>"]
    BcdOSLoaderInteger_GroupSize = 620757094,
-   #[doc = " <summary>\n Indicates whether the system should use I/O and IRQ resources created by the system firmware instead of using dynamically configured resources.\n </summary>\n <remarks>0x26000070</remarks>"]
+   #[doc = "<summary>\n Indicates whether the system should use I/O and IRQ resources created by the system firmware instead of using dynamically configured resources.\n </summary>\n <remarks>0x26000070</remarks>"]
    BcdOSLoaderInteger_UseFirmwarePciSettings = 637534320,
-   #[doc = " <summary>\n The PCI Message Signaled Interrupt (MSI) policy. Zero (0) indicates default, and one (1) indicates that MSI interrupts are forcefully disabled.\n </summary>\n <remarks>0x25000071</remarks>"]
+   #[doc = "<summary>\n The PCI Message Signaled Interrupt (MSI) policy. Zero (0) indicates default, and one (1) indicates that MSI interrupts are forcefully disabled.\n </summary>\n <remarks>0x25000071</remarks>"]
    BcdOSLoaderInteger_MsiPolicy = 620757105,
-   #[doc = " <summary>\n Zero (0) indicates default, and one (1) indicates that PCI Express is forcefully disabled.\n </summary>\n <remarks>0x25000072</remarks>"]
+   #[doc = "<summary>\n Zero (0) indicates default, and one (1) indicates that PCI Express is forcefully disabled.\n </summary>\n <remarks>0x25000072</remarks>"]
    BcdOSLoaderInteger_PciExpressPolicy = 620757106,
-   #[doc = " <summary>\n The Integer property is one of the values from the BcdLibrary_SafeBoot enumeration.\n </summary>\n <remarks>0x25000080</remarks>"]
+   #[doc = "<summary>\n The Integer property is one of the values from the BcdLibrary_SafeBoot enumeration.\n </summary>\n <remarks>0x25000080</remarks>"]
    BcdOSLoaderInteger_SafeBoot = 620757120,
-   #[doc = " <summary>\n Indicates whether the system should use the shell specified under the following registry key instead of the default shell:\n HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\SafeBoot\\AlternateShell.\n </summary>\n <remarks>0x26000081</remarks>"]
+   #[doc = "<summary>\n Indicates whether the system should use the shell specified under the following registry key instead of the default shell:\n HKEY_LOCAL_MACHINE</summary>\n <remarks>0x26000081</remarks>"]
    BcdOSLoaderBoolean_SafeBootAlternateShell = 637534337,
-   #[doc = " <summary>\n Indicates whether the system should write logging information to %SystemRoot%\\Ntbtlog.txt during initialization.\n </summary>\n <remarks>0x26000090</remarks>"]
+   #[doc = "<summary>\n Indicates whether the system should write logging information to %SystemRoot%during initialization.\n </summary>\n <remarks>0x26000090</remarks>"]
    BcdOSLoaderBoolean_BootLogInitialization = 637534352,
-   #[doc = " <summary>\n Indicates whether the system should display verbose information.\n </summary>\n <remarks>0x26000091</remarks>"]
+   #[doc = "<summary>\n Indicates whether the system should display verbose information.\n </summary>\n <remarks>0x26000091</remarks>"]
    BcdOSLoaderBoolean_VerboseObjectLoadMode = 637534353,
-   #[doc = " <summary>\n Indicates whether the kernel debugger should be enabled using the settings in the inherited debugger object.\n </summary>\n <remarks>0x260000A0</remarks>"]
+   #[doc = "<summary>\n Indicates whether the kernel debugger should be enabled using the settings in the inherited debugger object.\n </summary>\n <remarks>0x260000A0</remarks>"]
    BcdOSLoaderBoolean_KernelDebuggerEnabled = 637534368,
-   #[doc = " <summary>\n Indicates whether the HAL should call DbgBreakPoint at the start of HalInitSystem for phase 0 initialization of the kernel.\n </summary>\n <remarks>0x260000A1</remarks>"]
+   #[doc = "<summary>\n Indicates whether the HAL should call DbgBreakPoint at the start of HalInitSystem for phase 0 initialization of the kernel.\n </summary>\n <remarks>0x260000A1</remarks>"]
    BcdOSLoaderBoolean_DebuggerHalBreakpoint = 637534369,
-   #[doc = " <summary>\n Forces the use of the platform clock as the system's performance counter.\n </summary>\n <remarks>0x260000A2</remarks>"]
+   #[doc = "<summary>\n Forces the use of the platform clock as the system's performance counter.\n </summary>\n <remarks>0x260000A2</remarks>"]
    BcdOSLoaderBoolean_UsePlatformClock = 637534370,
-   #[doc = " <summary>\n Forces the OS to assume the presence of legacy PC devices like CMOS and keyboard controllers.\n This value should only be used for debugging.\n </summary>\n <remarks>0x260000A3</remarks>"]
+   #[doc = "<summary>\n Forces the OS to assume the presence of legacy PC devices like CMOS and keyboard controllers.\n This value should only be used for debugging.\n </summary>\n <remarks>0x260000A3</remarks>"]
    BcdOSLoaderBoolean_ForceLegacyPlatform = 637534371,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x260000A4</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x260000A4</remarks>"]
    BcdOSLoaderBoolean_UsePlatformTick = 637534372,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x260000A5</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x260000A5</remarks>"]
    BcdOSLoaderBoolean_DisableDynamicTick = 637534373,
-   #[doc = " <summary>\n Controls the TSC synchronization policy. Possible values include default (0), legacy (1), or enhanced (2).\n This value is supported starting in Windows 8 and Windows Server 2012.\n </summary>\n <remarks>0x250000A6</remarks>"]
+   #[doc = "<summary>\n Controls the TSC synchronization policy. Possible values include default (0), legacy (1), or enhanced (2).\n This value is supported starting in Windows 8 and Windows Server 2012.\n </summary>\n <remarks>0x250000A6</remarks>"]
    BcdOSLoaderInteger_TscSyncPolicy = 620757158,
-   #[doc = " <summary>\n Indicates whether EMS should be enabled in the kernel.\n </summary>\n <remarks>0x260000B0</remarks>"]
+   #[doc = "<summary>\n Indicates whether EMS should be enabled in the kernel.\n </summary>\n <remarks>0x260000B0</remarks>"]
    BcdOSLoaderBoolean_EmsEnabled = 637534384,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x250000C0</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x250000C0</remarks>"]
    BcdOSLoaderInteger_ForceFailure = 620757184,
-   #[doc = " <summary>\n Indicates the driver load failure policy. Zero (0) indicates that a failed driver load is fatal and the boot will not continue,\n one (1) indicates that the standard error control is used.\n </summary>\n <remarks>0x250000C1</remarks>"]
+   #[doc = "<summary>\n Indicates the driver load failure policy. Zero (0) indicates that a failed driver load is fatal and the boot will not continue,\n one (1) indicates that the standard error control is used.\n </summary>\n <remarks>0x250000C1</remarks>"]
    BcdOSLoaderInteger_DriverLoadFailurePolicy = 620757185,
-   #[doc = " <summary>\n Defines the type of boot menus the system will use. Possible values include menupolicylegacy (0) or menupolicystandard (1).\n The default value is menupolicylegacy (0).\n </summary>\n <remarks>0x250000C2</remarks>"]
+   #[doc = "<summary>\n Defines the type of boot menus the system will use. Possible values include menupolicylegacy (0) or menupolicystandard (1).\n The default value is menupolicylegacy (0).\n </summary>\n <remarks>0x250000C2</remarks>"]
    BcdOSLoaderInteger_BootMenuPolicy = 620757186,
-   #[doc = " <summary>\n Controls whether the system boots to the legacy menu (F8 menu) on the next boot.\n Note This value is supported starting in Windows 8 and Windows Server 2012.\n </summary>\n <remarks>0x260000C3</remarks>"]
+   #[doc = "<summary>\n Controls whether the system boots to the legacy menu (F8 menu) on the next boot.\n Note This value is supported starting in Windows 8 and Windows Server 2012.\n </summary>\n <remarks>0x260000C3</remarks>"]
    BcdOSLoaderBoolean_AdvancedOptionsOneTime = 637534403,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x260000C4</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x260000C4</remarks>"]
    BcdOSLoaderBoolean_OptionsEditOneTime = 637534404,
-   #[doc = " <summary>\n The boot status policy. The Integer property is one of the values from the BcdOSLoaderBootStatusPolicy enumeration\n </summary>\n <remarks>0x250000E0</remarks>"]
+   #[doc = "<summary>\n The boot status policy. The Integer property is one of the values from the BcdOSLoaderBootStatusPolicy enumeration\n </summary>\n <remarks>0x250000E0</remarks>"]
    BcdOSLoaderInteger_BootStatusPolicy = 620757216,
-   #[doc = " <summary>\n The OS loader removes this entry for security reasons. This option can only be triggered by using the F8 menu; a user must be physically present to trigger this option.\n This value is supported starting in Windows 8 and Windows Server 2012.\n </summary>\n <remarks>0x260000E1</remarks>"]
+   #[doc = "<summary>\n The OS loader removes this entry for security reasons. This option can only be triggered by using the F8 menu; a user must be physically present to trigger this option.\n This value is supported starting in Windows 8 and Windows Server 2012.\n </summary>\n <remarks>0x260000E1</remarks>"]
    BcdOSLoaderBoolean_DisableElamDrivers = 637534433,
-   #[doc = " <summary>\n Controls the hypervisor launch type. Options are HyperVisorLaunchOff (0) and HypervisorLaunchAuto (1).\n </summary>\n <remarks>0x250000F0</remarks>"]
+   #[doc = "<summary>\n Controls the hypervisor launch type. Options are HyperVisorLaunchOff (0) and HypervisorLaunchAuto (1).\n </summary>\n <remarks>0x250000F0</remarks>"]
    BcdOSLoaderInteger_HypervisorLaunchType = 620757232,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x250000F1</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x250000F1</remarks>"]
    BcdOSLoaderString_HypervisorPath = 620757233,
-   #[doc = " <summary>\n Controls whether the hypervisor debugger is enabled.\n </summary>\n <remarks>0x260000F2</remarks>"]
+   #[doc = "<summary>\n Controls whether the hypervisor debugger is enabled.\n </summary>\n <remarks>0x260000F2</remarks>"]
    BcdOSLoaderBoolean_HypervisorDebuggerEnabled = 637534450,
-   #[doc = " <summary>\n Controls the hypervisor debugger type. Can be set to SERIAL (0), 1394 (1), or NET (2).\n </summary>\n <remarks>0x250000F3</remarks>"]
+   #[doc = "<summary>\n Controls the hypervisor debugger type. Can be set to SERIAL (0), 1394 (1), or NET (2).\n </summary>\n <remarks>0x250000F3</remarks>"]
    BcdOSLoaderInteger_HypervisorDebuggerType = 620757235,
-   #[doc = " <summary>\n Specifies the serial port number for serial debugging.\n </summary>\n <remarks>0x250000F4</remarks>"]
+   #[doc = "<summary>\n Specifies the serial port number for serial debugging.\n </summary>\n <remarks>0x250000F4</remarks>"]
    BcdOSLoaderInteger_HypervisorDebuggerPortNumber = 620757236,
-   #[doc = " <summary>\n Specifies the baud rate for serial debugging.\n </summary>\n <remarks>0x250000F5</remarks>"]
+   #[doc = "<summary>\n Specifies the baud rate for serial debugging.\n </summary>\n <remarks>0x250000F5</remarks>"]
    BcdOSLoaderInteger_HypervisorDebuggerBaudrate = 620757237,
-   #[doc = " <summary>\n Specifies the channel number for 1394 debugging.\n </summary>\n <remarks>0x250000F6</remarks>"]
+   #[doc = "<summary>\n Specifies the channel number for 1394 debugging.\n </summary>\n <remarks>0x250000F6</remarks>"]
    BcdOSLoaderInteger_HypervisorDebugger1394Channel = 620757238,
-   #[doc = " <summary>\n Values are Disabled (0), Basic (1), and Standard (2).\n </summary>\n <remarks>0x250000F7</remarks>"]
+   #[doc = "<summary>\n Values are Disabled (0), Basic (1), and Standard (2).\n </summary>\n <remarks>0x250000F7</remarks>"]
    BcdOSLoaderInteger_BootUxPolicy = 620757239,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x220000F8</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x220000F8</remarks>"]
    BcdOSLoaderInteger_HypervisorSlatDisabled = 570425592,
-   #[doc = " <summary>\n Defines the PCI bus, device, and function numbers of the debugging device used with the hypervisor.\n For example, 1.5.0 describes the debugging device on bus 1, device 5, function 0.\n </summary>\n <remarks>0x220000F9</remarks>"]
+   #[doc = "<summary>\n Defines the PCI bus, device, and function numbers of the debugging device used with the hypervisor.\n For example, 1.5.0 describes the debugging device on bus 1, device 5, function 0.\n </summary>\n <remarks>0x220000F9</remarks>"]
    BcdOSLoaderString_HypervisorDebuggerBusParams = 570425593,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x250000FA</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x250000FA</remarks>"]
    BcdOSLoaderInteger_HypervisorNumProc = 620757242,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x250000FB</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x250000FB</remarks>"]
    BcdOSLoaderInteger_HypervisorRootProcPerNode = 620757243,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x260000FC</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x260000FC</remarks>"]
    BcdOSLoaderBoolean_HypervisorUseLargeVTlb = 637534460,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x250000FD</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x250000FD</remarks>"]
    BcdOSLoaderInteger_HypervisorDebuggerNetHostIp = 620757245,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x250000FE</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x250000FE</remarks>"]
    BcdOSLoaderInteger_HypervisorDebuggerNetHostPort = 620757246,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x250000FF</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x250000FF</remarks>"]
    BcdOSLoaderInteger_HypervisorDebuggerPages = 620757247,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000100</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000100</remarks>"]
    BcdOSLoaderInteger_TpmBootEntropyPolicy = 620757248,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x22000110</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x22000110</remarks>"]
    BcdOSLoaderString_HypervisorDebuggerNetKey = 570425616,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x22000112</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x22000112</remarks>"]
    BcdOSLoaderString_HypervisorProductSkuType = 570425618,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x22000113</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x22000113</remarks>"]
    BcdOSLoaderInteger_HypervisorRootProc = 570425619,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x26000114</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x26000114</remarks>"]
    BcdOSLoaderBoolean_HypervisorDebuggerNetDhcp = 637534484,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000115</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000115</remarks>"]
    BcdOSLoaderInteger_HypervisorIommuPolicy = 620757269,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x26000116</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x26000116</remarks>"]
    BcdOSLoaderBoolean_HypervisorUseVApic = 637534486,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x22000117</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x22000117</remarks>"]
    BcdOSLoaderString_HypervisorLoadOptions = 570425623,
-   #[doc = " <summary>\n BCDE_POLICY_OSLOADER_TYPE_HYPERVISOR_MSR_FILTER_POLICY\n </summary>\n <remarks>0x25000118</remarks>"]
+   #[doc = "<summary>\n BCDE_POLICY_OSLOADER_TYPE_HYPERVISOR_MSR_FILTER_POLICY\n </summary>\n <remarks>0x25000118</remarks>"]
    BcdOSLoaderInteger_HypervisorMsrFilterPolicy = 620757272,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000119</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000119</remarks>"]
    BcdOSLoaderInteger_HypervisorMmioNxPolicy = 620757273,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x2500011A</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x2500011A</remarks>"]
    BcdOSLoaderInteger_HypervisorSchedulerType = 620757274,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x2200011B</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x2200011B</remarks>"]
    BcdOSLoaderString_HypervisorRootProcNumaNodes = 570425627,
-   #[doc = " <summary>\n BCDE_POLICY_OSLOADER_TYPE_HYPERVISOR_PERFMON\n </summary>\n <remarks>0x2500011C</remarks>"]
+   #[doc = "<summary>\n BCDE_POLICY_OSLOADER_TYPE_HYPERVISOR_PERFMON\n </summary>\n <remarks>0x2500011C</remarks>"]
    BcdOSLoaderInteger_HypervisorPerfmon = 620757276,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x2500011D</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x2500011D</remarks>"]
    BcdOSLoaderInteger_HypervisorRootProcPerCore = 620757277,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x2200011E</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x2200011E</remarks>"]
    BcdOSLoaderString_HypervisorRootProcNumaNodeLps = 570425630,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000120</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000120</remarks>"]
    BcdOSLoaderInteger_XSavePolicy = 620757280,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000121</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000121</remarks>"]
    BcdOSLoaderInteger_XSaveAddFeature0 = 620757281,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000122</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000122</remarks>"]
    BcdOSLoaderInteger_XSaveAddFeature1 = 620757282,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000123</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000123</remarks>"]
    BcdOSLoaderInteger_XSaveAddFeature2 = 620757283,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000124</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000124</remarks>"]
    BcdOSLoaderInteger_XSaveAddFeature3 = 620757284,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000125</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000125</remarks>"]
    BcdOSLoaderInteger_XSaveAddFeature4 = 620757285,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000126</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000126</remarks>"]
    BcdOSLoaderInteger_XSaveAddFeature5 = 620757286,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000127</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000127</remarks>"]
    BcdOSLoaderInteger_XSaveAddFeature6 = 620757287,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000128</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000128</remarks>"]
    BcdOSLoaderInteger_XSaveAddFeature7 = 620757288,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000129</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000129</remarks>"]
    BcdOSLoaderInteger_XSaveRemoveFeature = 620757289,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x2500012A</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x2500012A</remarks>"]
    BcdOSLoaderInteger_XSaveProcessorsMask = 620757290,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x2500012B</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x2500012B</remarks>"]
    BcdOSLoaderInteger_XSaveDisable = 620757291,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x2500012C</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x2500012C</remarks>"]
    BcdOSLoaderInteger_KernelDebuggerType = 620757292,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x2200012D</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x2200012D</remarks>"]
    BcdOSLoaderString_KernelDebuggerBusParameters = 570425645,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x2500012E</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x2500012E</remarks>"]
    BcdOSLoaderInteger_KernelDebuggerPortAddress = 620757294,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x2500012F</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x2500012F</remarks>"]
    BcdOSLoaderInteger_KernelDebuggerPortNumber = 620757295,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000130</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000130</remarks>"]
    BcdOSLoaderInteger_ClaimedTpmCounter = 620757296,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000131</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000131</remarks>"]
    BcdOSLoaderInteger_KernelDebugger1394Channel = 620757297,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x22000132</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x22000132</remarks>"]
    BcdOSLoaderString_KernelDebuggerUsbTargetname = 570425650,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000133</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000133</remarks>"]
    BcdOSLoaderInteger_KernelDebuggerNetHostIp = 620757299,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000134</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000134</remarks>"]
    BcdOSLoaderInteger_KernelDebuggerNetHostPort = 620757300,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x26000135</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x26000135</remarks>"]
    BcdOSLoaderBoolean_KernelDebuggerNetDhcp = 637534517,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x22000136</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x22000136</remarks>"]
    BcdOSLoaderString_KernelDebuggerNetKey = 570425654,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x22000137</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x22000137</remarks>"]
    BcdOSLoaderString_IMCHiveName = 570425655,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x21000138</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x21000138</remarks>"]
    BcdOSLoaderDevice_IMCDevice = 553648440,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000139</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000139</remarks>"]
    BcdOSLoaderInteger_KernelDebuggerBaudrate = 620757305,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x22000140</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x22000140</remarks>"]
    BcdOSLoaderString_ManufacturingMode = 570425664,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x26000141</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x26000141</remarks>"]
    BcdOSLoaderBoolean_EventLoggingEnabled = 637534529,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x25000142</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x25000142</remarks>"]
    BcdOSLoaderInteger_VsmLaunchType = 620757314,
-   #[doc = " <summary>\n Zero (0) indicates Disabled, one (1) indicates that Enabled and two (2) indicates strict mode.\n </summary>\n <remarks>0x25000144</remarks>"]
+   #[doc = "<summary>\n Zero (0) indicates Disabled, one (1) indicates that Enabled and two (2) indicates strict mode.\n </summary>\n <remarks>0x25000144</remarks>"]
    BcdOSLoaderInteger_HypervisorEnforcedCodeIntegrity = 620757316,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x26000145</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x26000145</remarks>"]
    BcdOSLoaderBoolean_DtraceEnabled = 637534533,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x21000150</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x21000150</remarks>"]
    BcdOSLoaderDevice_SystemDataDevice = 553648464,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x21000151</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x21000151</remarks>"]
    BcdOSLoaderDevice_OsArcDevice = 553648465,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x21000153</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x21000153</remarks>"]
    BcdOSLoaderDevice_OsDataDevice = 553648467,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x21000154</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x21000154</remarks>"]
    BcdOSLoaderDevice_BspDevice = 553648468,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x21000155</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x21000155</remarks>"]
    BcdOSLoaderDevice_BspFilepath = 553648469,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x22000156</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x22000156</remarks>"]
    BcdOSLoaderString_KernelDebuggerNetHostIpv6 = 570425686,
-   #[doc = " <summary>\n\n </summary>\n <remarks>0x22000161</remarks>"]
+   #[doc = "<summary>\n\n </summary>\n <remarks>0x22000161</remarks>"]
    BcdOSLoaderString_HypervisorDebuggerNetHostIpv6 = 570425697,
 }
 pub use self::_BcdOSLoaderElementTypes as BcdOSLoaderElementTypes;
@@ -32458,7 +32384,7 @@ pub enum _MEMORY_INFORMATION_CLASS {
    MaxMemoryInfoClass = 15,
 }
 pub use self::_MEMORY_INFORMATION_CLASS as MEMORY_INFORMATION_CLASS;
-#[doc = " The MEMORY_WORKING_SET_BLOCK structure contains working set information for a page.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block"]
+#[doc = "The MEMORY_WORKING_SET_BLOCK structure contains working set information for a page.\n\n https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block"]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _MEMORY_WORKING_SET_BLOCK {
@@ -32663,20 +32589,20 @@ impl _MEMORY_WORKING_SET_BLOCK {
       __bindgen_bitfield_unit
    }
 }
-#[doc = " The MEMORY_WORKING_SET_BLOCK structure contains working set information for a page.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block"]
+#[doc = "The MEMORY_WORKING_SET_BLOCK structure contains working set information for a page.\n\n https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block"]
 pub type MEMORY_WORKING_SET_BLOCK = _MEMORY_WORKING_SET_BLOCK;
-#[doc = " The MEMORY_WORKING_SET_BLOCK structure contains working set information for a page.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block"]
+#[doc = "The MEMORY_WORKING_SET_BLOCK structure contains working set information for a page.\n\n https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block"]
 pub type PMEMORY_WORKING_SET_BLOCK = *mut _MEMORY_WORKING_SET_BLOCK;
-#[doc = " The MEMORY_WORKING_SET_INFORMATION structure contains working set information for a process.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information"]
+#[doc = "The MEMORY_WORKING_SET_INFORMATION structure contains working set information for a process.\n\n https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information"]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _MEMORY_WORKING_SET_INFORMATION {
    pub NumberOfEntries: ULONG_PTR,
    pub WorkingSetInfo: [MEMORY_WORKING_SET_BLOCK; 1usize],
 }
-#[doc = " The MEMORY_WORKING_SET_INFORMATION structure contains working set information for a process.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information"]
+#[doc = "The MEMORY_WORKING_SET_INFORMATION structure contains working set information for a process.\n\n https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information"]
 pub type MEMORY_WORKING_SET_INFORMATION = _MEMORY_WORKING_SET_INFORMATION;
-#[doc = " The MEMORY_WORKING_SET_INFORMATION structure contains working set information for a process.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information"]
+#[doc = "The MEMORY_WORKING_SET_INFORMATION structure contains working set information for a process.\n\n https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information"]
 pub type PMEMORY_WORKING_SET_INFORMATION = *mut _MEMORY_WORKING_SET_INFORMATION;
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -33272,7 +33198,7 @@ pub enum _MEMORY_WORKING_SET_EX_LOCATION {
    MemoryLocationReserved = 3,
 }
 pub use self::_MEMORY_WORKING_SET_EX_LOCATION as MEMORY_WORKING_SET_EX_LOCATION;
-#[doc = " The MEMORY_WORKING_SET_EX_BLOCK structure contains extended working set information for a page.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block"]
+#[doc = "The MEMORY_WORKING_SET_EX_BLOCK structure contains extended working set information for a page.\n\n https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block"]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union _MEMORY_WORKING_SET_EX_BLOCK {
@@ -34284,11 +34210,11 @@ impl Default for _MEMORY_WORKING_SET_EX_BLOCK {
       }
    }
 }
-#[doc = " The MEMORY_WORKING_SET_EX_BLOCK structure contains extended working set information for a page.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block"]
+#[doc = "The MEMORY_WORKING_SET_EX_BLOCK structure contains extended working set information for a page.\n\n https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block"]
 pub type MEMORY_WORKING_SET_EX_BLOCK = _MEMORY_WORKING_SET_EX_BLOCK;
-#[doc = " The MEMORY_WORKING_SET_EX_BLOCK structure contains extended working set information for a page.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block"]
+#[doc = "The MEMORY_WORKING_SET_EX_BLOCK structure contains extended working set information for a page.\n\n https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block"]
 pub type PMEMORY_WORKING_SET_EX_BLOCK = *mut _MEMORY_WORKING_SET_EX_BLOCK;
-#[doc = " The MEMORY_WORKING_SET_EX_INFORMATION structure contains extended working set information for a process.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information"]
+#[doc = "The MEMORY_WORKING_SET_EX_INFORMATION structure contains extended working set information for a process.\n\n https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information"]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _MEMORY_WORKING_SET_EX_INFORMATION {
@@ -34304,9 +34230,9 @@ impl Default for _MEMORY_WORKING_SET_EX_INFORMATION {
       }
    }
 }
-#[doc = " The MEMORY_WORKING_SET_EX_INFORMATION structure contains extended working set information for a process.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information"]
+#[doc = "The MEMORY_WORKING_SET_EX_INFORMATION structure contains extended working set information for a process.\n\n https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information"]
 pub type MEMORY_WORKING_SET_EX_INFORMATION = _MEMORY_WORKING_SET_EX_INFORMATION;
-#[doc = " The MEMORY_WORKING_SET_EX_INFORMATION structure contains extended working set information for a process.\n\n \\ref https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information"]
+#[doc = "The MEMORY_WORKING_SET_EX_INFORMATION structure contains extended working set information for a process.\n\n https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information"]
 pub type PMEMORY_WORKING_SET_EX_INFORMATION = *mut _MEMORY_WORKING_SET_EX_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -36958,7 +36884,7 @@ pub enum _OBJECT_INFORMATION_CLASS {
    MaxObjectInfoClass = 7,
 }
 pub use self::_OBJECT_INFORMATION_CLASS as OBJECT_INFORMATION_CLASS;
-#[doc = " The OBJECT_BASIC_INFORMATION structure contains basic information about an object."]
+#[doc = "The OBJECT_BASIC_INFORMATION structure contains basic information about an object."]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _OBJECT_BASIC_INFORMATION {
@@ -36983,11 +36909,11 @@ impl Default for _OBJECT_BASIC_INFORMATION {
       }
    }
 }
-#[doc = " The OBJECT_BASIC_INFORMATION structure contains basic information about an object."]
+#[doc = "The OBJECT_BASIC_INFORMATION structure contains basic information about an object."]
 pub type OBJECT_BASIC_INFORMATION = _OBJECT_BASIC_INFORMATION;
-#[doc = " The OBJECT_BASIC_INFORMATION structure contains basic information about an object."]
+#[doc = "The OBJECT_BASIC_INFORMATION structure contains basic information about an object."]
 pub type POBJECT_BASIC_INFORMATION = *mut _OBJECT_BASIC_INFORMATION;
-#[doc = " The OBJECT_NAME_INFORMATION structure contains the name, if there is one, of a given object."]
+#[doc = "The OBJECT_NAME_INFORMATION structure contains the name, if there is one, of a given object."]
 #[repr(C)]
 pub struct _OBJECT_NAME_INFORMATION {
    pub Name: UNICODE_STRING,
@@ -37001,11 +36927,11 @@ impl Default for _OBJECT_NAME_INFORMATION {
       }
    }
 }
-#[doc = " The OBJECT_NAME_INFORMATION structure contains the name, if there is one, of a given object."]
+#[doc = "The OBJECT_NAME_INFORMATION structure contains the name, if there is one, of a given object."]
 pub type OBJECT_NAME_INFORMATION = _OBJECT_NAME_INFORMATION;
-#[doc = " The OBJECT_NAME_INFORMATION structure contains the name, if there is one, of a given object."]
+#[doc = "The OBJECT_NAME_INFORMATION structure contains the name, if there is one, of a given object."]
 pub type POBJECT_NAME_INFORMATION = *mut _OBJECT_NAME_INFORMATION;
-#[doc = " The OBJECT_NAME_INFORMATION structure contains various statistics and properties about an object type."]
+#[doc = "The OBJECT_NAME_INFORMATION structure contains various statistics and properties about an object type."]
 #[repr(C)]
 pub struct _OBJECT_TYPE_INFORMATION {
    pub TypeName: UNICODE_STRING,
@@ -37041,9 +36967,9 @@ impl Default for _OBJECT_TYPE_INFORMATION {
       }
    }
 }
-#[doc = " The OBJECT_NAME_INFORMATION structure contains various statistics and properties about an object type."]
+#[doc = "The OBJECT_NAME_INFORMATION structure contains various statistics and properties about an object type."]
 pub type OBJECT_TYPE_INFORMATION = _OBJECT_TYPE_INFORMATION;
-#[doc = " The OBJECT_NAME_INFORMATION structure contains various statistics and properties about an object type."]
+#[doc = "The OBJECT_NAME_INFORMATION structure contains various statistics and properties about an object type."]
 pub type POBJECT_TYPE_INFORMATION = *mut _OBJECT_TYPE_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -39426,7 +39352,7 @@ impl Default for _TEB_ACTIVE_FRAME_EX {
 }
 pub type TEB_ACTIVE_FRAME_EX = _TEB_ACTIVE_FRAME_EX;
 pub type PTEB_ACTIVE_FRAME_EX = *mut _TEB_ACTIVE_FRAME_EX;
-#[doc = " Thread Environment Block (TEB) structure.\n\n This structure contains information about the currently executing thread."]
+#[doc = "Thread Environment Block (TEB) structure.\n\n This structure contains information about the currently executing thread."]
 #[repr(C)]
 pub struct _TEB {
    pub NtTib: NT_TIB,
@@ -40267,7 +40193,7 @@ impl Default for _TEB {
       }
    }
 }
-#[doc = " Thread Environment Block (TEB) structure.\n\n This structure contains information about the currently executing thread."]
+#[doc = "Thread Environment Block (TEB) structure.\n\n This structure contains information about the currently executing thread."]
 pub type TEB = _TEB;
 #[repr(i32)]
 #[non_exhaustive]
@@ -41325,7 +41251,7 @@ impl Default for _PROCESS_PRIORITY_CLASS_EX {
 }
 pub type PROCESS_PRIORITY_CLASS_EX = _PROCESS_PRIORITY_CLASS_EX;
 pub type PPROCESS_PRIORITY_CLASS_EX = *mut _PROCESS_PRIORITY_CLASS_EX;
-#[doc = " The PROCESS_FOREGROUND_BACKGROUND structure is used to manage the the priority class of a process, specifically whether it runs in the foreground or background."]
+#[doc = "The PROCESS_FOREGROUND_BACKGROUND structure is used to manage the the priority class of a process, specifically whether it runs in the foreground or background."]
 #[repr(C)]
 pub struct _PROCESS_FOREGROUND_BACKGROUND {
    pub Foreground: BOOLEAN,
@@ -41339,11 +41265,11 @@ impl Default for _PROCESS_FOREGROUND_BACKGROUND {
       }
    }
 }
-#[doc = " The PROCESS_FOREGROUND_BACKGROUND structure is used to manage the the priority class of a process, specifically whether it runs in the foreground or background."]
+#[doc = "The PROCESS_FOREGROUND_BACKGROUND structure is used to manage the the priority class of a process, specifically whether it runs in the foreground or background."]
 pub type PROCESS_FOREGROUND_BACKGROUND = _PROCESS_FOREGROUND_BACKGROUND;
-#[doc = " The PROCESS_FOREGROUND_BACKGROUND structure is used to manage the the priority class of a process, specifically whether it runs in the foreground or background."]
+#[doc = "The PROCESS_FOREGROUND_BACKGROUND structure is used to manage the the priority class of a process, specifically whether it runs in the foreground or background."]
 pub type PPROCESS_FOREGROUND_BACKGROUND = *mut _PROCESS_FOREGROUND_BACKGROUND;
-#[doc = " The PROCESS_DEVICEMAP_INFORMATION structure contains information about a process's device map."]
+#[doc = "The PROCESS_DEVICEMAP_INFORMATION structure contains information about a process's device map."]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _PROCESS_DEVICEMAP_INFORMATION {
@@ -41393,11 +41319,11 @@ impl Default for _PROCESS_DEVICEMAP_INFORMATION {
       }
    }
 }
-#[doc = " The PROCESS_DEVICEMAP_INFORMATION structure contains information about a process's device map."]
+#[doc = "The PROCESS_DEVICEMAP_INFORMATION structure contains information about a process's device map."]
 pub type PROCESS_DEVICEMAP_INFORMATION = _PROCESS_DEVICEMAP_INFORMATION;
-#[doc = " The PROCESS_DEVICEMAP_INFORMATION structure contains information about a process's device map."]
+#[doc = "The PROCESS_DEVICEMAP_INFORMATION structure contains information about a process's device map."]
 pub type PPROCESS_DEVICEMAP_INFORMATION = *mut _PROCESS_DEVICEMAP_INFORMATION;
-#[doc = " The _PROCESS_DEVICEMAP_INFORMATION_EX structure contains information about a process's device map."]
+#[doc = "The _PROCESS_DEVICEMAP_INFORMATION_EX structure contains information about a process's device map."]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _PROCESS_DEVICEMAP_INFORMATION_EX {
@@ -41448,19 +41374,19 @@ impl Default for _PROCESS_DEVICEMAP_INFORMATION_EX {
       }
    }
 }
-#[doc = " The _PROCESS_DEVICEMAP_INFORMATION_EX structure contains information about a process's device map."]
+#[doc = "The _PROCESS_DEVICEMAP_INFORMATION_EX structure contains information about a process's device map."]
 pub type PROCESS_DEVICEMAP_INFORMATION_EX = _PROCESS_DEVICEMAP_INFORMATION_EX;
-#[doc = " The _PROCESS_DEVICEMAP_INFORMATION_EX structure contains information about a process's device map."]
+#[doc = "The _PROCESS_DEVICEMAP_INFORMATION_EX structure contains information about a process's device map."]
 pub type PPROCESS_DEVICEMAP_INFORMATION_EX = *mut _PROCESS_DEVICEMAP_INFORMATION_EX;
-#[doc = " The PROCESS_SESSION_INFORMATION structure is used to store information about the session ID of a process."]
+#[doc = "The PROCESS_SESSION_INFORMATION structure is used to store information about the session ID of a process."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _PROCESS_SESSION_INFORMATION {
    pub SessionId: ULONG,
 }
-#[doc = " The PROCESS_SESSION_INFORMATION structure is used to store information about the session ID of a process."]
+#[doc = "The PROCESS_SESSION_INFORMATION structure is used to store information about the session ID of a process."]
 pub type PROCESS_SESSION_INFORMATION = _PROCESS_SESSION_INFORMATION;
-#[doc = " The PROCESS_SESSION_INFORMATION structure is used to store information about the session ID of a process."]
+#[doc = "The PROCESS_SESSION_INFORMATION structure is used to store information about the session ID of a process."]
 pub type PPROCESS_SESSION_INFORMATION = *mut _PROCESS_SESSION_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -43751,6 +43677,14 @@ pub type PROCESS_MEMBERSHIP_INFORMATION = _PROCESS_MEMBERSHIP_INFORMATION;
 pub type PPROCESS_MEMBERSHIP_INFORMATION = *mut _PROCESS_MEMBERSHIP_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
+pub struct _PROCESS_NETWORK_COUNTERS {
+   pub BytesIn: ULONG64,
+   pub BytesOut: ULONG64,
+}
+pub type PROCESS_NETWORK_COUNTERS = _PROCESS_NETWORK_COUNTERS;
+pub type PPROCESS_NETWORK_COUNTERS = *mut _PROCESS_NETWORK_COUNTERS;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
 pub struct _PROCESS_TEB_VALUE_INFORMATION {
    pub ThreadId: ULONG,
    pub TebOffset: ULONG,
@@ -43797,16 +43731,16 @@ impl Default for _THREAD_LAST_SYSCALL_INFORMATION {
 }
 pub type THREAD_LAST_SYSCALL_INFORMATION = _THREAD_LAST_SYSCALL_INFORMATION;
 pub type PTHREAD_LAST_SYSCALL_INFORMATION = *mut _THREAD_LAST_SYSCALL_INFORMATION;
-#[doc = " The THREAD_CYCLE_TIME_INFORMATION structure contains information about the cycle time of a thread."]
+#[doc = "The THREAD_CYCLE_TIME_INFORMATION structure contains information about the cycle time of a thread."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _THREAD_CYCLE_TIME_INFORMATION {
    pub AccumulatedCycles: ULONGLONG,
    pub CurrentCycleCount: ULONGLONG,
 }
-#[doc = " The THREAD_CYCLE_TIME_INFORMATION structure contains information about the cycle time of a thread."]
+#[doc = "The THREAD_CYCLE_TIME_INFORMATION structure contains information about the cycle time of a thread."]
 pub type THREAD_CYCLE_TIME_INFORMATION = _THREAD_CYCLE_TIME_INFORMATION;
-#[doc = " The THREAD_CYCLE_TIME_INFORMATION structure contains information about the cycle time of a thread."]
+#[doc = "The THREAD_CYCLE_TIME_INFORMATION structure contains information about the cycle time of a thread."]
 pub type PTHREAD_CYCLE_TIME_INFORMATION = *mut _THREAD_CYCLE_TIME_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -43860,7 +43794,7 @@ impl Default for _THREAD_TEB_INFORMATION {
 }
 pub type THREAD_TEB_INFORMATION = _THREAD_TEB_INFORMATION;
 pub type PTHREAD_TEB_INFORMATION = *mut _THREAD_TEB_INFORMATION;
-#[doc = " The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n\n \\sa https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data"]
+#[doc = "The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n\n [`https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data`]"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _COUNTER_READING {
@@ -43878,11 +43812,11 @@ impl Default for _COUNTER_READING {
       }
    }
 }
-#[doc = " The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n\n \\sa https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data"]
+#[doc = "The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n\n [`https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data`]"]
 pub type COUNTER_READING = _COUNTER_READING;
-#[doc = " The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n\n \\sa https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data"]
+#[doc = "The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n\n [`https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data`]"]
 pub type PCOUNTER_READING = *mut _COUNTER_READING;
-#[doc = " The THREAD_PERFORMANCE_DATA structure aggregates various performance metrics for a thread.\n\n \\remarks https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-performance_data"]
+#[doc = "The THREAD_PERFORMANCE_DATA structure aggregates various performance metrics for a thread.\n\n > https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-performance_data"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _THREAD_PERFORMANCE_DATA {
@@ -43906,11 +43840,11 @@ impl Default for _THREAD_PERFORMANCE_DATA {
       }
    }
 }
-#[doc = " The THREAD_PERFORMANCE_DATA structure aggregates various performance metrics for a thread.\n\n \\remarks https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-performance_data"]
+#[doc = "The THREAD_PERFORMANCE_DATA structure aggregates various performance metrics for a thread.\n\n > https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-performance_data"]
 pub type THREAD_PERFORMANCE_DATA = _THREAD_PERFORMANCE_DATA;
-#[doc = " The THREAD_PERFORMANCE_DATA structure aggregates various performance metrics for a thread.\n\n \\remarks https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-performance_data"]
+#[doc = "The THREAD_PERFORMANCE_DATA structure aggregates various performance metrics for a thread.\n\n > https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-performance_data"]
 pub type PTHREAD_PERFORMANCE_DATA = *mut _THREAD_PERFORMANCE_DATA;
-#[doc = " The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n\n \\sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata"]
+#[doc = "The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n\n [`https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata`]"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _THREAD_PROFILING_INFORMATION {
@@ -43928,9 +43862,9 @@ impl Default for _THREAD_PROFILING_INFORMATION {
       }
    }
 }
-#[doc = " The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n\n \\sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata"]
+#[doc = "The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n\n [`https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata`]"]
 pub type THREAD_PROFILING_INFORMATION = _THREAD_PROFILING_INFORMATION;
-#[doc = " The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n\n \\sa https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata"]
+#[doc = "The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n\n [`https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata`]"]
 pub type PTHREAD_PROFILING_INFORMATION = *mut _THREAD_PROFILING_INFORMATION;
 #[repr(C)]
 #[repr(align(16))]
@@ -44512,7 +44446,7 @@ impl Default for _THREAD_UMS_INFORMATION {
 }
 pub type THREAD_UMS_INFORMATION = _THREAD_UMS_INFORMATION;
 pub type PTHREAD_UMS_INFORMATION = *mut _THREAD_UMS_INFORMATION;
-#[doc = " The THREAD_NAME_INFORMATION structure assigns a description to a thread.\n\n \\remarks The handle must have THREAD_SET_LIMITED_INFORMATION access.\n \\remarks https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreaddescription"]
+#[doc = "The THREAD_NAME_INFORMATION structure assigns a description to a thread.\n\n > The handle must have THREAD_SET_LIMITED_INFORMATION access.\n > https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreaddescription"]
 #[repr(C)]
 pub struct _THREAD_NAME_INFORMATION {
    pub ThreadName: UNICODE_STRING,
@@ -44526,9 +44460,9 @@ impl Default for _THREAD_NAME_INFORMATION {
       }
    }
 }
-#[doc = " The THREAD_NAME_INFORMATION structure assigns a description to a thread.\n\n \\remarks The handle must have THREAD_SET_LIMITED_INFORMATION access.\n \\remarks https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreaddescription"]
+#[doc = "The THREAD_NAME_INFORMATION structure assigns a description to a thread.\n\n > The handle must have THREAD_SET_LIMITED_INFORMATION access.\n > https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreaddescription"]
 pub type THREAD_NAME_INFORMATION = _THREAD_NAME_INFORMATION;
-#[doc = " The THREAD_NAME_INFORMATION structure assigns a description to a thread.\n\n \\remarks The handle must have THREAD_SET_LIMITED_INFORMATION access.\n \\remarks https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreaddescription"]
+#[doc = "The THREAD_NAME_INFORMATION structure assigns a description to a thread.\n\n > The handle must have THREAD_SET_LIMITED_INFORMATION access.\n > https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreaddescription"]
 pub type PTHREAD_NAME_INFORMATION = *mut _THREAD_NAME_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -44707,11 +44641,11 @@ pub enum _THREAD_STATE_CHANGE_TYPE {
 }
 pub use self::_THREAD_STATE_CHANGE_TYPE as THREAD_STATE_CHANGE_TYPE;
 pub type PTHREAD_STATE_CHANGE_TYPE = *mut _THREAD_STATE_CHANGE_TYPE;
-#[doc = " A pointer to a function that serves as an APC routine.\n\n @param ApcArgument1 Optional. A pointer to the first argument to be passed to the APC routine.\n @param ApcArgument2 Optional. A pointer to the second argument to be passed to the APC routine.\n @param ApcArgument3 Optional. A pointer to the third argument to be passed to the APC routine."]
+#[doc = "A pointer to a function that serves as an APC routine.\n\n # Arguments\n\n* `ApcArgument1` - Optional. A pointer to the first argument to be passed to the APC routine.\n * `ApcArgument2` - Optional. A pointer to the second argument to be passed to the APC routine.\n * `ApcArgument3` - Optional. A pointer to the third argument to be passed to the APC routine."]
 pub type PPS_APC_ROUTINE = ::core::option::Option<
    unsafe extern "C" fn(ApcArgument1: PVOID, ApcArgument2: PVOID, ApcArgument3: PVOID),
 >;
-#[doc = " The APC_CALLBACK_DATA_CONTEXT structure is used to pass information to the APC callback routine."]
+#[doc = "The APC_CALLBACK_DATA_CONTEXT structure is used to pass information to the APC callback routine."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _APC_CALLBACK_DATA_CONTEXT {
@@ -44729,9 +44663,9 @@ impl Default for _APC_CALLBACK_DATA_CONTEXT {
       }
    }
 }
-#[doc = " The APC_CALLBACK_DATA_CONTEXT structure is used to pass information to the APC callback routine."]
+#[doc = "The APC_CALLBACK_DATA_CONTEXT structure is used to pass information to the APC callback routine."]
 pub type APC_CALLBACK_DATA_CONTEXT = _APC_CALLBACK_DATA_CONTEXT;
-#[doc = " The APC_CALLBACK_DATA_CONTEXT structure is used to pass information to the APC callback routine."]
+#[doc = "The APC_CALLBACK_DATA_CONTEXT structure is used to pass information to the APC callback routine."]
 pub type PAPC_CALLBACK_DATA_CONTEXT = *mut _APC_CALLBACK_DATA_CONTEXT;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -44742,7 +44676,7 @@ pub struct _PROC_THREAD_ATTRIBUTE {
 }
 pub type PROC_THREAD_ATTRIBUTE = _PROC_THREAD_ATTRIBUTE;
 pub type PPROC_THREAD_ATTRIBUTE = *mut _PROC_THREAD_ATTRIBUTE;
-#[doc = " The PROC_THREAD_ATTRIBUTE_LIST structure contains the list of attributes for process and thread creation."]
+#[doc = "The PROC_THREAD_ATTRIBUTE_LIST structure contains the list of attributes for process and thread creation."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _PROC_THREAD_ATTRIBUTE_LIST {
@@ -44762,7 +44696,7 @@ impl Default for _PROC_THREAD_ATTRIBUTE_LIST {
       }
    }
 }
-#[doc = " The PROC_THREAD_ATTRIBUTE_LIST structure contains the list of attributes for process and thread creation."]
+#[doc = "The PROC_THREAD_ATTRIBUTE_LIST structure contains the list of attributes for process and thread creation."]
 pub type PROC_THREAD_ATTRIBUTE_LIST = _PROC_THREAD_ATTRIBUTE_LIST;
 #[repr(i32)]
 #[non_exhaustive]
@@ -46387,7 +46321,7 @@ impl Default for _PS_CREATE_INFO {
 }
 pub type PS_CREATE_INFO = _PS_CREATE_INFO;
 pub type PPS_CREATE_INFO = *mut _PS_CREATE_INFO;
-#[doc = " A pointer to a user-defined function that serves as the starting routine for a new thread.\n\n @param ThreadParameter A pointer to a variable to be passed to the thread.\n @return NTSTATUS Successful or errant status."]
+#[doc = "A pointer to a user-defined function that serves as the starting routine for a new thread.\n\n # Arguments\n\n* `ThreadParameter` - A pointer to a variable to be passed to the thread.\n # Returns\n\nNTSTATUS Successful or errant status."]
 pub type PUSER_THREAD_START_ROUTINE =
    ::core::option::Option<unsafe extern "C" fn(ThreadParameter: PVOID) -> NTSTATUS>;
 #[repr(C)]
@@ -46847,6 +46781,30 @@ impl Default for _JOBOBJECT_PAGE_PRIORITY_LIMIT {
 }
 pub type JOBOBJECT_PAGE_PRIORITY_LIMIT = _JOBOBJECT_PAGE_PRIORITY_LIMIT;
 pub type PJOBOBJECT_PAGE_PRIORITY_LIMIT = *mut _JOBOBJECT_PAGE_PRIORITY_LIMIT;
+#[repr(C)]
+pub struct _SERVERSILO_DIAGNOSTIC_INFORMATION {
+   pub ExitStatus: NTSTATUS,
+   pub CriticalProcessName: [WCHAR; 15usize],
+}
+impl Default for _SERVERSILO_DIAGNOSTIC_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type SERVERSILO_DIAGNOSTIC_INFORMATION = _SERVERSILO_DIAGNOSTIC_INFORMATION;
+pub type PSERVERSILO_DIAGNOSTIC_INFORMATION = *mut _SERVERSILO_DIAGNOSTIC_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _JOBOBJECT_NETWORK_ACCOUNTING_INFORMATION {
+   pub DataBytesIn: ULONG64,
+   pub DataBytesOut: ULONG64,
+}
+pub type JOBOBJECT_NETWORK_ACCOUNTING_INFORMATION = _JOBOBJECT_NETWORK_ACCOUNTING_INFORMATION;
+pub type PJOBOBJECT_NETWORK_ACCOUNTING_INFORMATION = *mut _JOBOBJECT_NETWORK_ACCOUNTING_INFORMATION;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -46906,7 +46864,7 @@ pub enum _PSSNT_QUERY_INFORMATION_CLASS {
    PSSNT_QUERY_PERFORMANCE_COUNTERS = 7,
 }
 pub use self::_PSSNT_QUERY_INFORMATION_CLASS as PSSNT_QUERY_INFORMATION_CLASS;
-#[doc = " The NTPSS_MEMORY_BULK_INFORMATION structure is used to query basic memory information in bulk for a process."]
+#[doc = "The NTPSS_MEMORY_BULK_INFORMATION structure is used to query basic memory information in bulk for a process."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _NTPSS_MEMORY_BULK_INFORMATION {
@@ -46923,9 +46881,9 @@ impl Default for _NTPSS_MEMORY_BULK_INFORMATION {
       }
    }
 }
-#[doc = " The NTPSS_MEMORY_BULK_INFORMATION structure is used to query basic memory information in bulk for a process."]
+#[doc = "The NTPSS_MEMORY_BULK_INFORMATION structure is used to query basic memory information in bulk for a process."]
 pub type NTPSS_MEMORY_BULK_INFORMATION = _NTPSS_MEMORY_BULK_INFORMATION;
-#[doc = " The NTPSS_MEMORY_BULK_INFORMATION structure is used to query basic memory information in bulk for a process."]
+#[doc = "The NTPSS_MEMORY_BULK_INFORMATION structure is used to query basic memory information in bulk for a process."]
 pub type PNTPSS_MEMORY_BULK_INFORMATION = *mut _NTPSS_MEMORY_BULK_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -47335,7 +47293,7 @@ pub enum _FILE_INFORMATION_CLASS {
 }
 pub use self::_FILE_INFORMATION_CLASS as FILE_INFORMATION_CLASS;
 pub type PFILE_INFORMATION_CLASS = *mut _FILE_INFORMATION_CLASS;
-#[doc = " The FILE_BASIC_INFORMATION structure contains timestamps and basic attributes of a file.\n \\li If you specify a value of zero for any of the XxxTime members, the file system keeps a file's current value for that time.\n \\li If you specify a value of -1 for any of the XxxTime members, time stamp updates are disabled for I/O operations preformed on the file handle.\n \\li If you specify a value of -2 for any of the XxxTime members, time stamp updates are enabled for I/O operations preformed on the file handle.\n \\remarks To set the members of this structure, the caller must have FILE_WRITE_ATTRIBUTES access to the file."]
+#[doc = "The FILE_BASIC_INFORMATION structure contains timestamps and basic attributes of a file.\n If you specify a value of zero for any of the XxxTime members, the file system keeps a file's current value for that time.\n If you specify a value of -1 for any of the XxxTime members, time stamp updates are disabled for I/O operations preformed on the file handle.\n If you specify a value of -2 for any of the XxxTime members, time stamp updates are enabled for I/O operations preformed on the file handle.\n > To set the members of this structure, the caller must have FILE_WRITE_ATTRIBUTES access to the file."]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _FILE_BASIC_INFORMATION {
@@ -47354,11 +47312,11 @@ impl Default for _FILE_BASIC_INFORMATION {
       }
    }
 }
-#[doc = " The FILE_BASIC_INFORMATION structure contains timestamps and basic attributes of a file.\n \\li If you specify a value of zero for any of the XxxTime members, the file system keeps a file's current value for that time.\n \\li If you specify a value of -1 for any of the XxxTime members, time stamp updates are disabled for I/O operations preformed on the file handle.\n \\li If you specify a value of -2 for any of the XxxTime members, time stamp updates are enabled for I/O operations preformed on the file handle.\n \\remarks To set the members of this structure, the caller must have FILE_WRITE_ATTRIBUTES access to the file."]
+#[doc = "The FILE_BASIC_INFORMATION structure contains timestamps and basic attributes of a file.\n If you specify a value of zero for any of the XxxTime members, the file system keeps a file's current value for that time.\n If you specify a value of -1 for any of the XxxTime members, time stamp updates are disabled for I/O operations preformed on the file handle.\n If you specify a value of -2 for any of the XxxTime members, time stamp updates are enabled for I/O operations preformed on the file handle.\n > To set the members of this structure, the caller must have FILE_WRITE_ATTRIBUTES access to the file."]
 pub type FILE_BASIC_INFORMATION = _FILE_BASIC_INFORMATION;
-#[doc = " The FILE_BASIC_INFORMATION structure contains timestamps and basic attributes of a file.\n \\li If you specify a value of zero for any of the XxxTime members, the file system keeps a file's current value for that time.\n \\li If you specify a value of -1 for any of the XxxTime members, time stamp updates are disabled for I/O operations preformed on the file handle.\n \\li If you specify a value of -2 for any of the XxxTime members, time stamp updates are enabled for I/O operations preformed on the file handle.\n \\remarks To set the members of this structure, the caller must have FILE_WRITE_ATTRIBUTES access to the file."]
+#[doc = "The FILE_BASIC_INFORMATION structure contains timestamps and basic attributes of a file.\n If you specify a value of zero for any of the XxxTime members, the file system keeps a file's current value for that time.\n If you specify a value of -1 for any of the XxxTime members, time stamp updates are disabled for I/O operations preformed on the file handle.\n If you specify a value of -2 for any of the XxxTime members, time stamp updates are enabled for I/O operations preformed on the file handle.\n > To set the members of this structure, the caller must have FILE_WRITE_ATTRIBUTES access to the file."]
 pub type PFILE_BASIC_INFORMATION = *mut _FILE_BASIC_INFORMATION;
-#[doc = " The FILE_STANDARD_INFORMATION structure contains standard information of a file.\n \\remarks EndOfFile specifies the byte offset to the end of the file.\n Because this value is zero-based, it actually refers to the first free byte in the file; that is, it is the offset to the byte immediately following the last valid byte in the file."]
+#[doc = "The FILE_STANDARD_INFORMATION structure contains standard information of a file.\n > EndOfFile specifies the byte offset to the end of the file.\n Because this value is zero-based, it actually refers to the first free byte in the file; that is, it is the offset to the byte immediately following the last valid byte in the file."]
 #[repr(C)]
 pub struct _FILE_STANDARD_INFORMATION {
    pub AllocationSize: LARGE_INTEGER,
@@ -47376,9 +47334,9 @@ impl Default for _FILE_STANDARD_INFORMATION {
       }
    }
 }
-#[doc = " The FILE_STANDARD_INFORMATION structure contains standard information of a file.\n \\remarks EndOfFile specifies the byte offset to the end of the file.\n Because this value is zero-based, it actually refers to the first free byte in the file; that is, it is the offset to the byte immediately following the last valid byte in the file."]
+#[doc = "The FILE_STANDARD_INFORMATION structure contains standard information of a file.\n > EndOfFile specifies the byte offset to the end of the file.\n Because this value is zero-based, it actually refers to the first free byte in the file; that is, it is the offset to the byte immediately following the last valid byte in the file."]
 pub type FILE_STANDARD_INFORMATION = _FILE_STANDARD_INFORMATION;
-#[doc = " The FILE_STANDARD_INFORMATION structure contains standard information of a file.\n \\remarks EndOfFile specifies the byte offset to the end of the file.\n Because this value is zero-based, it actually refers to the first free byte in the file; that is, it is the offset to the byte immediately following the last valid byte in the file."]
+#[doc = "The FILE_STANDARD_INFORMATION structure contains standard information of a file.\n > EndOfFile specifies the byte offset to the end of the file.\n Because this value is zero-based, it actually refers to the first free byte in the file; that is, it is the offset to the byte immediately following the last valid byte in the file."]
 pub type PFILE_STANDARD_INFORMATION = *mut _FILE_STANDARD_INFORMATION;
 #[repr(C)]
 pub struct _FILE_STANDARD_INFORMATION_EX {
@@ -48098,7 +48056,7 @@ pub struct _FILE_PROCESS_IDS_USING_FILE_INFORMATION {
 }
 pub type FILE_PROCESS_IDS_USING_FILE_INFORMATION = _FILE_PROCESS_IDS_USING_FILE_INFORMATION;
 pub type PFILE_PROCESS_IDS_USING_FILE_INFORMATION = *mut _FILE_PROCESS_IDS_USING_FILE_INFORMATION;
-#[doc = " The FILE_IS_REMOTE_DEVICE_INFORMATION structure indicates whether the file system that contains the file is a remote file system."]
+#[doc = "The FILE_IS_REMOTE_DEVICE_INFORMATION structure indicates whether the file system that contains the file is a remote file system."]
 #[repr(C)]
 pub struct _FILE_IS_REMOTE_DEVICE_INFORMATION {
    pub IsRemote: BOOLEAN,
@@ -48112,9 +48070,9 @@ impl Default for _FILE_IS_REMOTE_DEVICE_INFORMATION {
       }
    }
 }
-#[doc = " The FILE_IS_REMOTE_DEVICE_INFORMATION structure indicates whether the file system that contains the file is a remote file system."]
+#[doc = "The FILE_IS_REMOTE_DEVICE_INFORMATION structure indicates whether the file system that contains the file is a remote file system."]
 pub type FILE_IS_REMOTE_DEVICE_INFORMATION = _FILE_IS_REMOTE_DEVICE_INFORMATION;
-#[doc = " The FILE_IS_REMOTE_DEVICE_INFORMATION structure indicates whether the file system that contains the file is a remote file system."]
+#[doc = "The FILE_IS_REMOTE_DEVICE_INFORMATION structure indicates whether the file system that contains the file is a remote file system."]
 pub type PFILE_IS_REMOTE_DEVICE_INFORMATION = *mut _FILE_IS_REMOTE_DEVICE_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -48548,6 +48506,62 @@ pub type FILE_ID_ALL_EXTD_BOTH_DIR_INFORMATION = _FILE_ID_ALL_EXTD_BOTH_DIR_INFO
 pub type PFILE_ID_ALL_EXTD_BOTH_DIR_INFORMATION = *mut _FILE_ID_ALL_EXTD_BOTH_DIR_INFORMATION;
 #[repr(C)]
 #[derive(Copy, Clone)]
+pub struct _FILE_STAT_INFORMATION {
+   pub FileId: LARGE_INTEGER,
+   pub CreationTime: LARGE_INTEGER,
+   pub LastAccessTime: LARGE_INTEGER,
+   pub LastWriteTime: LARGE_INTEGER,
+   pub ChangeTime: LARGE_INTEGER,
+   pub AllocationSize: LARGE_INTEGER,
+   pub EndOfFile: LARGE_INTEGER,
+   pub FileAttributes: ULONG,
+   pub ReparseTag: ULONG,
+   pub NumberOfLinks: ULONG,
+   pub EffectiveAccess: ACCESS_MASK,
+}
+impl Default for _FILE_STAT_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type FILE_STAT_INFORMATION = _FILE_STAT_INFORMATION;
+pub type PFILE_STAT_INFORMATION = *mut _FILE_STAT_INFORMATION;
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct _FILE_STAT_BASIC_INFORMATION {
+   pub FileId: LARGE_INTEGER,
+   pub CreationTime: LARGE_INTEGER,
+   pub LastAccessTime: LARGE_INTEGER,
+   pub LastWriteTime: LARGE_INTEGER,
+   pub ChangeTime: LARGE_INTEGER,
+   pub AllocationSize: LARGE_INTEGER,
+   pub EndOfFile: LARGE_INTEGER,
+   pub FileAttributes: ULONG,
+   pub ReparseTag: ULONG,
+   pub NumberOfLinks: ULONG,
+   pub DeviceType: ULONG,
+   pub DeviceCharacteristics: ULONG,
+   pub Reserved: ULONG,
+   pub VolumeSerialNumber: LARGE_INTEGER,
+   pub FileId128: FILE_ID_128,
+}
+impl Default for _FILE_STAT_BASIC_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type FILE_STAT_BASIC_INFORMATION = _FILE_STAT_BASIC_INFORMATION;
+pub type PFILE_STAT_BASIC_INFORMATION = *mut _FILE_STAT_BASIC_INFORMATION;
+#[repr(C)]
+#[derive(Copy, Clone)]
 pub struct _FILE_MEMORY_PARTITION_INFORMATION {
    pub OwnerPartitionHandle: HANDLE,
    pub Flags: _FILE_MEMORY_PARTITION_INFORMATION__bindgen_ty_1,
@@ -48585,6 +48599,38 @@ impl Default for _FILE_MEMORY_PARTITION_INFORMATION {
 pub type FILE_MEMORY_PARTITION_INFORMATION = _FILE_MEMORY_PARTITION_INFORMATION;
 pub type PFILE_MEMORY_PARTITION_INFORMATION = *mut _FILE_MEMORY_PARTITION_INFORMATION;
 #[repr(C)]
+#[derive(Copy, Clone)]
+pub struct _FILE_STAT_LX_INFORMATION {
+   pub FileId: LARGE_INTEGER,
+   pub CreationTime: LARGE_INTEGER,
+   pub LastAccessTime: LARGE_INTEGER,
+   pub LastWriteTime: LARGE_INTEGER,
+   pub ChangeTime: LARGE_INTEGER,
+   pub AllocationSize: LARGE_INTEGER,
+   pub EndOfFile: LARGE_INTEGER,
+   pub FileAttributes: ULONG,
+   pub ReparseTag: ULONG,
+   pub NumberOfLinks: ULONG,
+   pub EffectiveAccess: ACCESS_MASK,
+   pub LxFlags: ULONG,
+   pub LxUid: ULONG,
+   pub LxGid: ULONG,
+   pub LxMode: ULONG,
+   pub LxDeviceIdMajor: ULONG,
+   pub LxDeviceIdMinor: ULONG,
+}
+impl Default for _FILE_STAT_LX_INFORMATION {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type FILE_STAT_LX_INFORMATION = _FILE_STAT_LX_INFORMATION;
+pub type PFILE_STAT_LX_INFORMATION = *mut _FILE_STAT_LX_INFORMATION;
+#[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _FILE_STORAGE_RESERVE_ID_INFORMATION {
    pub StorageReserveId: STORAGE_RESERVE_ID,
@@ -48600,6 +48646,13 @@ impl Default for _FILE_STORAGE_RESERVE_ID_INFORMATION {
 }
 pub type FILE_STORAGE_RESERVE_ID_INFORMATION = _FILE_STORAGE_RESERVE_ID_INFORMATION;
 pub type PFILE_STORAGE_RESERVE_ID_INFORMATION = *mut _FILE_STORAGE_RESERVE_ID_INFORMATION;
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _FILE_CASE_SENSITIVE_INFORMATION {
+   pub Flags: ULONG,
+}
+pub type FILE_CASE_SENSITIVE_INFORMATION = _FILE_CASE_SENSITIVE_INFORMATION;
+pub type PFILE_CASE_SENSITIVE_INFORMATION = *mut _FILE_CASE_SENSITIVE_INFORMATION;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -54620,7 +54673,7 @@ pub struct _KEY_FLAGS_INFORMATION {
 }
 pub type KEY_FLAGS_INFORMATION = _KEY_FLAGS_INFORMATION;
 pub type PKEY_FLAGS_INFORMATION = *mut _KEY_FLAGS_INFORMATION;
-#[doc = " The KEY_VIRTUALIZATION_INFORMATION structure contains information about the virtualization state of a key.\n\n The flags include:\n - VirtualizationCandidate: The key is part of the virtualization namespace scope (only HKLM\\Software for now).\n - VirtualizationEnabled: Virtualization is enabled on this key. Can be 1 only if VirtualizationCandidate is 1.\n - VirtualTarget: The key is a virtual key. Can be 1 only if VirtualizationCandidate and VirtualizationEnabled are 0. Valid only on the virtual store key handles.\n - VirtualStore: The key is a part of the virtual store path. Valid only on the virtual store key handles.\n - VirtualSource: The key has ever been virtualized, can be 1 only if VirtualizationCandidate is 1.\n - Reserved: Reserved bits."]
+#[doc = "The KEY_VIRTUALIZATION_INFORMATION structure contains information about the virtualization state of a key.\n\n The flags include:\n - VirtualizationCandidate: The key is part of the virtualization namespace scope (only HKLMfor now).\n - VirtualizationEnabled: Virtualization is enabled on this key. Can be 1 only if VirtualizationCandidate is 1.\n - VirtualTarget: The key is a virtual key. Can be 1 only if VirtualizationCandidate and VirtualizationEnabled are 0. Valid only on the virtual store key handles.\n - VirtualStore: The key is a part of the virtual store path. Valid only on the virtual store key handles.\n - VirtualSource: The key has ever been virtualized, can be 1 only if VirtualizationCandidate is 1.\n - Reserved: Reserved bits."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _KEY_VIRTUALIZATION_INFORMATION {
@@ -54864,11 +54917,11 @@ impl _KEY_VIRTUALIZATION_INFORMATION {
       __bindgen_bitfield_unit
    }
 }
-#[doc = " The KEY_VIRTUALIZATION_INFORMATION structure contains information about the virtualization state of a key.\n\n The flags include:\n - VirtualizationCandidate: The key is part of the virtualization namespace scope (only HKLM\\Software for now).\n - VirtualizationEnabled: Virtualization is enabled on this key. Can be 1 only if VirtualizationCandidate is 1.\n - VirtualTarget: The key is a virtual key. Can be 1 only if VirtualizationCandidate and VirtualizationEnabled are 0. Valid only on the virtual store key handles.\n - VirtualStore: The key is a part of the virtual store path. Valid only on the virtual store key handles.\n - VirtualSource: The key has ever been virtualized, can be 1 only if VirtualizationCandidate is 1.\n - Reserved: Reserved bits."]
+#[doc = "The KEY_VIRTUALIZATION_INFORMATION structure contains information about the virtualization state of a key.\n\n The flags include:\n - VirtualizationCandidate: The key is part of the virtualization namespace scope (only HKLMfor now).\n - VirtualizationEnabled: Virtualization is enabled on this key. Can be 1 only if VirtualizationCandidate is 1.\n - VirtualTarget: The key is a virtual key. Can be 1 only if VirtualizationCandidate and VirtualizationEnabled are 0. Valid only on the virtual store key handles.\n - VirtualStore: The key is a part of the virtual store path. Valid only on the virtual store key handles.\n - VirtualSource: The key has ever been virtualized, can be 1 only if VirtualizationCandidate is 1.\n - Reserved: Reserved bits."]
 pub type KEY_VIRTUALIZATION_INFORMATION = _KEY_VIRTUALIZATION_INFORMATION;
-#[doc = " The KEY_VIRTUALIZATION_INFORMATION structure contains information about the virtualization state of a key.\n\n The flags include:\n - VirtualizationCandidate: The key is part of the virtualization namespace scope (only HKLM\\Software for now).\n - VirtualizationEnabled: Virtualization is enabled on this key. Can be 1 only if VirtualizationCandidate is 1.\n - VirtualTarget: The key is a virtual key. Can be 1 only if VirtualizationCandidate and VirtualizationEnabled are 0. Valid only on the virtual store key handles.\n - VirtualStore: The key is a part of the virtual store path. Valid only on the virtual store key handles.\n - VirtualSource: The key has ever been virtualized, can be 1 only if VirtualizationCandidate is 1.\n - Reserved: Reserved bits."]
+#[doc = "The KEY_VIRTUALIZATION_INFORMATION structure contains information about the virtualization state of a key.\n\n The flags include:\n - VirtualizationCandidate: The key is part of the virtualization namespace scope (only HKLMfor now).\n - VirtualizationEnabled: Virtualization is enabled on this key. Can be 1 only if VirtualizationCandidate is 1.\n - VirtualTarget: The key is a virtual key. Can be 1 only if VirtualizationCandidate and VirtualizationEnabled are 0. Valid only on the virtual store key handles.\n - VirtualStore: The key is a part of the virtual store path. Valid only on the virtual store key handles.\n - VirtualSource: The key has ever been virtualized, can be 1 only if VirtualizationCandidate is 1.\n - Reserved: Reserved bits."]
 pub type PKEY_VIRTUALIZATION_INFORMATION = *mut _KEY_VIRTUALIZATION_INFORMATION;
-#[doc = " The KEY_TRUST_INFORMATION structure contains information about the trust status of a key.\n\n The flags include:\n - TrustedKey: Indicates whether the key is trusted. When set, this flag signifies that the key is considered\n   to be secure and reliable.\n - Reserved: Reserved bits."]
+#[doc = "The KEY_TRUST_INFORMATION structure contains information about the trust status of a key.\n\n The flags include:\n - TrustedKey: Indicates whether the key is trusted. When set, this flag signifies that the key is considered\n to be secure and reliable.\n - Reserved: Reserved bits."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _KEY_TRUST_INFORMATION {
@@ -54959,11 +55012,11 @@ impl _KEY_TRUST_INFORMATION {
       __bindgen_bitfield_unit
    }
 }
-#[doc = " The KEY_TRUST_INFORMATION structure contains information about the trust status of a key.\n\n The flags include:\n - TrustedKey: Indicates whether the key is trusted. When set, this flag signifies that the key is considered\n   to be secure and reliable.\n - Reserved: Reserved bits."]
+#[doc = "The KEY_TRUST_INFORMATION structure contains information about the trust status of a key.\n\n The flags include:\n - TrustedKey: Indicates whether the key is trusted. When set, this flag signifies that the key is considered\n to be secure and reliable.\n - Reserved: Reserved bits."]
 pub type KEY_TRUST_INFORMATION = _KEY_TRUST_INFORMATION;
-#[doc = " The KEY_TRUST_INFORMATION structure contains information about the trust status of a key.\n\n The flags include:\n - TrustedKey: Indicates whether the key is trusted. When set, this flag signifies that the key is considered\n   to be secure and reliable.\n - Reserved: Reserved bits."]
+#[doc = "The KEY_TRUST_INFORMATION structure contains information about the trust status of a key.\n\n The flags include:\n - TrustedKey: Indicates whether the key is trusted. When set, this flag signifies that the key is considered\n to be secure and reliable.\n - Reserved: Reserved bits."]
 pub type PKEY_TRUST_INFORMATION = *mut _KEY_TRUST_INFORMATION;
-#[doc = " The KEY_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n   that the key has been deleted but not yet purged from the registry. It is used to maintain the\n   integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n   indicates that the key layer should replace the local key's information, effectively overriding\n   any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n   indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n   settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n   that the class information of the key layer is inherited from its parent key, rather than being\n   explicitly defined.\n - Reserved: Reserved bits."]
+#[doc = "The KEY_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n that the key has been deleted but not yet purged from the registry. It is used to maintain the\n integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n indicates that the key layer should replace the local key's information, effectively overriding\n any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n that the class information of the key layer is inherited from its parent key, rather than being\n explicitly defined.\n - Reserved: Reserved bits."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _KEY_LAYER_INFORMATION {
@@ -55168,9 +55221,9 @@ impl _KEY_LAYER_INFORMATION {
       __bindgen_bitfield_unit
    }
 }
-#[doc = " The KEY_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n   that the key has been deleted but not yet purged from the registry. It is used to maintain the\n   integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n   indicates that the key layer should replace the local key's information, effectively overriding\n   any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n   indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n   settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n   that the class information of the key layer is inherited from its parent key, rather than being\n   explicitly defined.\n - Reserved: Reserved bits."]
+#[doc = "The KEY_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n that the key has been deleted but not yet purged from the registry. It is used to maintain the\n integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n indicates that the key layer should replace the local key's information, effectively overriding\n any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n that the class information of the key layer is inherited from its parent key, rather than being\n explicitly defined.\n - Reserved: Reserved bits."]
 pub type KEY_LAYER_INFORMATION = _KEY_LAYER_INFORMATION;
-#[doc = " The KEY_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n   that the key has been deleted but not yet purged from the registry. It is used to maintain the\n   integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n   indicates that the key layer should replace the local key's information, effectively overriding\n   any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n   indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n   settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n   that the class information of the key layer is inherited from its parent key, rather than being\n   explicitly defined.\n - Reserved: Reserved bits."]
+#[doc = "The KEY_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n that the key has been deleted but not yet purged from the registry. It is used to maintain the\n integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n indicates that the key layer should replace the local key's information, effectively overriding\n any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n that the class information of the key layer is inherited from its parent key, rather than being\n explicitly defined.\n - Reserved: Reserved bits."]
 pub type PKEY_LAYER_INFORMATION = *mut _KEY_LAYER_INFORMATION;
 #[repr(i32)]
 #[non_exhaustive]
@@ -55186,7 +55239,7 @@ pub enum _KEY_SET_INFORMATION_CLASS {
    MaxKeySetInfoClass = 7,
 }
 pub use self::_KEY_SET_INFORMATION_CLASS as KEY_SET_INFORMATION_CLASS;
-#[doc = " Structure representing the last write time of a registry key.\n\n The values include:\n - LastWriteTime: Contains the timestamp of the last write operation performed on a registry key."]
+#[doc = "Structure representing the last write time of a registry key.\n\n The values include:\n - LastWriteTime: Contains the timestamp of the last write operation performed on a registry key."]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _KEY_WRITE_TIME_INFORMATION {
@@ -55201,31 +55254,31 @@ impl Default for _KEY_WRITE_TIME_INFORMATION {
       }
    }
 }
-#[doc = " Structure representing the last write time of a registry key.\n\n The values include:\n - LastWriteTime: Contains the timestamp of the last write operation performed on a registry key."]
+#[doc = "Structure representing the last write time of a registry key.\n\n The values include:\n - LastWriteTime: Contains the timestamp of the last write operation performed on a registry key."]
 pub type KEY_WRITE_TIME_INFORMATION = _KEY_WRITE_TIME_INFORMATION;
-#[doc = " Structure representing the last write time of a registry key.\n\n The values include:\n - LastWriteTime: Contains the timestamp of the last write operation performed on a registry key."]
+#[doc = "Structure representing the last write time of a registry key.\n\n The values include:\n - LastWriteTime: Contains the timestamp of the last write operation performed on a registry key."]
 pub type PKEY_WRITE_TIME_INFORMATION = *mut _KEY_WRITE_TIME_INFORMATION;
-#[doc = " The KEY_WOW64_FLAGS_INFORMATION structure contains information about the WOW64 flags for a key.\n\n The fields include:\n - UserFlags: A set of user-defined flags associated with the key. These flags are used to store\n   additional information about the key in the context of WOW64 (Windows 32-bit on Windows 64-bit)."]
+#[doc = "The KEY_WOW64_FLAGS_INFORMATION structure contains information about the WOW64 flags for a key.\n\n The fields include:\n - UserFlags: A set of user-defined flags associated with the key. These flags are used to store\n additional information about the key in the context of WOW64 (Windows 32-bit on Windows 64-bit)."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _KEY_WOW64_FLAGS_INFORMATION {
    pub UserFlags: ULONG,
 }
-#[doc = " The KEY_WOW64_FLAGS_INFORMATION structure contains information about the WOW64 flags for a key.\n\n The fields include:\n - UserFlags: A set of user-defined flags associated with the key. These flags are used to store\n   additional information about the key in the context of WOW64 (Windows 32-bit on Windows 64-bit)."]
+#[doc = "The KEY_WOW64_FLAGS_INFORMATION structure contains information about the WOW64 flags for a key.\n\n The fields include:\n - UserFlags: A set of user-defined flags associated with the key. These flags are used to store\n additional information about the key in the context of WOW64 (Windows 32-bit on Windows 64-bit)."]
 pub type KEY_WOW64_FLAGS_INFORMATION = _KEY_WOW64_FLAGS_INFORMATION;
-#[doc = " The KEY_WOW64_FLAGS_INFORMATION structure contains information about the WOW64 flags for a key.\n\n The fields include:\n - UserFlags: A set of user-defined flags associated with the key. These flags are used to store\n   additional information about the key in the context of WOW64 (Windows 32-bit on Windows 64-bit)."]
+#[doc = "The KEY_WOW64_FLAGS_INFORMATION structure contains information about the WOW64 flags for a key.\n\n The fields include:\n - UserFlags: A set of user-defined flags associated with the key. These flags are used to store\n additional information about the key in the context of WOW64 (Windows 32-bit on Windows 64-bit)."]
 pub type PKEY_WOW64_FLAGS_INFORMATION = *mut _KEY_WOW64_FLAGS_INFORMATION;
-#[doc = " The KEY_HANDLE_TAGS_INFORMATION structure contains information about the handle tags for a key.\n\n The fields include:\n - HandleTags: A set of tags associated with the key handle. These tags are used to store additional\n   metadata or state information about the key handle."]
+#[doc = "The KEY_HANDLE_TAGS_INFORMATION structure contains information about the handle tags for a key.\n\n The fields include:\n - HandleTags: A set of tags associated with the key handle. These tags are used to store additional\n metadata or state information about the key handle."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _KEY_HANDLE_TAGS_INFORMATION {
    pub HandleTags: ULONG,
 }
-#[doc = " The KEY_HANDLE_TAGS_INFORMATION structure contains information about the handle tags for a key.\n\n The fields include:\n - HandleTags: A set of tags associated with the key handle. These tags are used to store additional\n   metadata or state information about the key handle."]
+#[doc = "The KEY_HANDLE_TAGS_INFORMATION structure contains information about the handle tags for a key.\n\n The fields include:\n - HandleTags: A set of tags associated with the key handle. These tags are used to store additional\n metadata or state information about the key handle."]
 pub type KEY_HANDLE_TAGS_INFORMATION = _KEY_HANDLE_TAGS_INFORMATION;
-#[doc = " The KEY_HANDLE_TAGS_INFORMATION structure contains information about the handle tags for a key.\n\n The fields include:\n - HandleTags: A set of tags associated with the key handle. These tags are used to store additional\n   metadata or state information about the key handle."]
+#[doc = "The KEY_HANDLE_TAGS_INFORMATION structure contains information about the handle tags for a key.\n\n The fields include:\n - HandleTags: A set of tags associated with the key handle. These tags are used to store additional\n metadata or state information about the key handle."]
 pub type PKEY_HANDLE_TAGS_INFORMATION = *mut _KEY_HANDLE_TAGS_INFORMATION;
-#[doc = " The KEY_SET_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n   that the key has been deleted but not yet purged from the registry. It is used to maintain the\n   integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n   indicates that the key layer should replace the local key's information, effectively overriding\n   any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n   indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n   settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n   that the class information of the key layer is inherited from its parent key, rather than being\n   explicitly defined.\n - Reserved: Reserved bits."]
+#[doc = "The KEY_SET_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n that the key has been deleted but not yet purged from the registry. It is used to maintain the\n integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n indicates that the key layer should replace the local key's information, effectively overriding\n any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n that the class information of the key layer is inherited from its parent key, rather than being\n explicitly defined.\n - Reserved: Reserved bits."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _KEY_SET_LAYER_INFORMATION {
@@ -55430,19 +55483,19 @@ impl _KEY_SET_LAYER_INFORMATION {
       __bindgen_bitfield_unit
    }
 }
-#[doc = " The KEY_SET_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n   that the key has been deleted but not yet purged from the registry. It is used to maintain the\n   integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n   indicates that the key layer should replace the local key's information, effectively overriding\n   any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n   indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n   settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n   that the class information of the key layer is inherited from its parent key, rather than being\n   explicitly defined.\n - Reserved: Reserved bits."]
+#[doc = "The KEY_SET_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n that the key has been deleted but not yet purged from the registry. It is used to maintain the\n integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n indicates that the key layer should replace the local key's information, effectively overriding\n any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n that the class information of the key layer is inherited from its parent key, rather than being\n explicitly defined.\n - Reserved: Reserved bits."]
 pub type KEY_SET_LAYER_INFORMATION = _KEY_SET_LAYER_INFORMATION;
-#[doc = " The KEY_SET_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n   that the key has been deleted but not yet purged from the registry. It is used to maintain the\n   integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n   indicates that the key layer should replace the local key's information, effectively overriding\n   any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n   indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n   settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n   that the class information of the key layer is inherited from its parent key, rather than being\n   explicitly defined.\n - Reserved: Reserved bits."]
+#[doc = "The KEY_SET_LAYER_INFORMATION structure contains information about a key layer.\n\n The flags include:\n - IsTombstone: Indicates whether the key layer is a tombstone. A tombstone is a marker that indicates\n that the key has been deleted but not yet purged from the registry. It is used to maintain the\n integrity of the registry and ensure that deleted keys are not immediately reused.\n - IsSupersedeLocal: Indicates whether the key layer supersedes the local key. When set, this flag\n indicates that the key layer should replace the local key's information, effectively overriding\n any local changes or settings.\n - IsSupersedeTree: Indicates whether the key layer supersedes the entire key tree. When set, this flag\n indicates that the key layer should replace the entire subtree of keys, overriding any changes or\n settings in the subtree.\n - ClassIsInherited: Indicates whether the key layer's class is inherited. When set, this flag indicates\n that the class information of the key layer is inherited from its parent key, rather than being\n explicitly defined.\n - Reserved: Reserved bits."]
 pub type PKEY_SET_LAYER_INFORMATION = *mut _KEY_SET_LAYER_INFORMATION;
-#[doc = " The KEY_CONTROL_FLAGS_INFORMATION structure contains control flags for a key.\n\n The fields include:\n - ControlFlags: A set of control flags associated with the key. These flags are used to store\n   additional control information about the key, which can affect its behavior or state."]
+#[doc = "The KEY_CONTROL_FLAGS_INFORMATION structure contains control flags for a key.\n\n The fields include:\n - ControlFlags: A set of control flags associated with the key. These flags are used to store\n additional control information about the key, which can affect its behavior or state."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _KEY_CONTROL_FLAGS_INFORMATION {
    pub ControlFlags: ULONG,
 }
-#[doc = " The KEY_CONTROL_FLAGS_INFORMATION structure contains control flags for a key.\n\n The fields include:\n - ControlFlags: A set of control flags associated with the key. These flags are used to store\n   additional control information about the key, which can affect its behavior or state."]
+#[doc = "The KEY_CONTROL_FLAGS_INFORMATION structure contains control flags for a key.\n\n The fields include:\n - ControlFlags: A set of control flags associated with the key. These flags are used to store\n additional control information about the key, which can affect its behavior or state."]
 pub type KEY_CONTROL_FLAGS_INFORMATION = _KEY_CONTROL_FLAGS_INFORMATION;
-#[doc = " The KEY_CONTROL_FLAGS_INFORMATION structure contains control flags for a key.\n\n The fields include:\n - ControlFlags: A set of control flags associated with the key. These flags are used to store\n   additional control information about the key, which can affect its behavior or state."]
+#[doc = "The KEY_CONTROL_FLAGS_INFORMATION structure contains control flags for a key.\n\n The fields include:\n - ControlFlags: A set of control flags associated with the key. These flags are used to store\n additional control information about the key, which can affect its behavior or state."]
 pub type PKEY_CONTROL_FLAGS_INFORMATION = *mut _KEY_CONTROL_FLAGS_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -66547,6 +66600,8 @@ pub enum _PROCESS_ACTIVITY_TYPE {
    ProcessActivityTypeMax = 1,
 }
 pub use self::_PROCESS_ACTIVITY_TYPE as PROCESS_ACTIVITY_TYPE;
+pub type PROCESSTRACE_HANDLE = ULONG64;
+pub type CONTROLTRACE_ID = ULONG64;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _WMI_TRACE_PACKET {
@@ -74659,7 +74714,7 @@ unsafe extern "C" {
       Level: ULONG,
       ResourceDirectory: *mut PIMAGE_RESOURCE_DIRECTORY,
    ) -> NTSTATUS;
-   #[doc = " The LdrResFindResource function finds a resource in a DLL.\n\n @param DllHandle A handle to the DLL.\n @param Type The type of the resource.\n @param Name The name of the resource.\n @param Language The language of the resource.\n @param ResourceBuffer An optional pointer to receive the resource buffer.\n @param ResourceLength An optional pointer to receive the resource length.\n @param CultureName An optional buffer to receive the culture name.\n @param CultureNameLength An optional pointer to receive the length of the culture name.\n @param Flags Flags for the resource search.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "The LdrResFindResource function finds a resource in a DLL.\n\n # Arguments\n\n* `DllHandle` - A handle to the DLL.\n * `Type` - The type of the resource.\n * `Name` - The name of the resource.\n * `Language` - The language of the resource.\n * `ResourceBuffer` - An optional pointer to receive the resource buffer.\n * `ResourceLength` - An optional pointer to receive the resource length.\n * `CultureName` - An optional buffer to receive the culture name.\n * `CultureNameLength` - An optional pointer to receive the length of the culture name.\n * `Flags` - Flags for the resource search.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn LdrResFindResource(
       DllHandle: PVOID,
       Type: ULONG_PTR,
@@ -74671,7 +74726,7 @@ unsafe extern "C" {
       CultureNameLength: PULONG,
       Flags: ULONG,
    ) -> NTSTATUS;
-   #[doc = " The LdrResFindResourceDirectory function finds a resource directory in a DLL.\n\n @param DllHandle A handle to the DLL.\n @param Type The type of the resource.\n @param Name The name of the resource.\n @param ResourceDirectory An optional pointer to receive the resource directory.\n @param CultureName An optional buffer to receive the culture name.\n @param CultureNameLength An optional pointer to receive the length of the culture name.\n @param Flags Flags for the resource search.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "The LdrResFindResourceDirectory function finds a resource directory in a DLL.\n\n # Arguments\n\n* `DllHandle` - A handle to the DLL.\n * `Type` - The type of the resource.\n * `Name` - The name of the resource.\n * `ResourceDirectory` - An optional pointer to receive the resource directory.\n * `CultureName` - An optional buffer to receive the culture name.\n * `CultureNameLength` - An optional pointer to receive the length of the culture name.\n * `Flags` - Flags for the resource search.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn LdrResFindResourceDirectory(
       DllHandle: PVOID,
       Type: ULONG_PTR,
@@ -74688,7 +74743,7 @@ unsafe extern "C" {
       ResourceDirectory: *mut PIMAGE_RESOURCE_DIRECTORY,
       OutHeaders: *mut PIMAGE_NT_HEADERS,
    ) -> NTSTATUS;
-   #[doc = " The LdrResSearchResource function searches for a resource in a DLL.\n\n @param DllHandle A handle to the DLL.\n @param ResourceInfo A pointer to the resource information.\n @param Level The level of the resource.\n @param Flags Flags for the resource search.\n @param ResourceBuffer An optional pointer to receive the resource buffer.\n @param ResourceLength An optional pointer to receive the resource length.\n @param CultureName An optional buffer to receive the culture name.\n @param CultureNameLength An optional pointer to receive the length of the culture name.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "The LdrResSearchResource function searches for a resource in a DLL.\n\n # Arguments\n\n* `DllHandle` - A handle to the DLL.\n * `ResourceInfo` - A pointer to the resource information.\n * `Level` - The level of the resource.\n * `Flags` - Flags for the resource search.\n * `ResourceBuffer` - An optional pointer to receive the resource buffer.\n * `ResourceLength` - An optional pointer to receive the resource length.\n * `CultureName` - An optional buffer to receive the culture name.\n * `CultureNameLength` - An optional pointer to receive the length of the culture name.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn LdrResSearchResource(
       DllHandle: PVOID,
       ResourceInfo: PLDR_RESOURCE_INFO,
@@ -74699,7 +74754,7 @@ unsafe extern "C" {
       CultureName: PVOID,
       CultureNameLength: PULONG,
    ) -> NTSTATUS;
-   #[doc = " The LdrResGetRCConfig function retrieves the RC configuration for a DLL.\n\n @param DllHandle A handle to the DLL.\n @param Length The length of the configuration buffer.\n @param Config A buffer to receive the configuration.\n @param Flags Flags for the operation.\n @param AlternateResource Indicates if an alternate resource should be loaded.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "The LdrResGetRCConfig function retrieves the RC configuration for a DLL.\n\n # Arguments\n\n* `DllHandle` - A handle to the DLL.\n * `Length` - The length of the configuration buffer.\n * `Config` - A buffer to receive the configuration.\n * `Flags` - Flags for the operation.\n * `AlternateResource` - Indicates if an alternate resource should be loaded.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn LdrResGetRCConfig(
       DllHandle: PVOID,
       Length: SIZE_T,
@@ -74707,7 +74762,7 @@ unsafe extern "C" {
       Flags: ULONG,
       AlternateResource: BOOLEAN,
    ) -> NTSTATUS;
-   #[doc = " The LdrResRelease function releases a resource in a DLL.\n\n @param DllHandle A handle to the DLL.\n @param CultureNameOrId An optional culture name or ID.\n @param Flags Flags for the operation.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "The LdrResRelease function releases a resource in a DLL.\n\n # Arguments\n\n* `DllHandle` - A handle to the DLL.\n * `CultureNameOrId` - An optional culture name or ID.\n * `Flags` - Flags for the operation.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn LdrResRelease(DllHandle: PVOID, CultureNameOrId: ULONG_PTR, Flags: ULONG) -> NTSTATUS;
    pub fn LdrEnumResources(
       DllHandle: PVOID,
@@ -74800,9 +74855,9 @@ unsafe extern "C" {
    pub fn LdrShutdownProcess() -> !;
    pub fn LdrShutdownThread() -> !;
    pub fn LdrSetImplicitPathOptions(ImplicitPathOptions: ULONG) -> NTSTATUS;
-   #[doc = " The LdrControlFlowGuardEnforced function checks if Control Flow Guard is enforced.\n\n @return BOOLEAN TRUE if Control Flow Guard is enforced, FALSE otherwise."]
+   #[doc = "The LdrControlFlowGuardEnforced function checks if Control Flow Guard is enforced.\n\n # Returns\n\nBOOLEAN TRUE if Control Flow Guard is enforced, FALSE otherwise."]
    pub fn LdrControlFlowGuardEnforced() -> BOOLEAN;
-   #[doc = " The LdrControlFlowGuardEnforcedWithExportSuppression function checks if Control Flow Guard is\n enforced with export suppression.\n\n @return BOOLEAN TRUE if Control Flow Guard is enforced, FALSE otherwise."]
+   #[doc = "The LdrControlFlowGuardEnforcedWithExportSuppression function checks if Control Flow Guard is\n enforced with export suppression.\n\n # Returns\n\nBOOLEAN TRUE if Control Flow Guard is enforced, FALSE otherwise."]
    pub fn LdrControlFlowGuardEnforcedWithExportSuppression() -> BOOLEAN;
    pub fn LdrIsModuleSxsRedirected(DllHandle: PVOID) -> BOOLEAN;
    pub fn LdrUpdatePackageSearchPath(SearchPathW: PCWSTR) -> NTSTATUS;
@@ -74835,7 +74890,7 @@ unsafe extern "C" {
       DllPath: PCWSTR,
       DllName: PUNICODE_STRING,
    ) -> NTSTATUS;
-   #[doc = " This function forcefully terminates the calling program if it is invoked inside a loader callout. Otherwise, it has no effect.\n\n @remarks This routine does not catch all potential deadlock cases; it is possible for a thread inside a loader callout\n to acquire a lock while some thread outside a loader callout holds the same lock and makes a call into the loader.\n In other words, there can be a lock order inversion between the loader lock and a client lock."]
+   #[doc = "This function forcefully terminates the calling program if it is invoked inside a loader callout. Otherwise, it has no effect.\n\n > This routine does not catch all potential deadlock cases; it is possible for a thread inside a loader callout\n to acquire a lock while some thread outside a loader callout holds the same lock and makes a call into the loader.\n In other words, there can be a lock order inversion between the loader lock and a client lock."]
    pub fn LdrFastFailInLoaderCallout();
    pub fn LdrFlushAlternateResourceModules() -> BOOLEAN;
    pub fn LdrDllRedirectionCallback(
@@ -74854,16 +74909,16 @@ unsafe extern "C" {
       Flags: ULONG,
       GetFileSizeFromLoadAsDataTable: BOOLEAN,
    );
-   #[doc = " The NtDelayExecution routine suspends the current thread until the specified condition is met.\n\n @param Alertable The function returns when either the time-out period has elapsed or when the APC function is called.\n @param DelayInterval The time interval for which execution is to be suspended, in milliseconds.\n - A value of zero causes the thread to relinquish the remainder of its time slice to any other thread that is ready to run.\n - If there are no other threads ready to run, the function returns immediately, and the thread continues execution.\n - A value of INFINITE indicates that the suspension should not time out.\n @return NTSTATUS Successful or errant status. The return value is STATUS_USER_APC when Alertable is TRUE, and the function returned due to one or more I/O completion callback functions.\n @remarks Note that a ready thread is not guaranteed to run immediately. Consequently, the thread will not run until some arbitrary time after the sleep interval elapses,\n based upon the system \"tick\" frequency and the load factor from other processes.\n @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleepex"]
+   #[doc = "The NtDelayExecution routine suspends the current thread until the specified condition is met.\n\n # Arguments\n\n* `Alertable` - The function returns when either the time-out period has elapsed or when the APC function is called.\n * `DelayInterval` - The time interval for which execution is to be suspended, in milliseconds.\n - A value of zero causes the thread to relinquish the remainder of its time slice to any other thread that is ready to run.\n - If there are no other threads ready to run, the function returns immediately, and the thread continues execution.\n - A value of INFINITE indicates that the suspension should not time out.\n # Returns\n\nNTSTATUS Successful or errant status. The return value is STATUS_USER_APC when Alertable is TRUE, and the function returned due to one or more I/O completion callback functions.\n > Note that a ready thread is not guaranteed to run immediately. Consequently, the thread will not run until some arbitrary time after the sleep interval elapses,\n based upon the system \"tick\" frequency and the load factor from other processes.\n [`https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleepex`]"]
    pub fn NtDelayExecution(Alertable: BOOLEAN, DelayInterval: PLARGE_INTEGER) -> NTSTATUS;
-   #[doc = " Retrieves the value of the specified firmware environment variable.\n The user account that the app is running under must have the SE_SYSTEM_ENVIRONMENT_NAME privilege.\n\n @param VariableName The name of the firmware environment variable. The pointer must not be NULL.\n @param VariableValue A pointer to a buffer that receives the value of the specified firmware environment variable.\n @param ValueLength The size of the \\c VariableValue buffer, in bytes.\n @param ReturnLength If the function succeeds, the return length is the number of bytes stored in the \\c VariableValue buffer.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Retrieves the value of the specified firmware environment variable.\n The user account that the app is running under must have the SE_SYSTEM_ENVIRONMENT_NAME privilege.\n\n # Arguments\n\n* `VariableName` - The name of the firmware environment variable. The pointer must not be NULL.\n * `VariableValue` - A pointer to a buffer that receives the value of the specified firmware environment variable.\n * `ValueLength` - The size of the `VariableValue` buffer, in bytes.\n * `ReturnLength` - If the function succeeds, the return length is the number of bytes stored in the `VariableValue` buffer.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQuerySystemEnvironmentValue(
       VariableName: PUNICODE_STRING,
       VariableValue: PWSTR,
       ValueLength: USHORT,
       ReturnLength: PUSHORT,
    ) -> NTSTATUS;
-   #[doc = " Retrieves the value of the specified firmware environment variable and its attributes.\n The user account that the app is running under must have the SE_SYSTEM_ENVIRONMENT_NAME privilege.\n\n @param VariableName The name of the firmware environment variable. The pointer must not be NULL.\n @param VendorGuid The GUID that represents the namespace of the firmware environment variable.\n @param Buffer A pointer to a buffer that receives the value of the specified firmware environment variable.\n @param BufferLength The size of the \\c Buffer, in bytes.\n @param Attributes Bitmask identifying UEFI variable attributes associated with the variable.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Retrieves the value of the specified firmware environment variable and its attributes.\n The user account that the app is running under must have the SE_SYSTEM_ENVIRONMENT_NAME privilege.\n\n # Arguments\n\n* `VariableName` - The name of the firmware environment variable. The pointer must not be NULL.\n * `VendorGuid` - The GUID that represents the namespace of the firmware environment variable.\n * `Buffer` - A pointer to a buffer that receives the value of the specified firmware environment variable.\n * `BufferLength` - The size of the `Buffer,` in bytes.\n * `Attributes` - Bitmask identifying UEFI variable attributes associated with the variable.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQuerySystemEnvironmentValueEx(
       VariableName: PUNICODE_STRING,
       VendorGuid: PCGUID,
@@ -74871,12 +74926,12 @@ unsafe extern "C" {
       BufferLength: PULONG,
       Attributes: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Sets the value of the specified firmware environment variable.\n The user account that the app is running under must have the SE_SYSTEM_ENVIRONMENT_NAME privilege.\n\n @param VariableName The name of the firmware environment variable. The pointer must not be NULL.\n @param VariableValue A pointer to the new value for the firmware environment variable.\n If this parameter is zero, the firmware environment variable is deleted.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Sets the value of the specified firmware environment variable.\n The user account that the app is running under must have the SE_SYSTEM_ENVIRONMENT_NAME privilege.\n\n # Arguments\n\n* `VariableName` - The name of the firmware environment variable. The pointer must not be NULL.\n * `VariableValue` - A pointer to the new value for the firmware environment variable.\n If this parameter is zero, the firmware environment variable is deleted.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetSystemEnvironmentValue(
       VariableName: PUNICODE_STRING,
       VariableValue: PUNICODE_STRING,
    ) -> NTSTATUS;
-   #[doc = " Sets the value of the specified firmware environment variable and the attributes that indicate how this variable is stored and maintained.\n The user account that the app is running under must have the SE_SYSTEM_ENVIRONMENT_NAME privilege.\n\n @param VariableName The name of the firmware environment variable. The pointer must not be NULL.\n @param VendorGuid The GUID that represents the namespace of the firmware environment variable.\n @param Buffer A pointer to the new value for the firmware environment variable.\n @param BufferLength The size of the pValue buffer, in bytes.\n Unless the VARIABLE_ATTRIBUTE_APPEND_WRITE, VARIABLE_ATTRIBUTE_AUTHENTICATED_WRITE_ACCESS,\n or VARIABLE_ATTRIBUTE_TIME_BASED_AUTHENTICATED_WRITE_ACCESS variable attribute is set via dwAttributes,\n setting this value to zero will result in the deletion of this variable.\n @param Attributes Bitmask to set UEFI variable attributes associated with the variable.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Sets the value of the specified firmware environment variable and the attributes that indicate how this variable is stored and maintained.\n The user account that the app is running under must have the SE_SYSTEM_ENVIRONMENT_NAME privilege.\n\n # Arguments\n\n* `VariableName` - The name of the firmware environment variable. The pointer must not be NULL.\n * `VendorGuid` - The GUID that represents the namespace of the firmware environment variable.\n * `Buffer` - A pointer to the new value for the firmware environment variable.\n * `BufferLength` - The size of the pValue buffer, in bytes.\n Unless the VARIABLE_ATTRIBUTE_APPEND_WRITE, VARIABLE_ATTRIBUTE_AUTHENTICATED_WRITE_ACCESS,\n or VARIABLE_ATTRIBUTE_TIME_BASED_AUTHENTICATED_WRITE_ACCESS variable attribute is set via dwAttributes,\n setting this value to zero will result in the deletion of this variable.\n * `Attributes` - Bitmask to set UEFI variable attributes associated with the variable.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetSystemEnvironmentValueEx(
       VariableName: PUNICODE_STRING,
       VendorGuid: PCGUID,
@@ -74916,7 +74971,7 @@ unsafe extern "C" {
       Data: PVOID,
       DataSize: ULONG,
    ) -> NTSTATUS;
-   #[doc = " The NtCreateEvent routine creates an event object, sets the initial state of the event to the specified value,\n and opens a handle to the object with the specified desired access.\n\n @param EventHandle A pointer to a variable that receives the event object handle.\n @param DesiredAccess The access mask that specifies the requested access to the event object.\n @param ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param EventType The type of the event, which can be SynchronizationEvent or a NotificationEvent.\n @param InitialState The initial state of the event object.\n @return NTSTATUS Successful or errant status.\n @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-zwcreateevent"]
+   #[doc = "The NtCreateEvent routine creates an event object, sets the initial state of the event to the specified value,\n and opens a handle to the object with the specified desired access.\n\n # Arguments\n\n* `EventHandle` - A pointer to a variable that receives the event object handle.\n * `DesiredAccess` - The access mask that specifies the requested access to the event object.\n * `ObjectAttributes` - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n * `EventType` - The type of the event, which can be SynchronizationEvent or a NotificationEvent.\n * `InitialState` - The initial state of the event object.\n # Returns\n\nNTSTATUS Successful or errant status.\n [`https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-zwcreateevent`]"]
    pub fn NtCreateEvent(
       EventHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -74924,25 +74979,25 @@ unsafe extern "C" {
       EventType: EVENT_TYPE,
       InitialState: BOOLEAN,
    ) -> NTSTATUS;
-   #[doc = " The NtOpenEvent routine opens a handle to an existing event object.\n\n @param EventHandle A pointer to a variable that receives the event object handle.\n @param DesiredAccess The access mask that specifies the requested access to the event object.\n @param ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "The NtOpenEvent routine opens a handle to an existing event object.\n\n # Arguments\n\n* `EventHandle` - A pointer to a variable that receives the event object handle.\n * `DesiredAccess` - The access mask that specifies the requested access to the event object.\n * `ObjectAttributes` - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtOpenEvent(
       EventHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: POBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
-   #[doc = " The NtSetEvent routine sets an event object to the signaled state.\n\n @param EventHandle A handle to the event object.\n @param PreviousState A pointer to a variable that receives the previous state of the event object.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "The NtSetEvent routine sets an event object to the signaled state.\n\n # Arguments\n\n* `EventHandle` - A handle to the event object.\n * `PreviousState` - A pointer to a variable that receives the previous state of the event object.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetEvent(EventHandle: HANDLE, PreviousState: PLONG) -> NTSTATUS;
-   #[doc = " The NtSetEventEx routine sets an event object to the signaled state and optionally acquires a lock.\n\n @param ThreadId A handle to the thread.\n @param Lock A pointer to an RTL_SRWLOCK structure that specifies the lock to acquire.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "The NtSetEventEx routine sets an event object to the signaled state and optionally acquires a lock.\n\n # Arguments\n\n* `ThreadId` - A handle to the thread.\n * `Lock` - A pointer to an RTL_SRWLOCK structure that specifies the lock to acquire.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetEventEx(ThreadId: HANDLE, Lock: PRTL_SRWLOCK) -> NTSTATUS;
-   #[doc = " The NtSetEventBoostPriority routine sets an event object to the signaled state and boosts the priority of threads waiting on the event.\n\n @param EventHandle A handle to the event object.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "The NtSetEventBoostPriority routine sets an event object to the signaled state and boosts the priority of threads waiting on the event.\n\n # Arguments\n\n* `EventHandle` - A handle to the event object.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetEventBoostPriority(EventHandle: HANDLE) -> NTSTATUS;
-   #[doc = " The NtClearEvent routine sets an event object to the not-signaled state.\n\n @param EventHandle A handle to the event object.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "The NtClearEvent routine sets an event object to the not-signaled state.\n\n # Arguments\n\n* `EventHandle` - A handle to the event object.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtClearEvent(EventHandle: HANDLE) -> NTSTATUS;
-   #[doc = " The NtResetEvent routine sets an event object to the not-signaled state and optionally returns the previous state.\n\n @param EventHandle A handle to the event object.\n @param PreviousState A pointer to a variable that receives the previous state of the event object.\n @return NTSTATUS Successful or errant status.\n @see https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent"]
+   #[doc = "The NtResetEvent routine sets an event object to the not-signaled state and optionally returns the previous state.\n\n # Arguments\n\n* `EventHandle` - A handle to the event object.\n * `PreviousState` - A pointer to a variable that receives the previous state of the event object.\n # Returns\n\nNTSTATUS Successful or errant status.\n [`https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent`]"]
    pub fn NtResetEvent(EventHandle: HANDLE, PreviousState: PLONG) -> NTSTATUS;
-   #[doc = " The NtPulseEvent routine sets an event object to the signaled state and then resets it to the not-signaled state after releasing the appropriate number of waiting threads.\n\n @param EventHandle A handle to the event object.\n @param PreviousState A pointer to a variable that receives the previous state of the event object.\n @return NTSTATUS Successful or errant status.\n @see https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-pulseevent"]
+   #[doc = "The NtPulseEvent routine sets an event object to the signaled state and then resets it to the not-signaled state after releasing the appropriate number of waiting threads.\n\n # Arguments\n\n* `EventHandle` - A handle to the event object.\n * `PreviousState` - A pointer to a variable that receives the previous state of the event object.\n # Returns\n\nNTSTATUS Successful or errant status.\n [`https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-pulseevent`]"]
    pub fn NtPulseEvent(EventHandle: HANDLE, PreviousState: PLONG) -> NTSTATUS;
-   #[doc = " The NtQueryEvent routine retrieves information about an event object.\n\n @param EventHandle A handle to the event object.\n @param EventInformationClass The type of information to be retrieved.\n @param EventInformation A pointer to a buffer that receives the requested information.\n @param EventInformationLength The size of the buffer pointed to by EventInformation.\n @param ReturnLength A pointer to a variable that receives the size of the data returned in the buffer.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "The NtQueryEvent routine retrieves information about an event object.\n\n # Arguments\n\n* `EventHandle` - A handle to the event object.\n * `EventInformationClass` - The type of information to be retrieved.\n * `EventInformation` - A pointer to a buffer that receives the requested information.\n * `EventInformationLength` - The size of the buffer pointed to by EventInformation.\n * `ReturnLength` - A pointer to a variable that receives the size of the data returned in the buffer.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQueryEvent(
       EventHandle: HANDLE,
       EventInformationClass: EVENT_INFORMATION_CLASS,
@@ -75206,17 +75261,17 @@ unsafe extern "C" {
       PacketsReturned: PULONG,
       DeferredWork: PWORKER_FACTORY_DEFERRED_WORK,
    ) -> NTSTATUS;
-   #[doc = " The NtQuerySystemTime routine obtains the current system time.\n\n @param SystemTime A pointer to a LARGE_INTEGER structure that receives the system time. This is a 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 (UTC).\n @return NTSTATUS Successful or errant status.\n @see https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntquerysystemtime"]
+   #[doc = "The NtQuerySystemTime routine obtains the current system time.\n\n # Arguments\n\n* `SystemTime` - A pointer to a LARGE_INTEGER structure that receives the system time. This is a 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 (UTC).\n # Returns\n\nNTSTATUS Successful or errant status.\n [`https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntquerysystemtime`]"]
    pub fn NtQuerySystemTime(SystemTime: PLARGE_INTEGER) -> NTSTATUS;
-   #[doc = " The NtSetSystemTime routine sets the current system time and date. The system time is expressed in Coordinated Universal Time (UTC).\n\n @param SystemTime A pointer to a LARGE_INTEGER structure that that contains the new system date and time.\n @param PreviousTime A pointer to a LARGE_INTEGER structure that that contains the previous system time.\n @return NTSTATUS Successful or errant status.\n @remarks The calling process must have the SE_SYSTEMTIME_NAME privilege.\n @see https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-setsystemtime"]
+   #[doc = "The NtSetSystemTime routine sets the current system time and date. The system time is expressed in Coordinated Universal Time (UTC).\n\n # Arguments\n\n* `SystemTime` - A pointer to a LARGE_INTEGER structure that that contains the new system date and time.\n * `PreviousTime` - A pointer to a LARGE_INTEGER structure that that contains the previous system time.\n # Returns\n\nNTSTATUS Successful or errant status.\n > The calling process must have the SE_SYSTEMTIME_NAME privilege.\n [`https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-setsystemtime`]"]
    pub fn NtSetSystemTime(SystemTime: PLARGE_INTEGER, PreviousTime: PLARGE_INTEGER) -> NTSTATUS;
-   #[doc = " The NtQueryTimerResolution routine retrieves the range and current value of the system interrupt timer.\n\n @param MaximumTime The maximum timer resolution, in 100-nanosecond units.\n @param MinimumTime The minimum timer resolution, in 100-nanosecond units.\n @param CurrentTime The current timer resolution, in 100-nanosecond units.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "The NtQueryTimerResolution routine retrieves the range and current value of the system interrupt timer.\n\n # Arguments\n\n* `MaximumTime` - The maximum timer resolution, in 100-nanosecond units.\n * `MinimumTime` - The minimum timer resolution, in 100-nanosecond units.\n * `CurrentTime` - The current timer resolution, in 100-nanosecond units.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQueryTimerResolution(
       MaximumTime: PULONG,
       MinimumTime: PULONG,
       CurrentTime: PULONG,
    ) -> NTSTATUS;
-   #[doc = " The NtSetTimerResolution routine sets the system interrupt timer resolution to the specified value.\n\n @param DesiredTime The desired timer resolution, in 100-nanosecond units.\n @param SetResolution If TRUE, the timer resolution is set to the value specified by DesiredTime. If FALSE, the timer resolution is reset to the default value.\n @param ActualTime The actual timer resolution, in 100-nanosecond units.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "The NtSetTimerResolution routine sets the system interrupt timer resolution to the specified value.\n\n # Arguments\n\n* `DesiredTime` - The desired timer resolution, in 100-nanosecond units.\n * `SetResolution` - If TRUE, the timer resolution is set to the value specified by DesiredTime. If FALSE, the timer resolution is reset to the default value.\n * `ActualTime` - The actual timer resolution, in 100-nanosecond units.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetTimerResolution(
       DesiredTime: ULONG,
       SetResolution: BOOLEAN,
@@ -75362,53 +75417,53 @@ unsafe extern "C" {
    pub static PARTITION_MSFT_SNAPSHOT_GUID: GUID;
    pub static PARTITION_SPACES_GUID: GUID;
    pub static PARTITION_SYSTEM_GUID: GUID;
-   #[doc = " Sets the logging level and callback routine for BCD messages.\n\n @param BcdLoggingLevel The logging level to set.\n @param BcdMessageCallbackRoutine The callback routine for BCD messages.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Sets the logging level and callback routine for BCD messages.\n\n # Arguments\n\n* `BcdLoggingLevel` - The logging level to set.\n * `BcdMessageCallbackRoutine` - The callback routine for BCD messages.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn BcdSetLogging(
       BcdLoggingLevel: BCD_MESSAGE_TYPE,
       BcdMessageCallbackRoutine: BCD_MESSAGE_CALLBACK,
    ) -> NTSTATUS;
-   #[doc = " Initializes the BCD synchronization mutant."]
+   #[doc = "Initializes the BCD synchronization mutant."]
    pub fn BcdInitializeBcdSyncMutant();
-   #[doc = " Retrieves the file name for the BCD.\n\n @param BcdSystemStorePath The pointer to receive the system store path.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Retrieves the file name for the BCD.\n\n # Arguments\n\n* `BcdSystemStorePath` - The pointer to receive the system store path.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn BcdGetSystemStorePath(BcdSystemStorePath: *mut PWSTR) -> NTSTATUS;
-   #[doc = " Sets the device for the system BCD store.\n\n @param SystemPartition The system partition to set.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Sets the device for the system BCD store.\n\n # Arguments\n\n* `SystemPartition` - The system partition to set.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn BcdSetSystemStoreDevice(SystemPartition: PCUNICODE_STRING) -> NTSTATUS;
-   #[doc = " Opens the BCD system store.\n\n @param BcdStoreHandle The handle to receive the system store.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Opens the BCD system store.\n\n # Arguments\n\n* `BcdStoreHandle` - The handle to receive the system store.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn BcdOpenSystemStore(BcdStoreHandle: PHANDLE) -> NTSTATUS;
-   #[doc = " Opens a BCD store from a file.\n\n @param BcdFilePath The file path of the BCD store.\n @param BcdStoreHandle The handle to receive the BCD store.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Opens a BCD store from a file.\n\n # Arguments\n\n* `BcdFilePath` - The file path of the BCD store.\n * `BcdStoreHandle` - The handle to receive the BCD store.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn BcdOpenStoreFromFile(BcdFilePath: PCUNICODE_STRING, BcdStoreHandle: PHANDLE) -> NTSTATUS;
-   #[doc = " Creates a BCD store.\n\n @param BcdFilePath The file path to create the BCD store.\n @param BcdStoreHandle The handle to receive the BCD store.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Creates a BCD store.\n\n # Arguments\n\n* `BcdFilePath` - The file path to create the BCD store.\n * `BcdStoreHandle` - The handle to receive the BCD store.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn BcdCreateStore(BcdFilePath: PCUNICODE_STRING, BcdStoreHandle: PHANDLE) -> NTSTATUS;
-   #[doc = " Exports the BCD store to a file.\n\n @param BcdFilePath The file path to export the BCD store.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Exports the BCD store to a file.\n\n # Arguments\n\n* `BcdFilePath` - The file path to export the BCD store.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn BcdExportStore(BcdFilePath: PCUNICODE_STRING) -> NTSTATUS;
-   #[doc = " Exports the BCD store to a file with additional flags.\n\n @param BcdStoreHandle The handle to the BCD store.\n @param Flags The flags for exporting the store.\n @param BcdFilePath The file path to export the BCD store.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Exports the BCD store to a file with additional flags.\n\n # Arguments\n\n* `BcdStoreHandle` - The handle to the BCD store.\n * `Flags` - The flags for exporting the store.\n * `BcdFilePath` - The file path to export the BCD store.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn BcdExportStoreEx(
       BcdStoreHandle: HANDLE,
       Flags: ULONG,
       BcdFilePath: PCUNICODE_STRING,
    ) -> NTSTATUS;
-   #[doc = " Imports a BCD store from a file.\n\n @param BcdFilePath The file path to import the BCD store.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Imports a BCD store from a file.\n\n # Arguments\n\n* `BcdFilePath` - The file path to import the BCD store.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn BcdImportStore(BcdFilePath: PCUNICODE_STRING) -> NTSTATUS;
-   #[doc = " Imports a BCD store from a file with additional flags.\n\n @param BcdFilePath The file path to import the BCD store.\n @param BcdImportFlags The flags for importing the store.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Imports a BCD store from a file with additional flags.\n\n # Arguments\n\n* `BcdFilePath` - The file path to import the BCD store.\n * `BcdImportFlags` - The flags for importing the store.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn BcdImportStoreWithFlags(
       BcdFilePath: PCUNICODE_STRING,
       BcdImportFlags: BCD_IMPORT_FLAGS,
    ) -> NTSTATUS;
-   #[doc = " Deletes object references in the BCD store.\n\n @param BcdStoreHandle The handle to the BCD store.\n @param Identifier The identifier of the object to delete references for.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Deletes object references in the BCD store.\n\n # Arguments\n\n* `BcdStoreHandle` - The handle to the BCD store.\n * `Identifier` - The identifier of the object to delete references for.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn BcdDeleteObjectReferences(BcdStoreHandle: HANDLE, Identifier: PGUID) -> NTSTATUS;
-   #[doc = " Deletes the system store for BCD.\n\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Deletes the system store for BCD.\n\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn BcdDeleteSystemStore() -> NTSTATUS;
-   #[doc = " Opens a BCD store with additional flags.\n\n @param BcdFilePath The file path of the BCD store.\n @param BcdOpenFlags The flags for opening the store.\n @param BcdStoreHandle The handle to receive the BCD store.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Opens a BCD store with additional flags.\n\n # Arguments\n\n* `BcdFilePath` - The file path of the BCD store.\n * `BcdOpenFlags` - The flags for opening the store.\n * `BcdStoreHandle` - The handle to receive the BCD store.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn BcdOpenStore(
       BcdFilePath: PCUNICODE_STRING,
       BcdOpenFlags: BCD_OPEN_FLAGS,
       BcdStoreHandle: PHANDLE,
    ) -> NTSTATUS;
-   #[doc = " Closes a BCD store.\n\n @param BcdStoreHandle The handle to the BCD store.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Closes a BCD store.\n\n # Arguments\n\n* `BcdStoreHandle` - The handle to the BCD store.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn BcdCloseStore(BcdStoreHandle: HANDLE) -> NTSTATUS;
-   #[doc = " Flushes a BCD store.\n\n @param BcdStoreHandle The handle to the BCD store.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Flushes a BCD store.\n\n # Arguments\n\n* `BcdStoreHandle` - The handle to the BCD store.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn BcdFlushStore(BcdStoreHandle: HANDLE) -> NTSTATUS;
-   #[doc = " Forcibly unloads a BCD store.\n\n @param BcdStoreHandle The handle to the BCD store.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Forcibly unloads a BCD store.\n\n # Arguments\n\n* `BcdStoreHandle` - The handle to the BCD store.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn BcdForciblyUnloadStore(BcdStoreHandle: HANDLE) -> NTSTATUS;
    pub fn BcdMarkAsSystemStore(BcdStoreHandle: HANDLE) -> NTSTATUS;
    pub fn BcdEnumerateObjects(
@@ -75534,12 +75589,14 @@ unsafe extern "C" {
       ExtendedParameters: PMEM_EXTENDED_PARAMETER,
       ExtendedParameterCount: ULONG,
    ) -> NTSTATUS;
+   #[doc = "Frees virtual memory allocated for a process.\n\n # Arguments\n\n* `ProcessHandle` - A handle to the process whose virtual memory is to be freed.\n * `BaseAddress` - A pointer to the base address of the region of pages to be freed.\n * `RegionSize` - A pointer to a variable that specifies the size of the region of memory to be freed.\n * `FreeType` - The type of free operation. This parameter can be MEM_DECOMMIT or MEM_RELEASE.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtFreeVirtualMemory(
       ProcessHandle: HANDLE,
       BaseAddress: *mut PVOID,
       RegionSize: PSIZE_T,
       FreeType: ULONG,
    ) -> NTSTATUS;
+   #[doc = "Reads virtual memory from a process.\n\n # Arguments\n\n* `ProcessHandle` - A handle to the process whose memory is to be read.\n * `BaseAddress` - A pointer to the base address in the specified process from which to read.\n * `Buffer` - A pointer to a buffer that receives the contents from the address space of the specified process.\n * `NumberOfBytesToRead` - The number of bytes to be read from the specified process.\n * `NumberOfBytesRead` - A pointer to a variable that receives the number of bytes transferred into the specified buffer.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtReadVirtualMemory(
       ProcessHandle: HANDLE,
       BaseAddress: PVOID,
@@ -75554,6 +75611,7 @@ unsafe extern "C" {
       NumberOfBytesToRead: ULONGLONG,
       NumberOfBytesRead: PULONGLONG,
    ) -> NTSTATUS;
+   #[doc = "Reads virtual memory from a process with extended options.\n\n # Arguments\n\n* `ProcessHandle` - A handle to the process whose memory is to be read.\n * `BaseAddress` - A pointer to the base address in the specified process from which to read.\n * `Buffer` - A pointer to a buffer that receives the contents from the address space of the specified process.\n * `NumberOfBytesToRead` - The number of bytes to be read from the specified process.\n * `NumberOfBytesRead` - A pointer to a variable that receives the number of bytes transferred into the specified buffer.\n * `Flags` - Additional flags for the read operation.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtReadVirtualMemoryEx(
       ProcessHandle: HANDLE,
       BaseAddress: PVOID,
@@ -75562,6 +75620,7 @@ unsafe extern "C" {
       NumberOfBytesRead: PSIZE_T,
       Flags: ULONG,
    ) -> NTSTATUS;
+   #[doc = "Writes virtual memory to a process.\n\n # Arguments\n\n* `ProcessHandle` - A handle to the process whose memory is to be written.\n * `BaseAddress` - A pointer to the base address in the specified process to which to write.\n * `Buffer` - A pointer to the buffer that contains the data to be written to the address space of the specified process.\n * `NumberOfBytesToWrite` - The number of bytes to be written to the specified process.\n * `NumberOfBytesWritten` - A pointer to a variable that receives the number of bytes transferred into the specified buffer.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtWriteVirtualMemory(
       ProcessHandle: HANDLE,
       BaseAddress: PVOID,
@@ -75569,6 +75628,7 @@ unsafe extern "C" {
       NumberOfBytesToWrite: SIZE_T,
       NumberOfBytesWritten: PSIZE_T,
    ) -> NTSTATUS;
+   #[doc = "Writes virtual memory to a 64-bit process from a 32-bit process.\n\n # Arguments\n\n* `ProcessHandle` - A handle to the process whose memory is to be written.\n * `BaseAddress` - A pointer to the base address in the specified process to which to write.\n * `Buffer` - A pointer to the buffer that contains the data to be written to the address space of the specified process.\n * `NumberOfBytesToWrite` - The number of bytes to be written to the specified process.\n * `NumberOfBytesWritten` - A pointer to a variable that receives the number of bytes transferred into the specified buffer.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtWow64WriteVirtualMemory64(
       ProcessHandle: HANDLE,
       BaseAddress: ULONGLONG,
@@ -75576,6 +75636,7 @@ unsafe extern "C" {
       NumberOfBytesToWrite: ULONGLONG,
       NumberOfBytesWritten: PULONGLONG,
    ) -> NTSTATUS;
+   #[doc = "Changes the protection on a region of virtual memory.\n\n # Arguments\n\n* `ProcessHandle` - A handle to the process whose memory protection is to be changed.\n * `BaseAddress` - A pointer to the base address of the region of pages whose access protection attributes are to be changed.\n * `RegionSize` - A pointer to a variable that specifies the size of the region whose access protection attributes are to be changed.\n * `NewProtection` - The memory protection option. This parameter can be one of the memory protection constants.\n * `OldProtection` - A pointer to a variable that receives the previous access protection of the first page in the specified region of pages.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtProtectVirtualMemory(
       ProcessHandle: HANDLE,
       BaseAddress: *mut PVOID,
@@ -75583,6 +75644,7 @@ unsafe extern "C" {
       NewProtection: ULONG,
       OldProtection: PULONG,
    ) -> NTSTATUS;
+   #[doc = "Queries information about a region of virtual memory in a process.\n\n # Arguments\n\n* `ProcessHandle` - A handle to the process whose memory information is to be queried.\n * `BaseAddress` - A pointer to the base address of the region of pages to be queried.\n * `MemoryInformationClass` - The type of information to be queried.\n * `MemoryInformation` - A pointer to a buffer that receives the memory information.\n * `MemoryInformationLength` - The size of the buffer pointed to by the MemoryInformation parameter.\n * `ReturnLength` - A pointer to a variable that receives the number of bytes returned in the MemoryInformation buffer.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQueryVirtualMemory(
       ProcessHandle: HANDLE,
       BaseAddress: PVOID,
@@ -75591,6 +75653,7 @@ unsafe extern "C" {
       MemoryInformationLength: SIZE_T,
       ReturnLength: PSIZE_T,
    ) -> NTSTATUS;
+   #[doc = "Queries information about a region of virtual memory in a 64-bit process from a 32-bit process.\n\n # Arguments\n\n* `ProcessHandle` - A handle to the process whose memory information is to be queried.\n * `BaseAddress` - A pointer to the base address of the region of pages to be queried.\n * `MemoryInformationClass` - The type of information to be queried.\n * `MemoryInformation` - A pointer to a buffer that receives the memory information.\n * `MemoryInformationLength` - The size of the buffer pointed to by the MemoryInformation parameter.\n * `ReturnLength` - A pointer to a variable that receives the number of bytes returned in the MemoryInformation buffer.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtWow64QueryVirtualMemory64(
       ProcessHandle: HANDLE,
       BaseAddress: ULONGLONG,
@@ -75599,6 +75662,7 @@ unsafe extern "C" {
       MemoryInformationLength: ULONGLONG,
       ReturnLength: PULONGLONG,
    ) -> NTSTATUS;
+   #[doc = "Flushes the instruction cache for a specified process.\n\n # Arguments\n\n* `ProcessHandle` - A handle to the process whose instruction cache is to be flushed.\n * `BaseAddress` - A pointer to the base address of the region of memory to be flushed.\n * `RegionSize` - A pointer to a variable that specifies the size of the region to be flushed.\n * `IoStatus` - A pointer to an IO_STATUS_BLOCK structure that receives the status of the flush operation.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtFlushVirtualMemory(
       ProcessHandle: HANDLE,
       BaseAddress: *mut PVOID,
@@ -75924,7 +75988,7 @@ unsafe extern "C" {
       SymbolicLinkInformationLength: ULONG,
    ) -> NTSTATUS;
    pub fn NtQueryPortInformationProcess() -> NTSTATUS;
-   #[doc = " Creates a new process.\n\n @param ProcessHandle A pointer to a handle that receives the process object handle.\n @param DesiredAccess The access rights desired for the process object.\n @param ObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new process.\n @param ParentProcess A handle to the parent process.\n @param InheritObjectTable If TRUE, the new process inherits the object table of the parent process.\n @param SectionHandle Optional. A handle to a section object to be used for the new process.\n @param DebugPort Optional. A handle to a debug port to be used for the new process.\n @param TokenHandle Optional. A handle to an access token to be used for the new process.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Creates a new process.\n\n # Arguments\n\n* `ProcessHandle` - A pointer to a handle that receives the process object handle.\n * `DesiredAccess` - The access rights desired for the process object.\n * `ObjectAttributes` - Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new process.\n * `ParentProcess` - A handle to the parent process.\n * `InheritObjectTable` - If TRUE, the new process inherits the object table of the parent process.\n * `SectionHandle` - Optional. A handle to a section object to be used for the new process.\n * `DebugPort` - Optional. A handle to a debug port to be used for the new process.\n * `TokenHandle` - Optional. A handle to an access token to be used for the new process.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtCreateProcess(
       ProcessHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -75935,7 +75999,7 @@ unsafe extern "C" {
       DebugPort: HANDLE,
       TokenHandle: HANDLE,
    ) -> NTSTATUS;
-   #[doc = " Creates a new process with extended options.\n\n @param ProcessHandle A pointer to a handle that receives the process object handle.\n @param DesiredAccess The access rights desired for the process object.\n @param ObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new process.\n @param ParentProcess A handle to the parent process.\n @param Flags Flags that control the creation of the process. These flags are defined as PROCESS_CREATE_FLAGS_*.\n @param SectionHandle Optional. A handle to a section object to be used for the new process.\n @param DebugPort Optional. A handle to a debug port to be used for the new process.\n @param TokenHandle Optional. A handle to an access token to be used for the new process.\n @param Reserved Reserved for future use. Must be zero.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Creates a new process with extended options.\n\n # Arguments\n\n* `ProcessHandle` - A pointer to a handle that receives the process object handle.\n * `DesiredAccess` - The access rights desired for the process object.\n * `ObjectAttributes` - Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new process.\n * `ParentProcess` - A handle to the parent process.\n * `Flags` - Flags that control the creation of the process. These flags are defined as PROCESS_CREATE_FLAGS_*.\n * `SectionHandle` - Optional. A handle to a section object to be used for the new process.\n * `DebugPort` - Optional. A handle to a debug port to be used for the new process.\n * `TokenHandle` - Optional. A handle to an access token to be used for the new process.\n * `Reserved` - Reserved for future use. Must be zero.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtCreateProcessEx(
       ProcessHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -75947,21 +76011,21 @@ unsafe extern "C" {
       TokenHandle: HANDLE,
       Reserved: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Opens an existing process object.\n\n @param ProcessHandle A pointer to a handle that receives the process object handle.\n @param DesiredAccess The access rights desired for the process object.\n @param ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new process.\n @param ClientId Optional. A pointer to a CLIENT_ID structure that specifies the client ID of the process to be opened.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Opens an existing process object.\n\n # Arguments\n\n* `ProcessHandle` - A pointer to a handle that receives the process object handle.\n * `DesiredAccess` - The access rights desired for the process object.\n * `ObjectAttributes` - A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new process.\n * `ClientId` - Optional. A pointer to a CLIENT_ID structure that specifies the client ID of the process to be opened.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtOpenProcess(
       ProcessHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ClientId: PCLIENT_ID,
    ) -> NTSTATUS;
-   #[doc = " Terminates the specified process.\n\n @param ProcessHandle Optional. A handle to the process to be terminated. If this parameter is NULL, the calling process is terminated.\n @param ExitStatus The exit status to be used by the process and the process's termination status.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Terminates the specified process.\n\n # Arguments\n\n* `ProcessHandle` - Optional. A handle to the process to be terminated. If this parameter is NULL, the calling process is terminated.\n * `ExitStatus` - The exit status to be used by the process and the process's termination status.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtTerminateProcess(ProcessHandle: HANDLE, ExitStatus: NTSTATUS) -> NTSTATUS;
-   #[doc = " Suspends the specified process.\n\n @param ProcessHandle A handle to the process to be suspended.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Suspends the specified process.\n\n # Arguments\n\n* `ProcessHandle` - A handle to the process to be suspended.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSuspendProcess(ProcessHandle: HANDLE) -> NTSTATUS;
-   #[doc = " Resumes the specified process.\n\n @param ProcessHandle A handle to the process to be resumed.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Resumes the specified process.\n\n # Arguments\n\n* `ProcessHandle` - A handle to the process to be resumed.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtResumeProcess(ProcessHandle: HANDLE) -> NTSTATUS;
    pub static mut __ImageBase: IMAGE_DOS_HEADER;
-   #[doc = " Retrieves information about the specified process.\n\n @param ProcessHandle A handle to the process.\n @param ProcessInformationClass The type of process information to be retrieved.\n @param ProcessInformation A pointer to a buffer that receives the process information.\n @param ProcessInformationLength The size of the buffer pointed to by the ProcessInformation parameter.\n @param ReturnLength An optional pointer to a variable that receives the size of the data returned.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Retrieves information about the specified process.\n\n # Arguments\n\n* `ProcessHandle` - A handle to the process.\n * `ProcessInformationClass` - The type of process information to be retrieved.\n * `ProcessInformation` - A pointer to a buffer that receives the process information.\n * `ProcessInformationLength` - The size of the buffer pointed to by the ProcessInformation parameter.\n * `ReturnLength` - An optional pointer to a variable that receives the size of the data returned.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQueryInformationProcess(
       ProcessHandle: HANDLE,
       ProcessInformationClass: PROCESSINFOCLASS,
@@ -75976,7 +76040,7 @@ unsafe extern "C" {
       ProcessInformationLength: ULONG,
       ReturnLength: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Retrieves a handle to the next process in the system.\n\n @param ProcessHandle An optional handle to a process. If this parameter is NULL, the function retrieves the first process in the system.\n @param DesiredAccess The access rights desired for the new process handle.\n @param HandleAttributes The attributes for the new process handle.\n @param Flags Flags that modify the behavior of the function. This can be a combination of the following flags:\n - PROCESS_GET_NEXT_FLAGS_PREVIOUS_PROCESS (0x00000001): Retrieve the previous process in the system.\n @param NewProcessHandle A pointer to a variable that receives the handle to the next process.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Retrieves a handle to the next process in the system.\n\n # Arguments\n\n* `ProcessHandle` - An optional handle to a process. If this parameter is NULL, the function retrieves the first process in the system.\n * `DesiredAccess` - The access rights desired for the new process handle.\n * `HandleAttributes` - The attributes for the new process handle.\n * `Flags` - Flags that modify the behavior of the function. This can be a combination of the following flags:\n - PROCESS_GET_NEXT_FLAGS_PREVIOUS_PROCESS (0x00000001): Retrieve the previous process in the system.\n * `NewProcessHandle` - A pointer to a variable that receives the handle to the next process.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtGetNextProcess(
       ProcessHandle: HANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -75984,7 +76048,7 @@ unsafe extern "C" {
       Flags: ULONG,
       NewProcessHandle: PHANDLE,
    ) -> NTSTATUS;
-   #[doc = " Retrieves a handle to the next thread in the system.\n\n @param ProcessHandle A handle to the process for enumerateration of threads.\n @param ThreadHandle An optional handle to a thread. If this parameter is NULL, the function retrieves the first thread in the process.\n @param DesiredAccess The access rights desired for the new process handle.\n @param HandleAttributes The attributes for the new process handle.\n @param Flags Flags that modify the behavior of the function. This can be a combination of the following flags:\n - THREAD_GET_NEXT_FLAGS_PREVIOUS_THREAD (0x00000001): Retrieve the previous thread in the process.\n @param NewProcessHandle A pointer to a variable that receives the handle to the next process.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Retrieves a handle to the next thread in the system.\n\n # Arguments\n\n* `ProcessHandle` - A handle to the process for enumerateration of threads.\n * `ThreadHandle` - An optional handle to a thread. If this parameter is NULL, the function retrieves the first thread in the process.\n * `DesiredAccess` - The access rights desired for the new process handle.\n * `HandleAttributes` - The attributes for the new process handle.\n * `Flags` - Flags that modify the behavior of the function. This can be a combination of the following flags:\n - THREAD_GET_NEXT_FLAGS_PREVIOUS_THREAD (0x00000001): Retrieve the previous thread in the process.\n * `NewProcessHandle` - A pointer to a variable that receives the handle to the next process.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtGetNextThread(
       ProcessHandle: HANDLE,
       ThreadHandle: HANDLE,
@@ -75993,14 +76057,14 @@ unsafe extern "C" {
       Flags: ULONG,
       NewThreadHandle: PHANDLE,
    ) -> NTSTATUS;
-   #[doc = " Sets information for the specified process.\n\n @param ProcessHandle A handle to the process.\n @param ProcessInformationClass The type of process information to be set.\n @param ProcessInformation A pointer to a buffer that contains the process information.\n @param ProcessInformationLength The size of the buffer pointed to by the ProcessInformation parameter.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Sets information for the specified process.\n\n # Arguments\n\n* `ProcessHandle` - A handle to the process.\n * `ProcessInformationClass` - The type of process information to be set.\n * `ProcessInformation` - A pointer to a buffer that contains the process information.\n * `ProcessInformationLength` - The size of the buffer pointed to by the ProcessInformation parameter.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetInformationProcess(
       ProcessHandle: HANDLE,
       ProcessInformationClass: PROCESSINFOCLASS,
       ProcessInformation: PVOID,
       ProcessInformationLength: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Creates a state change handle for changing the suspension state of a process.\n\n @param ProcessStateChangeHandle A pointer to a variable that receives the handle.\n @param DesiredAccess The access rights desired for the handle.\n @param ObjectAttributes Optional attributes for the handle.\n @param ProcessHandle A handle to the process.\n @param Reserved Reserved for future use.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Creates a state change handle for changing the suspension state of a process.\n\n # Arguments\n\n* `ProcessStateChangeHandle` - A pointer to a variable that receives the handle.\n * `DesiredAccess` - The access rights desired for the handle.\n * `ObjectAttributes` - Optional attributes for the handle.\n * `ProcessHandle` - A handle to the process.\n * `Reserved` - Reserved for future use.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtCreateProcessStateChange(
       ProcessStateChangeHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -76008,7 +76072,7 @@ unsafe extern "C" {
       ProcessHandle: HANDLE,
       Reserved: ULONG64,
    ) -> NTSTATUS;
-   #[doc = " Changes the suspension state of a process.\n\n @param ProcessStateChangeHandle A handle to the process state change object.\n @param ProcessHandle A handle to the process.\n @param StateChangeType The type of state change.\n @param ExtendedInformation Optional extended information.\n @param ExtendedInformationLength The length of the extended information.\n @param Reserved Reserved for future use.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Changes the suspension state of a process.\n\n # Arguments\n\n* `ProcessStateChangeHandle` - A handle to the process state change object.\n * `ProcessHandle` - A handle to the process.\n * `StateChangeType` - The type of state change.\n * `ExtendedInformation` - Optional extended information.\n * `ExtendedInformationLength` - The length of the extended information.\n * `Reserved` - Reserved for future use.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtChangeProcessState(
       ProcessStateChangeHandle: HANDLE,
       ProcessHandle: HANDLE,
@@ -76017,7 +76081,7 @@ unsafe extern "C" {
       ExtendedInformationLength: SIZE_T,
       Reserved: ULONG64,
    ) -> NTSTATUS;
-   #[doc = " Creates a state change handle for changing the suspension state of a thread.\n\n @param ThreadStateChangeHandle A pointer to a variable that receives the handle.\n @param DesiredAccess The access rights desired for the handle.\n @param ObjectAttributes Optional attributes for the handle.\n @param ThreadHandle A handle to the thread.\n @param Reserved Reserved for future use.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Creates a state change handle for changing the suspension state of a thread.\n\n # Arguments\n\n* `ThreadStateChangeHandle` - A pointer to a variable that receives the handle.\n * `DesiredAccess` - The access rights desired for the handle.\n * `ObjectAttributes` - Optional attributes for the handle.\n * `ThreadHandle` - A handle to the thread.\n * `Reserved` - Reserved for future use.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtCreateThreadStateChange(
       ThreadStateChangeHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -76025,7 +76089,7 @@ unsafe extern "C" {
       ThreadHandle: HANDLE,
       Reserved: ULONG64,
    ) -> NTSTATUS;
-   #[doc = " Changes the suspension state of a thread.\n\n @param ThreadStateChangeHandle A handle to the thread state change object.\n @param ThreadHandle A handle to the thread.\n @param StateChangeType The type of state change.\n @param ExtendedInformation Optional extended information.\n @param ExtendedInformationLength The length of the extended information.\n @param Reserved Reserved for future use.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Changes the suspension state of a thread.\n\n # Arguments\n\n* `ThreadStateChangeHandle` - A handle to the thread state change object.\n * `ThreadHandle` - A handle to the thread.\n * `StateChangeType` - The type of state change.\n * `ExtendedInformation` - Optional extended information.\n * `ExtendedInformationLength` - The length of the extended information.\n * `Reserved` - Reserved for future use.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtChangeThreadState(
       ThreadStateChangeHandle: HANDLE,
       ThreadHandle: HANDLE,
@@ -76034,7 +76098,7 @@ unsafe extern "C" {
       ExtendedInformationLength: SIZE_T,
       Reserved: ULONG64,
    ) -> NTSTATUS;
-   #[doc = " Creates a new thread in the specified process.\n\n @param ThreadHandle A pointer to a handle that receives the thread object handle.\n @param DesiredAccess The access rights desired for the thread object.\n @param ObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n @param ProcessHandle A handle to the process in which the thread is to be created.\n @param ClientId A pointer to a CLIENT_ID structure that receives the client ID of the new thread.\n @param ThreadContext A pointer to a CONTEXT structure that specifies the initial context of the new thread.\n @param InitialTeb A pointer to an INITIAL_TEB structure that specifies the initial stack limits of the new thread.\n @param CreateSuspended If TRUE, the thread is created in a suspended state.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Creates a new thread in the specified process.\n\n # Arguments\n\n* `ThreadHandle` - A pointer to a handle that receives the thread object handle.\n * `DesiredAccess` - The access rights desired for the thread object.\n * `ObjectAttributes` - Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n * `ProcessHandle` - A handle to the process in which the thread is to be created.\n * `ClientId` - A pointer to a CLIENT_ID structure that receives the client ID of the new thread.\n * `ThreadContext` - A pointer to a CONTEXT structure that specifies the initial context of the new thread.\n * `InitialTeb` - A pointer to an INITIAL_TEB structure that specifies the initial stack limits of the new thread.\n * `CreateSuspended` - If TRUE, the thread is created in a suspended state.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtCreateThread(
       ThreadHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -76045,28 +76109,28 @@ unsafe extern "C" {
       InitialTeb: PINITIAL_TEB,
       CreateSuspended: BOOLEAN,
    ) -> NTSTATUS;
-   #[doc = " Opens an existing thread object.\n\n @param ThreadHandle A pointer to a handle that receives the thread object handle.\n @param DesiredAccess The access rights desired for the thread object.\n @param ObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n @param ClientId Optional. A pointer to a CLIENT_ID structure that specifies the client ID of the thread to be opened.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Opens an existing thread object.\n\n # Arguments\n\n* `ThreadHandle` - A pointer to a handle that receives the thread object handle.\n * `DesiredAccess` - The access rights desired for the thread object.\n * `ObjectAttributes` - Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n * `ClientId` - Optional. A pointer to a CLIENT_ID structure that specifies the client ID of the thread to be opened.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtOpenThread(
       ThreadHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: PCOBJECT_ATTRIBUTES,
       ClientId: PCLIENT_ID,
    ) -> NTSTATUS;
-   #[doc = " Terminates the specified thread.\n\n @param ThreadHandle Optional. A handle to the thread to be terminated. If this parameter is NULL, the calling thread is terminated.\n @param ExitStatus The exit status to be used by the thread and the thread's termination status.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Terminates the specified thread.\n\n # Arguments\n\n* `ThreadHandle` - Optional. A handle to the thread to be terminated. If this parameter is NULL, the calling thread is terminated.\n * `ExitStatus` - The exit status to be used by the thread and the thread's termination status.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtTerminateThread(ThreadHandle: HANDLE, ExitStatus: NTSTATUS) -> NTSTATUS;
-   #[doc = " Suspends the specified thread.\n\n @param ThreadHandle A handle to the thread to be suspended.\n @param PreviousSuspendCount Optional. A pointer to a variable that receives the thread's previous suspend count.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Suspends the specified thread.\n\n # Arguments\n\n* `ThreadHandle` - A handle to the thread to be suspended.\n * `PreviousSuspendCount` - Optional. A pointer to a variable that receives the thread's previous suspend count.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSuspendThread(ThreadHandle: HANDLE, PreviousSuspendCount: PULONG) -> NTSTATUS;
-   #[doc = " Resumes the specified thread.\n\n @param ThreadHandle A handle to the thread to be resumed.\n @param PreviousSuspendCount Optional. A pointer to a variable that receives the thread's previous suspend count.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Resumes the specified thread.\n\n # Arguments\n\n* `ThreadHandle` - A handle to the thread to be resumed.\n * `PreviousSuspendCount` - Optional. A pointer to a variable that receives the thread's previous suspend count.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtResumeThread(ThreadHandle: HANDLE, PreviousSuspendCount: PULONG) -> NTSTATUS;
-   #[doc = " Retrieves the number of the current processor.\n\n @return ULONG The number of the current processor."]
+   #[doc = "Retrieves the number of the current processor.\n\n # Returns\n\nULONG The number of the current processor."]
    pub fn NtGetCurrentProcessorNumber() -> ULONG;
-   #[doc = " Retrieves the number of the current processor.\n\n @param ProcessorNumber An optional pointer to a PROCESSOR_NUMBER structure that receives the processor number.\n @return ULONG The number of the current processor."]
+   #[doc = "Retrieves the number of the current processor.\n\n # Arguments\n\n* `ProcessorNumber` - An optional pointer to a PROCESSOR_NUMBER structure that receives the processor number.\n # Returns\n\nULONG The number of the current processor."]
    pub fn NtGetCurrentProcessorNumberEx(ProcessorNumber: PPROCESSOR_NUMBER) -> ULONG;
-   #[doc = " Retrieves the context of the specified thread.\n\n @param ThreadHandle A handle to the thread.\n @param ThreadContext A pointer to a CONTEXT structure that receives the thread context.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Retrieves the context of the specified thread.\n\n # Arguments\n\n* `ThreadHandle` - A handle to the thread.\n * `ThreadContext` - A pointer to a CONTEXT structure that receives the thread context.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtGetContextThread(ThreadHandle: HANDLE, ThreadContext: PCONTEXT) -> NTSTATUS;
-   #[doc = " Sets the context of the specified thread.\n\n @param ThreadHandle A handle to the thread.\n @param ThreadContext A pointer to a CONTEXT structure that specifies the thread context.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Sets the context of the specified thread.\n\n # Arguments\n\n* `ThreadHandle` - A handle to the thread.\n * `ThreadContext` - A pointer to a CONTEXT structure that specifies the thread context.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetContextThread(ThreadHandle: HANDLE, ThreadContext: PCONTEXT) -> NTSTATUS;
-   #[doc = " Retrieves information about the specified thread.\n\n @param ThreadHandle A handle to the thread.\n @param ThreadInformationClass The type of thread information to be retrieved.\n @param ThreadInformation A pointer to a buffer that receives the thread information.\n @param ThreadInformationLength The size of the buffer pointed to by the ThreadInformation parameter.\n @param ReturnLength An optional pointer to a variable that receives the size of the data returned.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Retrieves information about the specified thread.\n\n # Arguments\n\n* `ThreadHandle` - A handle to the thread.\n * `ThreadInformationClass` - The type of thread information to be retrieved.\n * `ThreadInformation` - A pointer to a buffer that receives the thread information.\n * `ThreadInformationLength` - The size of the buffer pointed to by the ThreadInformation parameter.\n * `ReturnLength` - An optional pointer to a variable that receives the size of the data returned.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQueryInformationThread(
       ThreadHandle: HANDLE,
       ThreadInformationClass: THREADINFOCLASS,
@@ -76074,20 +76138,20 @@ unsafe extern "C" {
       ThreadInformationLength: ULONG,
       ReturnLength: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Sets information for the specified thread.\n\n @param ThreadHandle A handle to the thread.\n @param ThreadInformationClass The type of thread information to be set.\n @param ThreadInformation A pointer to a buffer that contains the thread information.\n @param ThreadInformationLength The size of the buffer pointed to by the ThreadInformation parameter.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Sets information for the specified thread.\n\n # Arguments\n\n* `ThreadHandle` - A handle to the thread.\n * `ThreadInformationClass` - The type of thread information to be set.\n * `ThreadInformation` - A pointer to a buffer that contains the thread information.\n * `ThreadInformationLength` - The size of the buffer pointed to by the ThreadInformation parameter.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetInformationThread(
       ThreadHandle: HANDLE,
       ThreadInformationClass: THREADINFOCLASS,
       ThreadInformation: PVOID,
       ThreadInformationLength: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Sends an alert to the specified thread.\n\n @param ThreadHandle A handle to the thread to be alerted.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Sends an alert to the specified thread.\n\n # Arguments\n\n* `ThreadHandle` - A handle to the thread to be alerted.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtAlertThread(ThreadHandle: HANDLE) -> NTSTATUS;
-   #[doc = " Resumes a thread that was previously suspended and sends an alert to it.\n\n @param ThreadHandle A handle to the thread to be resumed and alerted.\n @param PreviousSuspendCount An optional pointer to a variable that receives the thread's previous suspend count.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Resumes a thread that was previously suspended and sends an alert to it.\n\n # Arguments\n\n* `ThreadHandle` - A handle to the thread to be resumed and alerted.\n * `PreviousSuspendCount` - An optional pointer to a variable that receives the thread's previous suspend count.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtAlertResumeThread(ThreadHandle: HANDLE, PreviousSuspendCount: PULONG) -> NTSTATUS;
-   #[doc = " Tests whether the current thread has an alert pending.\n\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Tests whether the current thread has an alert pending.\n\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtTestAlert() -> NTSTATUS;
-   #[doc = " Sends an alert to the specified thread.\n\n @param ThreadId The thread ID of the thread to be alerted.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Sends an alert to the specified thread.\n\n # Arguments\n\n* `ThreadId` - The thread ID of the thread to be alerted.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtAlertThreadByThreadId(ThreadId: HANDLE) -> NTSTATUS;
    pub fn NtAlertThreadByThreadIdEx(ThreadId: HANDLE, Lock: PRTL_SRWLOCK) -> NTSTATUS;
    pub fn NtAlertMultipleThreadByThreadId(
@@ -76096,17 +76160,17 @@ unsafe extern "C" {
       Boost: PVOID,
       BoostCount: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Waits for an alert to be delivered to the specified thread.\n\n @param Address The address to wait for an alert on.\n @param Timeout The timeout value for waiting, or NULL for no timeout.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Waits for an alert to be delivered to the specified thread.\n\n # Arguments\n\n* `Address` - The address to wait for an alert on.\n * `Timeout` - The timeout value for waiting, or NULL for no timeout.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtWaitForAlertByThreadId(Address: PVOID, Timeout: PLARGE_INTEGER) -> NTSTATUS;
-   #[doc = " Impersonates a client thread.\n\n @param ServerThreadHandle A handle to the server thread.\n @param ClientThreadHandle A handle to the client thread.\n @param SecurityQos A pointer to a SECURITY_QUALITY_OF_SERVICE structure that specifies the impersonation level and context tracking mode.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Impersonates a client thread.\n\n # Arguments\n\n* `ServerThreadHandle` - A handle to the server thread.\n * `ClientThreadHandle` - A handle to the client thread.\n * `SecurityQos` - A pointer to a SECURITY_QUALITY_OF_SERVICE structure that specifies the impersonation level and context tracking mode.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtImpersonateThread(
       ServerThreadHandle: HANDLE,
       ClientThreadHandle: HANDLE,
       SecurityQos: PSECURITY_QUALITY_OF_SERVICE,
    ) -> NTSTATUS;
-   #[doc = " Registers a thread termination port.\n\n @param PortHandle A handle to the port to be registered.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Registers a thread termination port.\n\n # Arguments\n\n* `PortHandle` - A handle to the port to be registered.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtRegisterThreadTerminatePort(PortHandle: HANDLE) -> NTSTATUS;
-   #[doc = " Sets LDT (Local Descriptor Table) entries.\n\n @param Selector0 The first selector.\n @param Entry0Low The low part of the first entry.\n @param Entry0Hi The high part of the first entry.\n @param Selector1 The second selector.\n @param Entry1Low The low part of the second entry.\n @param Entry1Hi The high part of the second entry.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Sets LDT (Local Descriptor Table) entries.\n\n # Arguments\n\n* `Selector0` - The first selector.\n * `Entry0Low` - The low part of the first entry.\n * `Entry0Hi` - The high part of the first entry.\n * `Selector1` - The second selector.\n * `Entry1Low` - The low part of the second entry.\n * `Entry1Hi` - The high part of the second entry.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetLdtEntries(
       Selector0: ULONG,
       Entry0Low: ULONG,
@@ -76115,9 +76179,9 @@ unsafe extern "C" {
       Entry1Low: ULONG,
       Entry1Hi: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Dispatches the Asynchronous Procedure Call (APC) from the NtQueueApc* functions to the specified routine.\n\n @param ApcRoutine A pointer to the APC routine to be executed.\n @param Parameter Optional. A pointer to a parameter to be passed to the APC routine.\n @param ActxContext Optional. A handle to an activation context."]
+   #[doc = "Dispatches the Asynchronous Procedure Call (APC) from the NtQueueApc* functions to the specified routine.\n\n # Arguments\n\n* `ApcRoutine` - A pointer to the APC routine to be executed.\n * `Parameter` - Optional. A pointer to a parameter to be passed to the APC routine.\n * `ActxContext` - Optional. A handle to an activation context."]
    pub fn RtlDispatchAPC(ApcRoutine: PAPCFUNC, Parameter: PVOID, ActxContext: HANDLE);
-   #[doc = " Queues an APC (Asynchronous Procedure Call) to a thread.\n\n @param ThreadHandle Handle to the thread to which the APC is to be queued.\n @param ApcRoutine A pointer to the RtlDispatchAPC function or custom APC routine to be executed.\n @param ApcArgument1 Optional first argument to be passed to the APC routine.\n @param ApcArgument2 Optional second argument to be passed to the APC routine.\n @param ApcArgument3 Optional third argument to be passed to the APC routine.\n @return NTSTATUS Successful or errant status.\n @remarks The APC will be executed in the context of the specified thread when the thread enters an alertable wait state or when any\n process calls the NtTestAlert, NtAlertThread, NtAlertResumeThread or NtAlertThreadByThreadId functions."]
+   #[doc = "Queues an APC (Asynchronous Procedure Call) to a thread.\n\n # Arguments\n\n* `ThreadHandle` - Handle to the thread to which the APC is to be queued.\n * `ApcRoutine` - A pointer to the RtlDispatchAPC function or custom APC routine to be executed.\n * `ApcArgument1` - Optional first argument to be passed to the APC routine.\n * `ApcArgument2` - Optional second argument to be passed to the APC routine.\n * `ApcArgument3` - Optional third argument to be passed to the APC routine.\n # Returns\n\nNTSTATUS Successful or errant status.\n > The APC will be executed in the context of the specified thread when the thread enters an alertable wait state or when any\n process calls the NtTestAlert, NtAlertThread, NtAlertResumeThread or NtAlertThreadByThreadId functions."]
    pub fn NtQueueApcThread(
       ThreadHandle: HANDLE,
       ApcRoutine: PPS_APC_ROUTINE,
@@ -76125,7 +76189,7 @@ unsafe extern "C" {
       ApcArgument2: PVOID,
       ApcArgument3: PVOID,
    ) -> NTSTATUS;
-   #[doc = " Queues an APC (Asynchronous Procedure Call) to a thread.\n\n @param ThreadHandle Handle to the thread to which the APC is to be queued.\n @param ReserveHandle Optional handle to a reserve object. This can be QUEUE_USER_APC_SPECIAL_USER_APC or a handle returned by NtAllocateReserveObject.\n @param ApcRoutine A pointer to the RtlDispatchAPC function or custom APC routine to be executed.\n @param ApcArgument1 Optional first argument to be passed to the APC routine.\n @param ApcArgument2 Optional second argument to be passed to the APC routine.\n @param ApcArgument3 Optional third argument to be passed to the APC routine.\n @return NTSTATUS Successful or errant status.\n @remarks The APC will be executed in the context of the specified thread after the thread enters an alertable wait state or immediately\n when QUEUE_USER_APC_SPECIAL_USER_APC is used or NtTestAlert, NtAlertThread, NtAlertResumeThread or NtAlertThreadByThreadId are called."]
+   #[doc = "Queues an APC (Asynchronous Procedure Call) to a thread.\n\n # Arguments\n\n* `ThreadHandle` - Handle to the thread to which the APC is to be queued.\n * `ReserveHandle` - Optional handle to a reserve object. This can be QUEUE_USER_APC_SPECIAL_USER_APC or a handle returned by NtAllocateReserveObject.\n * `ApcRoutine` - A pointer to the RtlDispatchAPC function or custom APC routine to be executed.\n * `ApcArgument1` - Optional first argument to be passed to the APC routine.\n * `ApcArgument2` - Optional second argument to be passed to the APC routine.\n * `ApcArgument3` - Optional third argument to be passed to the APC routine.\n # Returns\n\nNTSTATUS Successful or errant status.\n > The APC will be executed in the context of the specified thread after the thread enters an alertable wait state or immediately\n when QUEUE_USER_APC_SPECIAL_USER_APC is used or NtTestAlert, NtAlertThread, NtAlertResumeThread or NtAlertThreadByThreadId are called."]
    pub fn NtQueueApcThreadEx(
       ThreadHandle: HANDLE,
       ReserveHandle: HANDLE,
@@ -76134,7 +76198,7 @@ unsafe extern "C" {
       ApcArgument2: PVOID,
       ApcArgument3: PVOID,
    ) -> NTSTATUS;
-   #[doc = " Queues an Asynchronous Procedure Call (APC) to a specified thread.\n\n @param ThreadHandle A handle to the thread to which the APC is to be queued.\n @param ReserveHandle An optional handle to a reserve object. This can be obtained using NtAllocateReserveObject.\n @param ApcFlags Flags that control the behavior of the APC. These flags are defined in QUEUE_USER_APC_FLAGS.\n @param ApcRoutine A pointer to the RtlDispatchAPC function or custom APC routine to be executed.\n @param ApcArgument1 An optional argument to be passed to the APC routine.\n @param ApcArgument2 An optional argument to be passed to the APC routine.\n @param ApcArgument3 An optional argument to be passed to the APC routine.\n @return NTSTATUS Successful or errant status.\n @remarks The APC will be executed in the context of the specified thread when the thread enters an alertable wait state or immediately\n when QUEUE_USER_APC_SPECIAL_USER_APC is used or any process calls the NtTestAlert, NtAlertThread,\n NtAlertResumeThread or NtAlertThreadByThreadId functions."]
+   #[doc = "Queues an Asynchronous Procedure Call (APC) to a specified thread.\n\n # Arguments\n\n* `ThreadHandle` - A handle to the thread to which the APC is to be queued.\n * `ReserveHandle` - An optional handle to a reserve object. This can be obtained using NtAllocateReserveObject.\n * `ApcFlags` - Flags that control the behavior of the APC. These flags are defined in QUEUE_USER_APC_FLAGS.\n * `ApcRoutine` - A pointer to the RtlDispatchAPC function or custom APC routine to be executed.\n * `ApcArgument1` - An optional argument to be passed to the APC routine.\n * `ApcArgument2` - An optional argument to be passed to the APC routine.\n * `ApcArgument3` - An optional argument to be passed to the APC routine.\n # Returns\n\nNTSTATUS Successful or errant status.\n > The APC will be executed in the context of the specified thread when the thread enters an alertable wait state or immediately\n when QUEUE_USER_APC_SPECIAL_USER_APC is used or any process calls the NtTestAlert, NtAlertThread,\n NtAlertResumeThread or NtAlertThreadByThreadId functions."]
    pub fn NtQueueApcThreadEx2(
       ThreadHandle: HANDLE,
       ReserveHandle: HANDLE,
@@ -76144,7 +76208,7 @@ unsafe extern "C" {
       ApcArgument2: PVOID,
       ApcArgument3: PVOID,
    ) -> NTSTATUS;
-   #[doc = " Creates a new process and primary thread.\n\n @param ProcessHandle A pointer to a handle that receives the process object handle.\n @param ThreadHandle A pointer to a handle that receives the thread object handle.\n @param ProcessDesiredAccess The access rights desired for the process object.\n @param ThreadDesiredAccess The access rights desired for the thread object.\n @param ProcessObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new process.\n @param ThreadObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n @param ProcessFlags Flags that control the creation of the process. These flags are defined as PROCESS_CREATE_FLAGS_*.\n @param ThreadFlags Flags that control the creation of the thread. These flags are defined as THREAD_CREATE_FLAGS_*.\n @param ProcessParameters Optional. A pointer to a RTL_USER_PROCESS_PARAMETERS structure that specifies the parameters for the new process.\n @param CreateInfo A pointer to a PS_CREATE_INFO structure that specifies additional information for the process creation.\n @param AttributeList Optional. A pointer to a list of attributes for the process and thread.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Creates a new process and primary thread.\n\n # Arguments\n\n* `ProcessHandle` - A pointer to a handle that receives the process object handle.\n * `ThreadHandle` - A pointer to a handle that receives the thread object handle.\n * `ProcessDesiredAccess` - The access rights desired for the process object.\n * `ThreadDesiredAccess` - The access rights desired for the thread object.\n * `ProcessObjectAttributes` - Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new process.\n * `ThreadObjectAttributes` - Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n * `ProcessFlags` - Flags that control the creation of the process. These flags are defined as PROCESS_CREATE_FLAGS_*.\n * `ThreadFlags` - Flags that control the creation of the thread. These flags are defined as THREAD_CREATE_FLAGS_*.\n * `ProcessParameters` - Optional. A pointer to a RTL_USER_PROCESS_PARAMETERS structure that specifies the parameters for the new process.\n * `CreateInfo` - A pointer to a PS_CREATE_INFO structure that specifies additional information for the process creation.\n * `AttributeList` - Optional. A pointer to a list of attributes for the process and thread.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtCreateUserProcess(
       ProcessHandle: PHANDLE,
       ThreadHandle: PHANDLE,
@@ -76158,7 +76222,7 @@ unsafe extern "C" {
       CreateInfo: PPS_CREATE_INFO,
       AttributeList: PPS_ATTRIBUTE_LIST,
    ) -> NTSTATUS;
-   #[doc = " Creates a new thread in the specified process.\n\n @param ThreadHandle A pointer to a handle that receives the thread object handle.\n @param DesiredAccess The access rights desired for the thread object.\n @param ObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n @param ProcessHandle A handle to the process in which the thread is to be created.\n @param StartRoutine A pointer to the application-defined function to be executed by the thread.\n @param Argument Optional. A pointer to a variable to be passed to the thread.\n @param CreateFlags Flags that control the creation of the thread. These flags are defined as THREAD_CREATE_FLAGS_*.\n @param ZeroBits The number of zero bits in the starting address of the thread's stack.\n @param StackSize The initial size of the thread's stack, in bytes.\n @param MaximumStackSize The maximum size of the thread's stack, in bytes.\n @param AttributeList Optional. A pointer to a list of attributes for the thread.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Creates a new thread in the specified process.\n\n # Arguments\n\n* `ThreadHandle` - A pointer to a handle that receives the thread object handle.\n * `DesiredAccess` - The access rights desired for the thread object.\n * `ObjectAttributes` - Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n * `ProcessHandle` - A handle to the process in which the thread is to be created.\n * `StartRoutine` - A pointer to the application-defined function to be executed by the thread.\n * `Argument` - Optional. A pointer to a variable to be passed to the thread.\n * `CreateFlags` - Flags that control the creation of the thread. These flags are defined as THREAD_CREATE_FLAGS_*.\n * `ZeroBits` - The number of zero bits in the starting address of the thread's stack.\n * `StackSize` - The initial size of the thread's stack, in bytes.\n * `MaximumStackSize` - The maximum size of the thread's stack, in bytes.\n * `AttributeList` - Optional. A pointer to a list of attributes for the thread.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtCreateThreadEx(
       ThreadHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -76172,25 +76236,25 @@ unsafe extern "C" {
       MaximumStackSize: SIZE_T,
       AttributeList: PPS_ATTRIBUTE_LIST,
    ) -> NTSTATUS;
-   #[doc = " Creates or opens a job object.\n\n @param JobHandle A handle to the job object.\n @param DesiredAccess The access rights desired for the thread object.\n @param ObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Creates or opens a job object.\n\n # Arguments\n\n* `JobHandle` - A handle to the job object.\n * `DesiredAccess` - The access rights desired for the thread object.\n * `ObjectAttributes` - Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtCreateJobObject(
       JobHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
-   #[doc = " Opens an existing job object.\n\n @param JobHandle A handle to the job object.\n @param DesiredAccess The access rights desired for the thread object.\n @param ObjectAttributes Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Opens an existing job object.\n\n # Arguments\n\n* `JobHandle` - A handle to the job object.\n * `DesiredAccess` - The access rights desired for the thread object.\n * `ObjectAttributes` - Optional. A pointer to an OBJECT_ATTRIBUTES structure that specifies the attributes of the new thread.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtOpenJobObject(
       JobHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
-   #[doc = " Assigns a process to an existing job object.\n\n @param JobHandle A handle to the job object to which the process will be associated. The handle must have the JOB_OBJECT_ASSIGN_PROCESS access right.\n @param ProcessHandle A handle to the process to associate with the job object. The handle must have the PROCESS_SET_QUOTA and PROCESS_TERMINATE access rights.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Assigns a process to an existing job object.\n\n # Arguments\n\n* `JobHandle` - A handle to the job object to which the process will be associated. The handle must have the JOB_OBJECT_ASSIGN_PROCESS access right.\n * `ProcessHandle` - A handle to the process to associate with the job object. The handle must have the PROCESS_SET_QUOTA and PROCESS_TERMINATE access rights.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtAssignProcessToJobObject(JobHandle: HANDLE, ProcessHandle: HANDLE) -> NTSTATUS;
-   #[doc = " Terminates all processes associated with the job object. If the job is nested, all processes currently associated with the job and all child jobs in the hierarchy are terminated.\n\n @param JobHandle A handle to the job whose processes will be terminated. The handle must have the JOB_OBJECT_TERMINATE access right.\n @param ExitStatus The exit status to be used by all processes and threads in the job object.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Terminates all processes associated with the job object. If the job is nested, all processes currently associated with the job and all child jobs in the hierarchy are terminated.\n\n # Arguments\n\n* `JobHandle` - A handle to the job whose processes will be terminated. The handle must have the JOB_OBJECT_TERMINATE access right.\n * `ExitStatus` - The exit status to be used by all processes and threads in the job object.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtTerminateJobObject(JobHandle: HANDLE, ExitStatus: NTSTATUS) -> NTSTATUS;
-   #[doc = " Checks if a process is associated with a job object.\n\n @param ProcessHandle A handle to the process to be checked.\n @param JobHandle An optional handle to the job object. If this parameter is NULL, the function checks if the process is associated with any job object.\n @return NTSTATUS Successful or errant status.\n @remarks This function can be used to determine if a process is running within a job object, which can be useful for managing process resources and constraints."]
+   #[doc = "Checks if a process is associated with a job object.\n\n # Arguments\n\n* `ProcessHandle` - A handle to the process to be checked.\n * `JobHandle` - An optional handle to the job object. If this parameter is NULL, the function checks if the process is associated with any job object.\n # Returns\n\nNTSTATUS Successful or errant status.\n > This function can be used to determine if a process is running within a job object, which can be useful for managing process resources and constraints."]
    pub fn NtIsProcessInJob(ProcessHandle: HANDLE, JobHandle: HANDLE) -> NTSTATUS;
-   #[doc = " Retrieves information about a job object.\n\n @param JobHandle An optional handle to the job object. If this parameter is NULL, the function retrieves information about the job object associated with the calling process.\n @param JobObjectInformationClass The type of job object information to be retrieved.\n @param JobObjectInformation A pointer to a buffer that receives the job object information.\n @param JobObjectInformationLength The size of the buffer pointed to by the JobObjectInformation parameter.\n @param ReturnLength An optional pointer to a variable that receives the size of the data returned.\n @return NTSTATUS Successful or errant status.\n @remarks This function can be used to query various types of information about a job object, such as accounting information, limit information, and process ID list."]
+   #[doc = "Retrieves information about a job object.\n\n # Arguments\n\n* `JobHandle` - An optional handle to the job object. If this parameter is NULL, the function retrieves information about the job object associated with the calling process.\n * `JobObjectInformationClass` - The type of job object information to be retrieved.\n * `JobObjectInformation` - A pointer to a buffer that receives the job object information.\n * `JobObjectInformationLength` - The size of the buffer pointed to by the JobObjectInformation parameter.\n * `ReturnLength` - An optional pointer to a variable that receives the size of the data returned.\n # Returns\n\nNTSTATUS Successful or errant status.\n > This function can be used to query various types of information about a job object, such as accounting information, limit information, and process ID list."]
    pub fn NtQueryInformationJobObject(
       JobHandle: HANDLE,
       JobObjectInformationClass: JOBOBJECTINFOCLASS,
@@ -76198,30 +76262,30 @@ unsafe extern "C" {
       JobObjectInformationLength: ULONG,
       ReturnLength: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Sets information for a job object.\n\n @param JobHandle A handle to the job object.\n @param JobObjectInformationClass The type of job object information to be set.\n @param JobObjectInformation A pointer to a buffer that contains the job object information.\n @param JobObjectInformationLength The size of the buffer pointed to by the JobObjectInformation parameter.\n @return NTSTATUS Successful or errant status.\n @remarks This function can be used to set various types of information for a job object, such as limit information, UI restrictions, and security limit information."]
+   #[doc = "Sets information for a job object.\n\n # Arguments\n\n* `JobHandle` - A handle to the job object.\n * `JobObjectInformationClass` - The type of job object information to be set.\n * `JobObjectInformation` - A pointer to a buffer that contains the job object information.\n * `JobObjectInformationLength` - The size of the buffer pointed to by the JobObjectInformation parameter.\n # Returns\n\nNTSTATUS Successful or errant status.\n > This function can be used to set various types of information for a job object, such as limit information, UI restrictions, and security limit information."]
    pub fn NtSetInformationJobObject(
       JobHandle: HANDLE,
       JobObjectInformationClass: JOBOBJECTINFOCLASS,
       JobObjectInformation: PVOID,
       JobObjectInformationLength: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Creates a set of job objects.\n\n @param NumJob The number of job objects in the set.\n @param UserJobSet A pointer to an array of JOB_SET_ARRAY structures that specify the job objects in the set.\n @param Flags Reserved for future use. Must be zero.\n @return NTSTATUS Successful or errant status.\n @remarks This function can be used to create a set of job objects, which can be useful for managing groups of related processes."]
+   #[doc = "Creates a set of job objects.\n\n # Arguments\n\n* `NumJob` - The number of job objects in the set.\n * `UserJobSet` - A pointer to an array of JOB_SET_ARRAY structures that specify the job objects in the set.\n * `Flags` - Reserved for future use. Must be zero.\n # Returns\n\nNTSTATUS Successful or errant status.\n > This function can be used to create a set of job objects, which can be useful for managing groups of related processes."]
    pub fn NtCreateJobSet(NumJob: ULONG, UserJobSet: PJOB_SET_ARRAY, Flags: ULONG) -> NTSTATUS;
    pub fn NtRevertContainerImpersonation() -> NTSTATUS;
-   #[doc = " Allocates a memory reserve object.\n\n @param MemoryReserveHandle Pointer to a variable that receives the memory reserve object handle.\n @param ObjectAttributes Pointer to an object attributes structure.\n @param Type The type of memory reserve.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Allocates a memory reserve object.\n\n # Arguments\n\n* `MemoryReserveHandle` - Pointer to a variable that receives the memory reserve object handle.\n * `ObjectAttributes` - Pointer to an object attributes structure.\n * `Type` - The type of memory reserve.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtAllocateReserveObject(
       MemoryReserveHandle: PHANDLE,
       ObjectAttributes: PCOBJECT_ATTRIBUTES,
       Type: MEMORY_RESERVE_TYPE,
    ) -> NTSTATUS;
-   #[doc = " Captures a snapshot of the specified process.\n\n @param SnapshotHandle Pointer to a variable that receives the snapshot handle.\n @param ProcessHandle Handle to the process.\n @param CaptureFlags Flags indicating what to capture.\n @param ThreadContextFlags Optional flags for capturing thread context.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Captures a snapshot of the specified process.\n\n # Arguments\n\n* `SnapshotHandle` - Pointer to a variable that receives the snapshot handle.\n * `ProcessHandle` - Handle to the process.\n * `CaptureFlags` - Flags indicating what to capture.\n * `ThreadContextFlags` - Optional flags for capturing thread context.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn PssNtCaptureSnapshot(
       SnapshotHandle: PHANDLE,
       ProcessHandle: HANDLE,
       CaptureFlags: PSSNT_CAPTURE_FLAGS,
       ThreadContextFlags: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Duplicates a process snapshot from one process to another.\n\n @param SourceProcessHandle Handle to the source process.\n @param SnapshotHandle Handle to the snapshot to duplicate.\n @param TargetProcessHandle Handle to the target process.\n @param TargetSnapshotHandle Pointer to a variable that receives the duplicated snapshot handle.\n @param Flags Optional flags for duplication.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Duplicates a process snapshot from one process to another.\n\n # Arguments\n\n* `SourceProcessHandle` - Handle to the source process.\n * `SnapshotHandle` - Handle to the snapshot to duplicate.\n * `TargetProcessHandle` - Handle to the target process.\n * `TargetSnapshotHandle` - Pointer to a variable that receives the duplicated snapshot handle.\n * `Flags` - Optional flags for duplication.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn PssNtDuplicateSnapshot(
       SourceProcessHandle: HANDLE,
       SnapshotHandle: HANDLE,
@@ -76229,18 +76293,18 @@ unsafe extern "C" {
       TargetSnapshotHandle: PHANDLE,
       Flags: PSSNT_DUPLICATE_FLAGS,
    ) -> NTSTATUS;
-   #[doc = " Frees a remote process snapshot.\n\n @param ProcessHandle A handle to the process that contains the snapshot. The handle must have PROCESS_VM_READ, PROCESS_VM_OPERATION, and PROCESS_DUP_HANDLE rights.\n @param SnapshotHandle Handle to the snapshot to free.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Frees a remote process snapshot.\n\n # Arguments\n\n* `ProcessHandle` - A handle to the process that contains the snapshot. The handle must have PROCESS_VM_READ, PROCESS_VM_OPERATION, and PROCESS_DUP_HANDLE rights.\n * `SnapshotHandle` - Handle to the snapshot to free.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn PssNtFreeSnapshot(SnapshotHandle: HANDLE) -> NTSTATUS;
-   #[doc = " Frees a snapshot.\n\n @param SnapshotHandle Handle to the snapshot to free.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Frees a snapshot.\n\n # Arguments\n\n* `SnapshotHandle` - Handle to the snapshot to free.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn PssNtFreeRemoteSnapshot(ProcessHandle: HANDLE, SnapshotHandle: HANDLE) -> NTSTATUS;
-   #[doc = " Queries information from a the specified snapshot.\n\n @param SnapshotHandle Handle to the snapshot.\n @param InformationClass The information class to query.\n @param Buffer Pointer to a buffer that receives the queried information.\n @param BufferLength Length of the buffer.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Queries information from a the specified snapshot.\n\n # Arguments\n\n* `SnapshotHandle` - Handle to the snapshot.\n * `InformationClass` - The information class to query.\n * `Buffer` - Pointer to a buffer that receives the queried information.\n * `BufferLength` - Length of the buffer.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn PssNtQuerySnapshot(
       SnapshotHandle: HANDLE,
       InformationClass: PSSNT_QUERY_INFORMATION_CLASS,
       Buffer: PVOID,
       BufferLength: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Captures virtual address space bulk information for a process.\n\n @param ProcessHandle Handle to the process.\n @param BaseAddress Optional base address to start the capture.\n @param BulkInformation Pointer to the memory bulk information structure.\n @param BulkInformationLength Length of the memory bulk information structure.\n @param ReturnLength Optional pointer to a variable that receives the length of the captured information.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Captures virtual address space bulk information for a process.\n\n # Arguments\n\n* `ProcessHandle` - Handle to the process.\n * `BaseAddress` - Optional base address to start the capture.\n * `BulkInformation` - Pointer to the memory bulk information structure.\n * `BulkInformationLength` - Length of the memory bulk information structure.\n * `ReturnLength` - Optional pointer to a variable that receives the length of the captured information.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtPssCaptureVaSpaceBulk(
       ProcessHandle: HANDLE,
       BaseAddress: PVOID,
@@ -76596,9 +76660,9 @@ unsafe extern "C" {
       WatchTree: BOOLEAN,
       DirectoryNotifyInformationClass: DIRECTORY_NOTIFY_INFORMATION_CLASS,
    ) -> NTSTATUS;
-   #[doc = " \\brief The NtLoadDriver function loads a driver specified by the DriverServiceName parameter.\n \\param DriverServiceName A pointer to a UNICODE_STRING structure that specifies the name of the driver service to load.\n \\return NTSTATUS The status code returned by the function. Possible values include, but are not limited to:\n - STATUS_SUCCESS: The driver was successfully loaded.\n - STATUS_INVALID_PARAMETER: The DriverServiceName parameter is invalid.\n - STATUS_INSUFFICIENT_RESOURCES: There are insufficient resources to load the driver.\n - STATUS_OBJECT_NAME_NOT_FOUND: The specified driver service name was not found.\n - STATUS_OBJECT_PATH_NOT_FOUND: The path to the driver service was not found.\n - STATUS_OBJECT_NAME_COLLISION: A driver with the same name already exists."]
+   #[doc = "The NtLoadDriver function loads a driver specified by the DriverServiceName parameter.\n # Arguments\n\n* `DriverServiceName` - A pointer to a UNICODE_STRING structure that specifies the name of the driver service to load.\n # Returns\n\nNTSTATUS The status code returned by the function. Possible values include, but are not limited to:\n - STATUS_SUCCESS: The driver was successfully loaded.\n - STATUS_INVALID_PARAMETER: The DriverServiceName parameter is invalid.\n - STATUS_INSUFFICIENT_RESOURCES: There are insufficient resources to load the driver.\n - STATUS_OBJECT_NAME_NOT_FOUND: The specified driver service name was not found.\n - STATUS_OBJECT_PATH_NOT_FOUND: The path to the driver service was not found.\n - STATUS_OBJECT_NAME_COLLISION: A driver with the same name already exists."]
    pub fn NtLoadDriver(DriverServiceName: PUNICODE_STRING) -> NTSTATUS;
-   #[doc = " \\brief The NtUnloadDriver function unloads a driver specified by the DriverServiceName parameter.\n \\param DriverServiceName A pointer to a UNICODE_STRING structure that specifies the name of the driver service to unload.\n \\return NTSTATUS The status code returned by the function. Possible values include, but are not limited to:\n - STATUS_SUCCESS: The driver was successfully unloaded.\n - STATUS_INVALID_PARAMETER: The DriverServiceName parameter is invalid.\n - STATUS_OBJECT_NAME_NOT_FOUND: The specified driver service name was not found.\n - STATUS_OBJECT_PATH_NOT_FOUND: The path to the driver service was not found.\n - STATUS_OBJECT_NAME_COLLISION: A driver with the same name already exists."]
+   #[doc = "The NtUnloadDriver function unloads a driver specified by the DriverServiceName parameter.\n # Arguments\n\n* `DriverServiceName` - A pointer to a UNICODE_STRING structure that specifies the name of the driver service to unload.\n # Returns\n\nNTSTATUS The status code returned by the function. Possible values include, but are not limited to:\n - STATUS_SUCCESS: The driver was successfully unloaded.\n - STATUS_INVALID_PARAMETER: The DriverServiceName parameter is invalid.\n - STATUS_OBJECT_NAME_NOT_FOUND: The specified driver service name was not found.\n - STATUS_OBJECT_PATH_NOT_FOUND: The path to the driver service was not found.\n - STATUS_OBJECT_NAME_COLLISION: A driver with the same name already exists."]
    pub fn NtUnloadDriver(DriverServiceName: PUNICODE_STRING) -> NTSTATUS;
    pub fn NtCreateIoCompletion(
       IoCompletionHandle: PHANDLE,
@@ -76997,7 +77061,7 @@ unsafe extern "C" {
       SpareInstancePath: PUNICODE_STRING,
       Flags: ULONG,
    ) -> NTSTATUS;
-   #[doc = " The NtPowerInformation routine sets or retrieves system power information.\n\n @param InformationLevel Specifies the requested information level, which indicates the specific power information to be set or retrieved.\n @param InputBuffer Optional pointer to a caller-allocated input buffer.\n @param InputBufferLength Size, in bytes, of the buffer at InputBuffer.\n @param OutputBuffer Optional pointer to an output buffer. The type depends on the InformationLevel requested.\n @param OutputBufferLength Size, in bytes, of the output buffer.\n @return Successful or errant status."]
+   #[doc = "The NtPowerInformation routine sets or retrieves system power information.\n\n # Arguments\n\n* `InformationLevel` - Specifies the requested information level, which indicates the specific power information to be set or retrieved.\n * `InputBuffer` - Optional pointer to a caller-allocated input buffer.\n * `InputBufferLength` - Size, in bytes, of the buffer at InputBuffer.\n * `OutputBuffer` - Optional pointer to an output buffer. The type depends on the InformationLevel requested.\n * `OutputBufferLength` - Size, in bytes, of the output buffer.\n # Returns\n\nSuccessful or errant status."]
    pub fn NtPowerInformation(
       InformationLevel: POWER_INFORMATION_LEVEL,
       InputBuffer: PVOID,
@@ -77005,27 +77069,27 @@ unsafe extern "C" {
       OutputBuffer: PVOID,
       OutputBufferLength: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Enables an application to inform the system that it is in use,\n thereby preventing the system from entering sleep or turning off the display while the application is running.\n\n @param NewFlags New execution state flags.\n @param PreviousFlags Pointer to receive the previous execution state flags.\n @return Successful or errant status."]
+   #[doc = "Enables an application to inform the system that it is in use,\n thereby preventing the system from entering sleep or turning off the display while the application is running.\n\n # Arguments\n\n* `NewFlags` - New execution state flags.\n * `PreviousFlags` - Pointer to receive the previous execution state flags.\n # Returns\n\nSuccessful or errant status."]
    pub fn NtSetThreadExecutionState(
       NewFlags: EXECUTION_STATE,
       PreviousFlags: *mut EXECUTION_STATE,
    ) -> NTSTATUS;
-   #[doc = " Initiates a power action of the current system.\n\n @param SystemAction The system power action.\n @param LightestSystemState The lightest system power state.\n @param Flags Flags for the power action.\n @param Asynchronous Whether the action is asynchronous.\n @return Successful or errant status."]
+   #[doc = "Initiates a power action of the current system.\n\n # Arguments\n\n* `SystemAction` - The system power action.\n * `LightestSystemState` - The lightest system power state.\n * `Flags` - Flags for the power action.\n * `Asynchronous` - Whether the action is asynchronous.\n # Returns\n\nSuccessful or errant status."]
    pub fn NtInitiatePowerAction(
       SystemAction: POWER_ACTION,
       LightestSystemState: SYSTEM_POWER_STATE,
       Flags: ULONG,
       Asynchronous: BOOLEAN,
    ) -> NTSTATUS;
-   #[doc = " Initiates a power action of the current system. Depending on the Flags parameter, the function either\n suspends operation immediately or requests permission from all applications and device drivers before doing so.\n\n @param SystemAction The system power action.\n @param LightestSystemState The lightest system power state.\n @param Flags Flags for the power action.\n @return Successful or errant status."]
+   #[doc = "Initiates a power action of the current system. Depending on the Flags parameter, the function either\n suspends operation immediately or requests permission from all applications and device drivers before doing so.\n\n # Arguments\n\n* `SystemAction` - The system power action.\n * `LightestSystemState` - The lightest system power state.\n * `Flags` - Flags for the power action.\n # Returns\n\nSuccessful or errant status."]
    pub fn NtSetSystemPowerState(
       SystemAction: POWER_ACTION,
       LightestSystemState: SYSTEM_POWER_STATE,
       Flags: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Retrieves the current power state of the specified device. This function cannot be used to query the power state of a display device.\n\n @param Device A handle to an object on the device, such as a file or socket, or a handle to the device itself.\n @param State A pointer to the variable that receives the power state.\n @return Successful or errant status.\n @remarks An application can use NtGetDevicePowerState to determine whether a device is in the working state or a low-power state.\n If the device is in a low-power state, accessing the device may cause it to either queue or fail any I/O requests, or transition the device into the working state.\n The exact behavior depends on the implementation of the device."]
+   #[doc = "Retrieves the current power state of the specified device. This function cannot be used to query the power state of a display device.\n\n # Arguments\n\n* `Device` - A handle to an object on the device, such as a file or socket, or a handle to the device itself.\n * `State` - A pointer to the variable that receives the power state.\n # Returns\n\nSuccessful or errant status.\n > An application can use NtGetDevicePowerState to determine whether a device is in the working state or a low-power state.\n If the device is in a low-power state, accessing the device may cause it to either queue or fail any I/O requests, or transition the device into the working state.\n The exact behavior depends on the implementation of the device."]
    pub fn NtGetDevicePowerState(Device: HANDLE, State: PDEVICE_POWER_STATE) -> NTSTATUS;
-   #[doc = " Checks if the system resume is automatic.\n\n @return BOOLEAN TRUE if the system resume is automatic, FALSE otherwise."]
+   #[doc = "Checks if the system resume is automatic.\n\n # Returns\n\nBOOLEAN TRUE if the system resume is automatic, FALSE otherwise."]
    pub fn NtIsSystemResumeAutomatic() -> BOOLEAN;
    #[doc = " Creates a new registry key routine or opens an existing one.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] TitleIndex Reserved.\n @param[in, optional] Class A pointer to a UNICODE_STRING structure that specifies the class of the key.\n @param[in] CreateOptions The options to use when creating the key.\n @param[out, optional] Disposition A pointer to a variable that receives the disposition value.\n @return NTSTATUS Successful or errant status."]
    pub fn NtCreateKey(
@@ -77048,27 +77112,27 @@ unsafe extern "C" {
       TransactionHandle: HANDLE,
       Disposition: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Opens an existing registry key.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @return NTSTATUS Successful or errant status.\n @remarks NtOpenKey ignores the security information in the ObjectAttributes structure."]
+   #[doc = "Opens an existing registry key.\n\n # Arguments\n\n* `KeyHandle` (direction out) - A pointer to a handle that receives the key handle.\n * `DesiredAccess` (direction in) - The access mask that specifies the desired access rights.\n * `ObjectAttributes` (direction in) - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n # Returns\n\nNTSTATUS Successful or errant status.\n > NtOpenKey ignores the security information in the ObjectAttributes structure."]
    pub fn NtOpenKey(
       KeyHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: POBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
-   #[doc = " Opens an existing registry key and associates the key with a transaction.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] TransactionHandle A handle to the transaction.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Opens an existing registry key and associates the key with a transaction.\n\n # Arguments\n\n* `KeyHandle` (direction out) - A pointer to a handle that receives the key handle.\n * `DesiredAccess` (direction in) - The access mask that specifies the desired access rights.\n * `ObjectAttributes` (direction in) - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n * `TransactionHandle` (direction in) - A handle to the transaction.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtOpenKeyTransacted(
       KeyHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: POBJECT_ATTRIBUTES,
       TransactionHandle: HANDLE,
    ) -> NTSTATUS;
-   #[doc = " Opens an existing registry key with extended options.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] OpenOptions The options to use when opening the key.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Opens an existing registry key with extended options.\n\n # Arguments\n\n* `KeyHandle` (direction out) - A pointer to a handle that receives the key handle.\n * `DesiredAccess` (direction in) - The access mask that specifies the desired access rights.\n * `ObjectAttributes` (direction in) - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n * `OpenOptions` (direction in) - The options to use when opening the key.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtOpenKeyEx(
       KeyHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: POBJECT_ATTRIBUTES,
       OpenOptions: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Opens an existing registry key in a transaction with extended options.\n\n @param[out] KeyHandle A pointer to a handle that receives the key handle.\n @param[in] DesiredAccess The access mask that specifies the desired access rights.\n @param[in] ObjectAttributes A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n @param[in] OpenOptions The options to use when opening the key.\n @param[in] TransactionHandle A handle to the transaction.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Opens an existing registry key in a transaction with extended options.\n\n # Arguments\n\n* `KeyHandle` (direction out) - A pointer to a handle that receives the key handle.\n * `DesiredAccess` (direction in) - The access mask that specifies the desired access rights.\n * `ObjectAttributes` (direction in) - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n * `OpenOptions` (direction in) - The options to use when opening the key.\n * `TransactionHandle` (direction in) - A handle to the transaction.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtOpenKeyTransactedEx(
       KeyHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -77076,13 +77140,13 @@ unsafe extern "C" {
       OpenOptions: ULONG,
       TransactionHandle: HANDLE,
    ) -> NTSTATUS;
-   #[doc = " Deletes a registry key.\n\n @param[in] KeyHandle A handle to the key to be deleted.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Deletes a registry key.\n\n # Arguments\n\n* `KeyHandle` (direction in) - A handle to the key to be deleted.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtDeleteKey(KeyHandle: HANDLE) -> NTSTATUS;
-   #[doc = " Renames a registry key.\n\n @param[in] KeyHandle A handle to the key to be renamed.\n @param[in] NewName A pointer to a UNICODE_STRING structure that specifies the new name of the key.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Renames a registry key.\n\n # Arguments\n\n* `KeyHandle` (direction in) - A handle to the key to be renamed.\n * `NewName` (direction in) - A pointer to a UNICODE_STRING structure that specifies the new name of the key.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtRenameKey(KeyHandle: HANDLE, NewName: PUNICODE_STRING) -> NTSTATUS;
-   #[doc = " Deletes a value from a registry key.\n\n @param[in] KeyHandle A handle to the key that contains the value to be deleted.\n @param[in] ValueName A pointer to a UNICODE_STRING structure that specifies the name of the value to be deleted.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Deletes a value from a registry key.\n\n # Arguments\n\n* `KeyHandle` (direction in) - A handle to the key that contains the value to be deleted.\n * `ValueName` (direction in) - A pointer to a UNICODE_STRING structure that specifies the name of the value to be deleted.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtDeleteValueKey(KeyHandle: HANDLE, ValueName: PUNICODE_STRING) -> NTSTATUS;
-   #[doc = " Queries information about a registry key.\n\n @param[in] KeyHandle A handle to the key to be queried.\n @param[in] KeyInformationClass The type of information to be queried.\n @param[out] KeyInformation A pointer to a buffer that receives the key information.\n @param[in] Length The size of the buffer.\n @param[out] ResultLength A pointer to a variable that receives the size of the data returned.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Queries information about a registry key.\n\n # Arguments\n\n* `KeyHandle` (direction in) - A handle to the key to be queried.\n * `KeyInformationClass` (direction in) - The type of information to be queried.\n * `KeyInformation` (direction out) - A pointer to a buffer that receives the key information.\n * `Length` (direction in) - The size of the buffer.\n * `ResultLength` (direction out) - A pointer to a variable that receives the size of the data returned.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQueryKey(
       KeyHandle: HANDLE,
       KeyInformationClass: KEY_INFORMATION_CLASS,
@@ -77090,14 +77154,14 @@ unsafe extern "C" {
       Length: ULONG,
       ResultLength: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Sets information for a registry key.\n\n @param[in] KeyHandle A handle to the key to be modified.\n @param[in] KeySetInformationClass The type of information to be set.\n @param[in] KeySetInformation A pointer to a buffer that contains the key information.\n @param[in] KeySetInformationLength The size of the buffer.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Sets information for a registry key.\n\n # Arguments\n\n* `KeyHandle` (direction in) - A handle to the key to be modified.\n * `KeySetInformationClass` (direction in) - The type of information to be set.\n * `KeySetInformation` (direction in) - A pointer to a buffer that contains the key information.\n * `KeySetInformationLength` (direction in) - The size of the buffer.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetInformationKey(
       KeyHandle: HANDLE,
       KeySetInformationClass: KEY_SET_INFORMATION_CLASS,
       KeySetInformation: PVOID,
       KeySetInformationLength: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Queries the value of a registry key.\n\n @param[in] KeyHandle A handle to the key to be queried.\n @param[in] ValueName A pointer to a UNICODE_STRING structure that specifies the name of the value to be queried.\n @param[in] KeyValueInformationClass The type of information to be queried.\n @param[out] KeyValueInformation A pointer to a buffer that receives the value information.\n @param[in] Length The size of the buffer.\n @param[out] ResultLength A pointer to a variable that receives the size of the data returned.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Queries the value of a registry key.\n\n # Arguments\n\n* `KeyHandle` (direction in) - A handle to the key to be queried.\n * `ValueName` (direction in) - A pointer to a UNICODE_STRING structure that specifies the name of the value to be queried.\n * `KeyValueInformationClass` (direction in) - The type of information to be queried.\n * `KeyValueInformation` (direction out) - A pointer to a buffer that receives the value information.\n * `Length` (direction in) - The size of the buffer.\n * `ResultLength` (direction out) - A pointer to a variable that receives the size of the data returned.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQueryValueKey(
       KeyHandle: HANDLE,
       ValueName: PUNICODE_STRING,
@@ -77124,7 +77188,7 @@ unsafe extern "C" {
       BufferLength: PULONG,
       RequiredBufferLength: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Enumerates the subkeys of a registry key.\n\n @param[in] KeyHandle A handle to the key to be enumerated.\n @param[in] Index The index of the subkey to be enumerated.\n @param[in] KeyInformationClass The type of information to be queried.\n @param[out] KeyInformation A pointer to a buffer that receives the key information.\n @param[in] Length The size of the buffer.\n @param[out] ResultLength A pointer to a variable that receives the size of the data returned.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Enumerates the subkeys of a registry key.\n\n # Arguments\n\n* `KeyHandle` (direction in) - A handle to the key to be enumerated.\n * `Index` (direction in) - The index of the subkey to be enumerated.\n * `KeyInformationClass` (direction in) - The type of information to be queried.\n * `KeyInformation` (direction out) - A pointer to a buffer that receives the key information.\n * `Length` (direction in) - The size of the buffer.\n * `ResultLength` (direction out) - A pointer to a variable that receives the size of the data returned.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtEnumerateKey(
       KeyHandle: HANDLE,
       Index: ULONG,
@@ -77133,7 +77197,7 @@ unsafe extern "C" {
       Length: ULONG,
       ResultLength: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Enumerates the values of a registry key.\n\n @param[in] KeyHandle A handle to the key to be enumerated.\n @param[in] Index The index of the value to be enumerated.\n @param[in] KeyValueInformationClass The type of information to be queried.\n @param[out] KeyValueInformation A pointer to a buffer that receives the value information.\n @param[in] Length The size of the buffer.\n @param[out] ResultLength A pointer to a variable that receives the size of the data returned.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Enumerates the values of a registry key.\n\n # Arguments\n\n* `KeyHandle` (direction in) - A handle to the key to be enumerated.\n * `Index` (direction in) - The index of the value to be enumerated.\n * `KeyValueInformationClass` (direction in) - The type of information to be queried.\n * `KeyValueInformation` (direction out) - A pointer to a buffer that receives the value information.\n * `Length` (direction in) - The size of the buffer.\n * `ResultLength` (direction out) - A pointer to a variable that receives the size of the data returned.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtEnumerateValueKey(
       KeyHandle: HANDLE,
       Index: ULONG,
@@ -77142,15 +77206,15 @@ unsafe extern "C" {
       Length: ULONG,
       ResultLength: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Flushes the changes to a registry key.\n\n @param[in] KeyHandle A handle to the key to be flushed.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Flushes the changes to a registry key.\n\n # Arguments\n\n* `KeyHandle` (direction in) - A handle to the key to be flushed.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtFlushKey(KeyHandle: HANDLE) -> NTSTATUS;
-   #[doc = " Compacts the specified registry keys.\n\n @param[in] Count The number of keys to be compacted.\n @param[in] KeyArray An array of handles to the keys to be compacted.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Compacts the specified registry keys.\n\n # Arguments\n\n* `Count` (direction in) - The number of keys to be compacted.\n * `KeyArray` (direction in) - An array of handles to the keys to be compacted.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtCompactKeys(Count: ULONG, KeyArray: *mut HANDLE) -> NTSTATUS;
-   #[doc = " Compresses a registry key.\n\n @param[in] KeyHandle A handle to the key to be compressed.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Compresses a registry key.\n\n # Arguments\n\n* `KeyHandle` (direction in) - A handle to the key to be compressed.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtCompressKey(KeyHandle: HANDLE) -> NTSTATUS;
-   #[doc = " Loads a registry key from a file.\n\n @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.\n @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Loads a registry key from a file.\n\n # Arguments\n\n* `TargetKey` (direction in) - A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.\n * `SourceFile` (direction in) - A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtLoadKey(TargetKey: POBJECT_ATTRIBUTES, SourceFile: POBJECT_ATTRIBUTES) -> NTSTATUS;
-   #[doc = " Loads a registry key from a file with additional options.\n\n @param[in] TargetKey A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.\n @param[in] SourceFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.\n @param[in] Flags The options to use when loading the key.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Loads a registry key from a file with additional options.\n\n # Arguments\n\n* `TargetKey` (direction in) - A pointer to an OBJECT_ATTRIBUTES structure that specifies the target key.\n * `SourceFile` (direction in) - A pointer to an OBJECT_ATTRIBUTES structure that specifies the source file.\n * `Flags` (direction in) - The options to use when loading the key.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtLoadKey2(
       TargetKey: POBJECT_ATTRIBUTES,
       SourceFile: POBJECT_ATTRIBUTES,
@@ -77178,31 +77242,31 @@ unsafe extern "C" {
       RootHandle: PHANDLE,
       Reserved: PVOID,
    ) -> NTSTATUS;
-   #[doc = " Replaces a registry key.\n\n @param[in] NewFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the new file.\n @param[in] TargetHandle A handle to the target key.\n @param[in] OldFile A pointer to an OBJECT_ATTRIBUTES structure that specifies the old file.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Replaces a registry key.\n\n # Arguments\n\n* `NewFile` (direction in) - A pointer to an OBJECT_ATTRIBUTES structure that specifies the new file.\n * `TargetHandle` (direction in) - A handle to the target key.\n * `OldFile` (direction in) - A pointer to an OBJECT_ATTRIBUTES structure that specifies the old file.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtReplaceKey(
       NewFile: POBJECT_ATTRIBUTES,
       TargetHandle: HANDLE,
       OldFile: POBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
-   #[doc = " Saves the specified registry key to a file.\n\n @param KeyHandle Handle to the registry key.\n @param FileHandle Handle to the file where the key will be saved.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Saves the specified registry key to a file.\n\n # Arguments\n\n* `KeyHandle` - Handle to the registry key.\n * `FileHandle` - Handle to the file where the key will be saved.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSaveKey(KeyHandle: HANDLE, FileHandle: HANDLE) -> NTSTATUS;
-   #[doc = " Saves the specified registry key to a file with a specified format.\n\n @param KeyHandle Handle to the registry key.\n @param FileHandle Handle to the file where the key will be saved.\n @param Format Format in which the key will be saved.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Saves the specified registry key to a file with a specified format.\n\n # Arguments\n\n* `KeyHandle` - Handle to the registry key.\n * `FileHandle` - Handle to the file where the key will be saved.\n * `Format` - Format in which the key will be saved.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSaveKeyEx(KeyHandle: HANDLE, FileHandle: HANDLE, Format: ULONG) -> NTSTATUS;
-   #[doc = " Merges two registry keys and saves the result to a file.\n\n @param HighPrecedenceKeyHandle Handle to the high precedence registry key.\n @param LowPrecedenceKeyHandle Handle to the low precedence registry key.\n @param FileHandle Handle to the file where the merged key will be saved.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Merges two registry keys and saves the result to a file.\n\n # Arguments\n\n* `HighPrecedenceKeyHandle` - Handle to the high precedence registry key.\n * `LowPrecedenceKeyHandle` - Handle to the low precedence registry key.\n * `FileHandle` - Handle to the file where the merged key will be saved.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSaveMergedKeys(
       HighPrecedenceKeyHandle: HANDLE,
       LowPrecedenceKeyHandle: HANDLE,
       FileHandle: HANDLE,
    ) -> NTSTATUS;
-   #[doc = " Restores a registry key from a file.\n\n @param KeyHandle Handle to the registry key.\n @param FileHandle Handle to the file from which the key will be restored.\n @param Flags Flags for the restore operation.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Restores a registry key from a file.\n\n # Arguments\n\n* `KeyHandle` - Handle to the registry key.\n * `FileHandle` - Handle to the file from which the key will be restored.\n * `Flags` - Flags for the restore operation.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtRestoreKey(KeyHandle: HANDLE, FileHandle: HANDLE, Flags: ULONG) -> NTSTATUS;
-   #[doc = " Unloads a registry key.\n\n @param TargetKey Pointer to the object attributes of the target key.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Unloads a registry key.\n\n # Arguments\n\n* `TargetKey` - Pointer to the object attributes of the target key.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtUnloadKey(TargetKey: POBJECT_ATTRIBUTES) -> NTSTATUS;
-   #[doc = " Unloads a registry key with additional flags.\n\n @param TargetKey Pointer to the object attributes of the target key.\n @param Flags Flags for the unload operation.\n @return NTSTATUS Successful or errant status.\n @remarks Valid flags are REG_FORCE_UNLOAD and REG_UNLOAD_LEGAL_FLAGS."]
+   #[doc = "Unloads a registry key with additional flags.\n\n # Arguments\n\n* `TargetKey` - Pointer to the object attributes of the target key.\n * `Flags` - Flags for the unload operation.\n # Returns\n\nNTSTATUS Successful or errant status.\n > Valid flags are REG_FORCE_UNLOAD and REG_UNLOAD_LEGAL_FLAGS."]
    pub fn NtUnloadKey2(TargetKey: POBJECT_ATTRIBUTES, Flags: ULONG) -> NTSTATUS;
-   #[doc = " Unloads a registry key and optionally signals an event.\n\n @param TargetKey Pointer to the object attributes of the target key.\n @param Event Optional handle to an event to be signaled.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Unloads a registry key and optionally signals an event.\n\n # Arguments\n\n* `TargetKey` - Pointer to the object attributes of the target key.\n * `Event` - Optional handle to an event to be signaled.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtUnloadKeyEx(TargetKey: POBJECT_ATTRIBUTES, Event: HANDLE) -> NTSTATUS;
-   #[doc = " Notifies of changes to a registry key.\n\n @param KeyHandle Handle to the registry key.\n @param Event Optional handle to an event to be signaled.\n @param ApcRoutine Optional APC routine to be called.\n @param ApcContext Optional context for the APC routine.\n @param IoStatusBlock Pointer to an IO status block.\n @param CompletionFilter Filter for the types of changes to notify.\n @param WatchTree Whether to watch the entire tree.\n @param Buffer Optional buffer for change data.\n @param BufferSize Size of the buffer.\n @param Asynchronous Whether the operation is asynchronous.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Notifies of changes to a registry key.\n\n # Arguments\n\n* `KeyHandle` - Handle to the registry key.\n * `Event` - Optional handle to an event to be signaled.\n * `ApcRoutine` - Optional APC routine to be called.\n * `ApcContext` - Optional context for the APC routine.\n * `IoStatusBlock` - Pointer to an IO status block.\n * `CompletionFilter` - Filter for the types of changes to notify.\n * `WatchTree` - Whether to watch the entire tree.\n * `Buffer` - Optional buffer for change data.\n * `BufferSize` - Size of the buffer.\n * `Asynchronous` - Whether the operation is asynchronous.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtNotifyChangeKey(
       KeyHandle: HANDLE,
       Event: HANDLE,
@@ -77215,7 +77279,7 @@ unsafe extern "C" {
       BufferSize: ULONG,
       Asynchronous: BOOLEAN,
    ) -> NTSTATUS;
-   #[doc = " Requests notification when a registry key or any of its subkeys changes.\n\n @param MasterKeyHandle A handle to an open key. The handle must be opened with the KEY_NOTIFY access right.\n @param Count The number of subkeys under the key specified by the MasterKeyHandle parameter.\n @param SubordinateObjects Pointer to an array of OBJECT_ATTRIBUTES structures, one for each subkey. This array can contain one OBJECT_ATTRIBUTES structure.\n @param Event A handle to an event created by the caller. If Event is not NULL, the caller waits until the operation succeeds, at which time the event is signaled.\n @param ApcRoutine A pointer to an asynchronous procedure call (APC) function supplied by the caller. If ApcRoutine is not NULL, the specified APC function executes after the operation completes.\n @param ApcContext A pointer to a context supplied by the caller for its APC function. This value is passed to the APC function when it is executed. The Asynchronous parameter must be TRUE. If ApcContext is specified, the Event parameter must be NULL.\n @param IoStatusBlock A pointer to an IO_STATUS_BLOCK structure that contains the final status and information about the operation. For successful calls that return data, the number of bytes written to the Buffer parameter is supplied in the Information member of the IO_STATUS_BLOCK structure.\n @param CompletionFilter A bitmap of operations that trigger notification. This parameter can be one or more of the following flags. REG_NOTIFY_CHANGE_NAME, REG_NOTIFY_CHANGE_ATTRIBUTES, REG_NOTIFY_CHANGE_LAST_SET, REG_NOTIFY_CHANGE_SECURITY.\n @param WatchTree If this parameter is TRUE, the caller is notified about changes to all subkeys of the specified key. If this parameter is FALSE, the caller is notified only about changes to the specified key.\n @param Buffer Reserved for system use. This parameter must be NULL.\n @param BufferSize Reserved for system use. This parameter must be zero.\n @param Asynchronous Whether the operation is asynchronous.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Requests notification when a registry key or any of its subkeys changes.\n\n # Arguments\n\n* `MasterKeyHandle` - A handle to an open key. The handle must be opened with the KEY_NOTIFY access right.\n * `Count` - The number of subkeys under the key specified by the MasterKeyHandle parameter.\n * `SubordinateObjects` - Pointer to an array of OBJECT_ATTRIBUTES structures, one for each subkey. This array can contain one OBJECT_ATTRIBUTES structure.\n * `Event` - A handle to an event created by the caller. If Event is not NULL, the caller waits until the operation succeeds, at which time the event is signaled.\n * `ApcRoutine` - A pointer to an asynchronous procedure call (APC) function supplied by the caller. If ApcRoutine is not NULL, the specified APC function executes after the operation completes.\n * `ApcContext` - A pointer to a context supplied by the caller for its APC function. This value is passed to the APC function when it is executed. The Asynchronous parameter must be TRUE. If ApcContext is specified, the Event parameter must be NULL.\n * `IoStatusBlock` - A pointer to an IO_STATUS_BLOCK structure that contains the final status and information about the operation. For successful calls that return data, the number of bytes written to the Buffer parameter is supplied in the Information member of the IO_STATUS_BLOCK structure.\n * `CompletionFilter` - A bitmap of operations that trigger notification. This parameter can be one or more of the following flags. REG_NOTIFY_CHANGE_NAME, REG_NOTIFY_CHANGE_ATTRIBUTES, REG_NOTIFY_CHANGE_LAST_SET, REG_NOTIFY_CHANGE_SECURITY.\n * `WatchTree` - If this parameter is TRUE, the caller is notified about changes to all subkeys of the specified key. If this parameter is FALSE, the caller is notified only about changes to the specified key.\n * `Buffer` - Reserved for system use. This parameter must be NULL.\n * `BufferSize` - Reserved for system use. This parameter must be zero.\n * `Asynchronous` - Whether the operation is asynchronous.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtNotifyChangeMultipleKeys(
       MasterKeyHandle: HANDLE,
       Count: ULONG,
@@ -77230,41 +77294,41 @@ unsafe extern "C" {
       BufferSize: ULONG,
       Asynchronous: BOOLEAN,
    ) -> NTSTATUS;
-   #[doc = " Queries the number of open subkeys of a registry key.\n\n @param TargetKey Pointer to the object attributes of the target key.\n @param HandleCount Pointer to a variable to receive the handle count.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Queries the number of open subkeys of a registry key.\n\n # Arguments\n\n* `TargetKey` - Pointer to the object attributes of the target key.\n * `HandleCount` - Pointer to a variable to receive the handle count.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQueryOpenSubKeys(TargetKey: POBJECT_ATTRIBUTES, HandleCount: PULONG) -> NTSTATUS;
-   #[doc = " Queries the open subkeys of a registry key with additional information.\n\n @param TargetKey Pointer to the object attributes of the target key.\n @param BufferLength Length of the buffer.\n @param Buffer Optional buffer to receive the subkey information.\n @param RequiredSize Pointer to a variable to receive the required size.\n @return NTSTATUS Successful or errant status.\n @remarks Returns an array of KEY_OPEN_SUBKEYS_INFORMATION structures."]
+   #[doc = "Queries the open subkeys of a registry key with additional information.\n\n # Arguments\n\n* `TargetKey` - Pointer to the object attributes of the target key.\n * `BufferLength` - Length of the buffer.\n * `Buffer` - Optional buffer to receive the subkey information.\n * `RequiredSize` - Pointer to a variable to receive the required size.\n # Returns\n\nNTSTATUS Successful or errant status.\n > Returns an array of KEY_OPEN_SUBKEYS_INFORMATION structures."]
    pub fn NtQueryOpenSubKeysEx(
       TargetKey: POBJECT_ATTRIBUTES,
       BufferLength: ULONG,
       Buffer: PVOID,
       RequiredSize: PULONG,
    ) -> NTSTATUS;
-   #[doc = " Initializes the registry.\n\n @param BootCondition Condition for the boot.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Initializes the registry.\n\n # Arguments\n\n* `BootCondition` - Condition for the boot.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtInitializeRegistry(BootCondition: USHORT) -> NTSTATUS;
-   #[doc = " Locks the registry key and prevents changes from being written to disk.\n\n @param KeyHandle Handle to the registry key.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Locks the registry key and prevents changes from being written to disk.\n\n # Arguments\n\n* `KeyHandle` - Handle to the registry key.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtLockRegistryKey(KeyHandle: HANDLE) -> NTSTATUS;
-   #[doc = " Locks the product activation keys.\n\n @param pPrivateVer Optional pointer to a private version variable.\n @param pSafeMode Optional pointer to a safe mode variable.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Locks the product activation keys.\n\n # Arguments\n\n* `pPrivateVer` - Optional pointer to a private version variable.\n * `pSafeMode` - Optional pointer to a safe mode variable.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtLockProductActivationKeys(pPrivateVer: *mut ULONG, pSafeMode: *mut ULONG) -> NTSTATUS;
-   #[doc = " Freezes the registry and prevents changes from being flushed to disk.\n\n @param TimeOutInSeconds Timeout in seconds.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Freezes the registry and prevents changes from being flushed to disk.\n\n # Arguments\n\n* `TimeOutInSeconds` - Timeout in seconds.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtFreezeRegistry(TimeOutInSeconds: ULONG) -> NTSTATUS;
-   #[doc = " Thaws the registry and enables flushing changes to disk.\n\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Thaws the registry and enables flushing changes to disk.\n\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtThawRegistry() -> NTSTATUS;
-   #[doc = " Creates a registry transaction.\n\n @param RegistryTransactionHandle Pointer to a variable to receive the handle.\n @param DesiredAccess Desired access mask.\n @param ObjAttributes Optional pointer to object attributes.\n @param CreateOptions Reserved for future use.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Creates a registry transaction.\n\n # Arguments\n\n* `RegistryTransactionHandle` - Pointer to a variable to receive the handle.\n * `DesiredAccess` - Desired access mask.\n * `ObjAttributes` - Optional pointer to object attributes.\n * `CreateOptions` - Reserved for future use.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtCreateRegistryTransaction(
       RegistryTransactionHandle: *mut HANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjAttributes: POBJECT_ATTRIBUTES,
       CreateOptions: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Opens a registry transaction.\n\n @param RegistryTransactionHandle Pointer to a variable to receive the handle.\n @param DesiredAccess Desired access mask.\n @param ObjAttributes Pointer to object attributes.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Opens a registry transaction.\n\n # Arguments\n\n* `RegistryTransactionHandle` - Pointer to a variable to receive the handle.\n * `DesiredAccess` - Desired access mask.\n * `ObjAttributes` - Pointer to object attributes.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtOpenRegistryTransaction(
       RegistryTransactionHandle: *mut HANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjAttributes: POBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
-   #[doc = " Commits a registry transaction.\n\n @param RegistryTransactionHandle Handle to the registry transaction.\n @param Flags Reserved for future use.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Commits a registry transaction.\n\n # Arguments\n\n* `RegistryTransactionHandle` - Handle to the registry transaction.\n * `Flags` - Reserved for future use.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtCommitRegistryTransaction(RegistryTransactionHandle: HANDLE, Flags: ULONG) -> NTSTATUS;
-   #[doc = " Rolls back a registry transaction.\n\n @param RegistryTransactionHandle Handle to the registry transaction.\n @param Flags Reserved for future use.\n @return NTSTATUS Successful or errant status."]
+   #[doc = "Rolls back a registry transaction.\n\n # Arguments\n\n* `RegistryTransactionHandle` - Handle to the registry transaction.\n * `Flags` - Reserved for future use.\n # Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtRollbackRegistryTransaction(
       RegistryTransactionHandle: HANDLE,
       Flags: ULONG,
@@ -77494,7 +77558,7 @@ unsafe extern "C" {
    ) -> ULONG;
    pub fn RtlQueryCriticalSectionOwner(EventHandle: HANDLE) -> HANDLE;
    pub fn RtlCheckForOrphanedCriticalSections(ThreadHandle: HANDLE);
-   #[doc = " Enables the creation of early critical section events.\n\n This function allows the system to create critical section events early in the process\n initialization. It is typically used to ensure that critical sections are properly\n initialized and can be used safely during the early stages of process startup.\n @remarks This function sets the FLG_CRITSEC_EVENT_CREATION flag in the PEB flags field.\n @return A pointer to the Process Environment Block (PEB)."]
+   #[doc = "Enables the creation of early critical section events.\n\n This function allows the system to create critical section events early in the process\n initialization. It is typically used to ensure that critical sections are properly\n initialized and can be used safely during the early stages of process startup.\n > This function sets the FLG_CRITSEC_EVENT_CREATION flag in the PEB flags field.\n # Returns\n\nA pointer to the Process Environment Block (PEB)."]
    pub fn RtlEnableEarlyCriticalSectionEventCreation() -> PPEB;
    pub fn RtlInitializeResource(Resource: PRTL_RESOURCE);
    pub fn RtlDeleteResource(Resource: PRTL_RESOURCE);
@@ -78239,19 +78303,19 @@ unsafe extern "C" {
       PassContext: BOOLEAN,
       AlreadySuspended: BOOLEAN,
    ) -> NTSTATUS;
-   #[doc = " Registers a vectored exception handler.\n\n @param First If this parameter is TRUE, the handler is the first handler in the list.\n @param Handler A pointer to the vectored exception handler to be called.\n @return A handle to the vectored exception handler.\n @see https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredexceptionhandler"]
+   #[doc = "Registers a vectored exception handler.\n\n # Arguments\n\n* `First` - If this parameter is TRUE, the handler is the first handler in the list.\n * `Handler` - A pointer to the vectored exception handler to be called.\n # Returns\n\nA handle to the vectored exception handler.\n [`https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredexceptionhandler`]"]
    pub fn RtlAddVectoredExceptionHandler(
       First: ULONG,
       Handler: PVECTORED_EXCEPTION_HANDLER,
    ) -> PVOID;
-   #[doc = " Removes a vectored exception handler.\n\n @param Handle A handle to the vectored exception handler to remove.\n @return The function returns 0 if the handler is removed, or -1 if the handler is not found.\n @see https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredexceptionhandler"]
+   #[doc = "Removes a vectored exception handler.\n\n # Arguments\n\n* `Handle` - A handle to the vectored exception handler to remove.\n # Returns\n\nThe function returns 0 if the handler is removed, or -1 if the handler is not found.\n [`https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredexceptionhandler`]"]
    pub fn RtlRemoveVectoredExceptionHandler(Handle: PVOID) -> ULONG;
-   #[doc = " Registers a vectored continue handler.\n\n @param First If this parameter is TRUE, the handler is the first handler in the list.\n @param Handler A pointer to the vectored exception handler to be called.\n @return A handle to the vectored continue handler.\n @see https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredcontinuehandler"]
+   #[doc = "Registers a vectored continue handler.\n\n # Arguments\n\n* `First` - If this parameter is TRUE, the handler is the first handler in the list.\n * `Handler` - A pointer to the vectored exception handler to be called.\n # Returns\n\nA handle to the vectored continue handler.\n [`https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredcontinuehandler`]"]
    pub fn RtlAddVectoredContinueHandler(
       First: ULONG,
       Handler: PVECTORED_EXCEPTION_HANDLER,
    ) -> PVOID;
-   #[doc = " Removes a vectored continue handler.\n\n @param Handle A handle to the vectored continue handler to remove.\n @return The function returns 0 if the handler is removed, or -1 if the handler is not found.\n @see https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredcontinuehandler"]
+   #[doc = "Removes a vectored continue handler.\n\n # Arguments\n\n* `Handle` - A handle to the vectored continue handler to remove.\n # Returns\n\nThe function returns 0 if the handler is removed, or -1 if the handler is not found.\n [`https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredcontinuehandler`]"]
    pub fn RtlRemoveVectoredContinueHandler(Handle: PVOID) -> ULONG;
    pub fn RtlSetUnhandledExceptionFilter(
       UnhandledExceptionFilter: PRTLP_UNHANDLED_EXCEPTION_FILTER,
@@ -78604,7 +78668,7 @@ unsafe extern "C" {
    pub fn RtlGetNtSystemRoot() -> PWSTR;
    pub fn RtlAreLongPathsEnabled() -> BOOLEAN;
    pub fn RtlIsThreadWithinLoaderCallout() -> BOOLEAN;
-   #[doc = " Gets a value indicating whether the process is currently in the shutdown phase.\n\n @return TRUE if a shutdown of the current dll process is in progress; otherwise, FALSE."]
+   #[doc = "Gets a value indicating whether the process is currently in the shutdown phase.\n\n # Returns\n\nTRUE if a shutdown of the current dll process is in progress; otherwise, FALSE."]
    pub fn RtlDllShutdownInProgress() -> BOOLEAN;
    pub fn RtlCreateHeap(
       Flags: ULONG,
@@ -79180,16 +79244,16 @@ unsafe extern "C" {
       CapabilityGroupSid: PSID,
       CapabilitySid: PSID,
    ) -> NTSTATUS;
-   #[doc = " The RtlCreateSecurityDescriptor routine initializes a new absolute-format security descriptor.\n On return, the security descriptor is initialized with no system ACL, no discretionary ACL, no owner, no primary group, and all control flags set to zero.\n\n \\param SecurityDescriptor Pointer to the buffer for the \\ref SECURITY_DESCRIPTOR to be initialized.\n \\param Revision Specifies the revision level to assign to the security descriptor. Set this parameter to SECURITY_DESCRIPTOR_REVISION.\n @return NTSTATUS Successful or errant status.\n @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlcreatesecuritydescriptor"]
+   #[doc = "The RtlCreateSecurityDescriptor routine initializes a new absolute-format security descriptor.\n On return, the security descriptor is initialized with no system ACL, no discretionary ACL, no owner, no primary group, and all control flags set to zero.\n\n # Arguments\n\n* `SecurityDescriptor` - Pointer to the buffer for the SECURITY_DESCRIPTOR to be initialized.\n * `Revision` - Specifies the revision level to assign to the security descriptor. Set this parameter to SECURITY_DESCRIPTOR_REVISION.\n # Returns\n\nNTSTATUS Successful or errant status.\n [`https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlcreatesecuritydescriptor`]"]
    pub fn RtlCreateSecurityDescriptor(
       SecurityDescriptor: PSECURITY_DESCRIPTOR,
       Revision: ULONG,
    ) -> NTSTATUS;
-   #[doc = " The RtlValidSecurityDescriptor routine checks a given security descriptor's validity.\n\n \\param SecurityDescriptor Pointer to the \\ref SECURITY_DESCRIPTOR to be checked.\n @return Returns TRUE if the security descriptor is valid, or FALSE otherwise.\n @remarks The routine checks the validity of an absolute-format security descriptor. To check the validity of a self-relative security descriptor, use the \\ref RtlValidRelativeSecurityDescriptor routine instead.\n @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidsecuritydescriptor"]
+   #[doc = "The RtlValidSecurityDescriptor routine checks a given security descriptor's validity.\n\n # Arguments\n\n* `SecurityDescriptor` - Pointer to the SECURITY_DESCRIPTOR to be checked.\n # Returns\n\nReturns TRUE if the security descriptor is valid, or FALSE otherwise.\n > The routine checks the validity of an absolute-format security descriptor. To check the validity of a self-relative security descriptor, use the RtlValidRelativeSecurityDescriptor routine instead.\n [`https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidsecuritydescriptor`]"]
    pub fn RtlValidSecurityDescriptor(SecurityDescriptor: PSECURITY_DESCRIPTOR) -> BOOLEAN;
-   #[doc = " The RtlLengthSecurityDescriptor routine returns the size of a given security descriptor.\n\n \\param SecurityDescriptor A pointer to a \\ref SECURITY_DESCRIPTOR structure whose length the function retrieves.\n @return Returns the length, in bytes, of the SECURITY_DESCRIPTOR structure.\n @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtllengthsecuritydescriptor"]
+   #[doc = "The RtlLengthSecurityDescriptor routine returns the size of a given security descriptor.\n\n # Arguments\n\n* `SecurityDescriptor` - A pointer to a SECURITY_DESCRIPTOR structure whose length the function retrieves.\n # Returns\n\nReturns the length, in bytes, of the SECURITY_DESCRIPTOR structure.\n [`https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtllengthsecuritydescriptor`]"]
    pub fn RtlLengthSecurityDescriptor(SecurityDescriptor: PSECURITY_DESCRIPTOR) -> ULONG;
-   #[doc = " The RtlValidRelativeSecurityDescriptor routine checks the validity of a self-relative security descriptor.\n\n \\param SecurityDescriptorInput A pointer to the buffer that contains the security descriptor in self-relative format.\n The buffer must begin with a SECURITY_DESCRIPTOR structure, which is followed by the rest of the security descriptor data.\n \\param SecurityDescriptorLength The size of the SecurityDescriptorInput structure.\n \\param RequiredInformation A SECURITY_INFORMATION value that specifies the information that is required to be contained in the security descriptor.\n @return RtlValidRelativeSecurityDescriptor returns TRUE if the security descriptor is valid and includes the information that the RequiredInformation parameter specifies. Otherwise, this routine returns FALSE.\n @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidrelativesecuritydescriptor"]
+   #[doc = "The RtlValidRelativeSecurityDescriptor routine checks the validity of a self-relative security descriptor.\n\n # Arguments\n\n* `SecurityDescriptorInput` - A pointer to the buffer that contains the security descriptor in self-relative format.\n The buffer must begin with a SECURITY_DESCRIPTOR structure, which is followed by the rest of the security descriptor data.\n * `SecurityDescriptorLength` - The size of the SecurityDescriptorInput structure.\n * `RequiredInformation` - A SECURITY_INFORMATION value that specifies the information that is required to be contained in the security descriptor.\n # Returns\n\nRtlValidRelativeSecurityDescriptor returns TRUE if the security descriptor is valid and includes the information that the RequiredInformation parameter specifies. Otherwise, this routine returns FALSE.\n [`https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidrelativesecuritydescriptor`]"]
    pub fn RtlValidRelativeSecurityDescriptor(
       SecurityDescriptorInput: PSECURITY_DESCRIPTOR,
       SecurityDescriptorLength: ULONG,
@@ -79242,19 +79306,19 @@ unsafe extern "C" {
       Sacl: *mut PACL,
       SaclDefaulted: PBOOLEAN,
    ) -> NTSTATUS;
-   #[doc = " The RtlSetOwnerSecurityDescriptor routine sets the owner information of an absolute-format security descriptor. It replaces any owner information that is already present in the security descriptor.\n\n \\param SecurityDescriptor Pointer to the SECURITY_DESCRIPTOR structure whose owner is to be set. RtlSetOwnerSecurityDescriptor replaces any existing owner with the new owner.\n \\param Owner Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.\n \\li \\c This pointer, not the SID structure itself, is copied into the security descriptor.\n \\li \\c If this parameter is NULL, RtlSetOwnerSecurityDescriptor clears the security descriptor's owner information. This marks the security descriptor as having no owner.\n \\param OwnerDefaulted Set to TRUE if the owner information is derived from a default mechanism.\n \\li \\c If this value is TRUE, it is default information. RtlSetOwnerSecurityDescriptor sets the SE_OWNER_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.\n \\li \\c If this parameter is FALSE, the SE_OWNER_DEFAULTED flag is cleared.\n @return NTSTATUS Successful or errant status.\n @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetownersecuritydescriptor"]
+   #[doc = "The RtlSetOwnerSecurityDescriptor routine sets the owner information of an absolute-format security descriptor. It replaces any owner information that is already present in the security descriptor.\n\n # Arguments\n\n* `SecurityDescriptor` - Pointer to the SECURITY_DESCRIPTOR structure whose owner is to be set. RtlSetOwnerSecurityDescriptor replaces any existing owner with the new owner.\n * `Owner` - Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.\n `This` pointer, not the SID structure itself, is copied into the security descriptor.\n `If` this parameter is NULL, RtlSetOwnerSecurityDescriptor clears the security descriptor's owner information. This marks the security descriptor as having no owner.\n * `OwnerDefaulted` - Set to TRUE if the owner information is derived from a default mechanism.\n `If` this value is TRUE, it is default information. RtlSetOwnerSecurityDescriptor sets the SE_OWNER_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.\n `If` this parameter is FALSE, the SE_OWNER_DEFAULTED flag is cleared.\n # Returns\n\nNTSTATUS Successful or errant status.\n [`https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetownersecuritydescriptor`]"]
    pub fn RtlSetOwnerSecurityDescriptor(
       SecurityDescriptor: PSECURITY_DESCRIPTOR,
       Owner: PSID,
       OwnerDefaulted: BOOLEAN,
    ) -> NTSTATUS;
-   #[doc = " The RtlGetOwnerSecurityDescriptor routine returns the owner information for a given security descriptor.\n\n \\param SecurityDescriptor Pointer to the SECURITY_DESCRIPTOR structure.\n \\param Owner Pointer to an address to receive a pointer to the owner security identifier (SID). If the security descriptor does not currently contain an owner SID, Owner receives NULL.\n \\param OwnerDefaulted Pointer to a Boolean variable that receives TRUE if the owner information is derived from a default mechanism, FALSE otherwise. Valid only if Owner receives a non-NULL value.\n @return NTSTATUS Successful or errant status.\n @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlgetownersecuritydescriptor"]
+   #[doc = "The RtlGetOwnerSecurityDescriptor routine returns the owner information for a given security descriptor.\n\n # Arguments\n\n* `SecurityDescriptor` - Pointer to the SECURITY_DESCRIPTOR structure.\n * `Owner` - Pointer to an address to receive a pointer to the owner security identifier (SID). If the security descriptor does not currently contain an owner SID, Owner receives NULL.\n * `OwnerDefaulted` - Pointer to a Boolean variable that receives TRUE if the owner information is derived from a default mechanism, FALSE otherwise. Valid only if Owner receives a non-NULL value.\n # Returns\n\nNTSTATUS Successful or errant status.\n [`https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlgetownersecuritydescriptor`]"]
    pub fn RtlGetOwnerSecurityDescriptor(
       SecurityDescriptor: PSECURITY_DESCRIPTOR,
       Owner: *mut PSID,
       OwnerDefaulted: PBOOLEAN,
    ) -> NTSTATUS;
-   #[doc = " The RtlSetGroupSecurityDescriptor routine sets the primary group information of an absolute-format security descriptor. It replaces any primary group information that is already present in the security descriptor.\n\n \\param SecurityDescriptor Pointer to the SECURITY_DESCRIPTOR structure whose primary group is to be set. RtlSetGroupSecurityDescriptor replaces any existing primary group with the new primary group.\n \\param Group Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.\n \\li \\c This pointer, not the SID structure itself, is copied into the security descriptor.\n \\li \\c If Group is NULL, RtlSetGroupSecurityDescriptor clears the security descriptor's primary group information. This marks the security descriptor as having no primary group.\n \\param GroupDefaulted Set this Boolean variable to TRUE if the primary group information is derived from a default mechanism.\n \\li \\c If this parameter is TRUE, RtlSetGroupSecurityDescriptor sets the SE_GROUP_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.\n \\li \\c If this parameter is FALSE, RtlSetGroupSecurityDescriptor clears the SE_GROUP_DEFAULTED flag.\n @return NTSTATUS Successful or errant status.\n @see https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetgroupsecuritydescriptor"]
+   #[doc = "The RtlSetGroupSecurityDescriptor routine sets the primary group information of an absolute-format security descriptor. It replaces any primary group information that is already present in the security descriptor.\n\n # Arguments\n\n* `SecurityDescriptor` - Pointer to the SECURITY_DESCRIPTOR structure whose primary group is to be set. RtlSetGroupSecurityDescriptor replaces any existing primary group with the new primary group.\n * `Group` - Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.\n `This` pointer, not the SID structure itself, is copied into the security descriptor.\n `If` Group is NULL, RtlSetGroupSecurityDescriptor clears the security descriptor's primary group information. This marks the security descriptor as having no primary group.\n * `GroupDefaulted` - Set this Boolean variable to TRUE if the primary group information is derived from a default mechanism.\n `If` this parameter is TRUE, RtlSetGroupSecurityDescriptor sets the SE_GROUP_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.\n `If` this parameter is FALSE, RtlSetGroupSecurityDescriptor clears the SE_GROUP_DEFAULTED flag.\n # Returns\n\nNTSTATUS Successful or errant status.\n [`https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetgroupsecuritydescriptor`]"]
    pub fn RtlSetGroupSecurityDescriptor(
       SecurityDescriptor: PSECURITY_DESCRIPTOR,
       Group: PSID,
@@ -79299,12 +79363,12 @@ unsafe extern "C" {
       NewSecurityDescriptorLength: PDWORD,
       CheckOnly: BOOLEAN,
    ) -> BOOLEAN;
-   #[doc = " Checks if all desired accesses are granted.\n\n This function determines whether all the accesses specified in the DesiredAccess\n mask are granted by the GrantedAccess mask.\n\n \\param GrantedAccess The access mask that specifies the granted accesses.\n \\param DesiredAccess The access mask that specifies the desired accesses.\n @return Returns TRUE if all desired accesses are granted, otherwise FALSE."]
+   #[doc = "Checks if all desired accesses are granted.\n\n This function determines whether all the accesses specified in the DesiredAccess\n mask are granted by the GrantedAccess mask.\n\n # Arguments\n\n* `GrantedAccess` - The access mask that specifies the granted accesses.\n * `DesiredAccess` - The access mask that specifies the desired accesses.\n # Returns\n\nReturns TRUE if all desired accesses are granted, otherwise FALSE."]
    pub fn RtlAreAllAccessesGranted(
       GrantedAccess: ACCESS_MASK,
       DesiredAccess: ACCESS_MASK,
    ) -> BOOLEAN;
-   #[doc = " Checks if any of the desired accesses are granted.\n\n This function determines if any of the access rights specified in the DesiredAccess\n mask are present in the GrantedAccess mask.\n\n \\param GrantedAccess The access mask that specifies the granted access rights.\n \\param DesiredAccess The access mask that specifies the desired access rights.\n @return Returns TRUE if any of the desired access rights are granted, otherwise FALSE."]
+   #[doc = "Checks if any of the desired accesses are granted.\n\n This function determines if any of the access rights specified in the DesiredAccess\n mask are present in the GrantedAccess mask.\n\n # Arguments\n\n* `GrantedAccess` - The access mask that specifies the granted access rights.\n * `DesiredAccess` - The access mask that specifies the desired access rights.\n # Returns\n\nReturns TRUE if any of the desired access rights are granted, otherwise FALSE."]
    pub fn RtlAreAnyAccessesGranted(
       GrantedAccess: ACCESS_MASK,
       DesiredAccess: ACCESS_MASK,
@@ -84111,19 +84175,19 @@ unsafe extern "C" {
       Real: LONGLONG,
       ClassName: PUNICODE_STRING,
    ) -> ULONG;
-   #[doc = " Performs special kernel operations for console host applications. (win32u.dll)\n\n This includes reparenting the console window, allowing the console to pass foreground rights\n on to launched console subsystem applications and terminating attached processes.\n\n @param Command One of the CONSOLECONTROL values indicating which console control function should be executed.\n @param ConsoleInformation A pointer to one of the  structures specifying additional data for the requested console control function.\n @param ConsoleInformationLength The size of the structure pointed to by the ConsoleInformation parameter.\n @return Successful or errant status."]
+   #[doc = "Performs special kernel operations for console host applications. (win32u.dll)\n\n This includes reparenting the console window, allowing the console to pass foreground rights\n on to launched console subsystem applications and terminating attached processes.\n\n # Arguments\n\n* `Command` - One of the CONSOLECONTROL values indicating which console control function should be executed.\n * `ConsoleInformation` - A pointer to one of the structures specifying additional data for the requested console control function.\n * `ConsoleInformationLength` - The size of the structure pointed to by the ConsoleInformation parameter.\n # Returns\n\nSuccessful or errant status."]
    pub fn NtUserConsoleControl(
       Command: CONSOLECONTROL,
       ConsoleInformation: PVOID,
       ConsoleInformationLength: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Performs special kernel operations for console host applications. (user32.dll)\n\n This includes reparenting the console window, allowing the console to pass foreground rights\n on to launched console subsystem applications and terminating attached processes.\n\n @param Command One of the CONSOLECONTROL values indicating which console control function should be executed.\n @param ConsoleInformation A pointer to one of the  structures specifying additional data for the requested console control function.\n @param ConsoleInformationLength The size of the structure pointed to by the ConsoleInformation parameter.\n @return Successful or errant status."]
+   #[doc = "Performs special kernel operations for console host applications. (user32.dll)\n\n This includes reparenting the console window, allowing the console to pass foreground rights\n on to launched console subsystem applications and terminating attached processes.\n\n # Arguments\n\n* `Command` - One of the CONSOLECONTROL values indicating which console control function should be executed.\n * `ConsoleInformation` - A pointer to one of the structures specifying additional data for the requested console control function.\n * `ConsoleInformationLength` - The size of the structure pointed to by the ConsoleInformation parameter.\n # Returns\n\nSuccessful or errant status."]
    pub fn ConsoleControl(
       Command: CONSOLECONTROL,
       ConsoleInformation: PVOID,
       ConsoleInformationLength: ULONG,
    ) -> NTSTATUS;
-   #[doc = " Opens the specified window station.\n\n @param ObjectAttributes The name of the window station to be opened. Window station names are case-insensitive. This window station must belong to the current session.\n @param DesiredAccess The access to the window station.\n @return Successful or errant status."]
+   #[doc = "Opens the specified window station.\n\n # Arguments\n\n* `ObjectAttributes` - The name of the window station to be opened. Window station names are case-insensitive. This window station must belong to the current session.\n * `DesiredAccess` - The access to the window station.\n # Returns\n\nSuccessful or errant status."]
    pub fn NtUserOpenWindowStation(
       ObjectAttributes: OBJECT_ATTRIBUTES,
       DesiredAccess: ACCESS_MASK,
