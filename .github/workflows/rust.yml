@@ -28,7 +28,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         wget_release_id: latest
     - name: Install Build Tools
-      run: winget install -e --id Microsoft.VisualStudio.2022.BuildTools --disable-interactivity --accept-source-agreements
+      run: |
+        winget install -e --id Git.Git --disable-interactivity --accept-source-agreements
     - uses: actions/checkout@v4
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
