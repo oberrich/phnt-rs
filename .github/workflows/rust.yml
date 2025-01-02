@@ -32,9 +32,6 @@ jobs:
         install: >-
           curl
           git
-    - name: Install Build Tools
-      run: |
-        winget install -e --id Git.Git --disable-interactivity --accept-source-agreements
     - uses: actions/checkout@v4
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
