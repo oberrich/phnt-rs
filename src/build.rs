@@ -97,7 +97,7 @@ mod doxygen {
                      first_see_also = false;
                   }
 
-                  res.push(format!("\t{}", format_ref(take_word(&mut toks))));
+                  res.push(format!("> {}", format_ref(take_word(&mut toks))));
                }
                "a" | "e" | "em" => res.push(format!("_{}_", take_word(&mut toks))),
                "b" => res.push(format!("**{}**", take_word(&mut toks))),
