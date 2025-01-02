@@ -15,9 +15,11 @@ jobs:
         target: [aarch64-pc-windows-msvc, x86_64-pc-windows-msvc, i686-pc-windows-msvc]
         exclude:
           - os: windows-11_aarch64
-            target: [x86_64-pc-windows-msvc, i686-pc-windows-msvc]
+            target: x86_64-pc-windows-msvc
+          - os: windows-11_aarch64
+            target: i686-pc-windows-msvc
           - os: windows-2025
-            target: [aarch64-pc-windows-msvc]
+            target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
