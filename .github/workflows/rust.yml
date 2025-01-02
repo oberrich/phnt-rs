@@ -28,8 +28,6 @@ jobs:
         irm https://github.com/asheroto/winget-install/releases/latest/download/winget-install.ps1 | iex
         winget install -e --id Git.Git --disable-interactivity --accept-source-agreements
     - uses: actions/checkout@v4
-      with:
-        submodules: recursive
     - name: Install Rust
       uses: dtolnay/rust-toolchain@nightly
       with:
