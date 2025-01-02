@@ -23,7 +23,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Install Build Tools
-      shell: pwsh
+      shell: powershell
       run: |
         winget install -e --id Microsoft.VisualStudio.2022.BuildTools
     - uses: actions/checkout@v4
