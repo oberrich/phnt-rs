@@ -22,7 +22,13 @@ jobs:
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
+    - name: Install Build Tools
+      shell: pwsh
+      run: |
+        winget install -e --id Microsoft.VisualStudio.2022.BuildTools
     - uses: actions/checkout@v4
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Install Rust
       uses: dtolnay/rust-toolchain@nightly
       with:
