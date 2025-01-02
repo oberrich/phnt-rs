@@ -12,11 +12,12 @@ jobs:
     strategy:
       matrix:
         os: [windows-11_aarch64, windows-2025]
-        include:
+        target: [aarch64-pc-windows-msvc, x86_64-pc-windows-msvc, i686-pc-windows-msvc]
+        exclude:
           - os: windows-11_aarch64
-            target: [aarch64-pc-windows-msvc]
-          - os: windows-2025
             target: [x86_64-pc-windows-msvc, i686-pc-windows-msvc]
+          - os: windows-2025
+            target: [aarch64-pc-windows-msvc]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
