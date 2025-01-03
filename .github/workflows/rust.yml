@@ -35,19 +35,20 @@ jobs:
         Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
         refreshenv
         where bash
-    - name: Install Visual Studio Build Tools using winget
+    - name: Install and Update winget, then Install Visual Studio Build Tools
       shell: pwsh
       run: |
-        # Ensure winget is available (this step is usually not required on modern Windows runners)
+        # Ensure winget is installed and up-to-date
         if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
           Write-Host "winget is not installed. Installing now..."
           Invoke-WebRequest -Uri https://aka.ms/Microsoft.AppInstaller -OutFile "$env:TEMP\AppInstaller.msi"
           Start-Process msiexec.exe -ArgumentList "/i", "$env:TEMP\AppInstaller.msi", "/quiet", "/norestart" -Wait
+        } else {
+          Write-Host "winget is already installed."
         }
-        
-        # Install Visual Studio Build Tools
-        winget install -e --id Microsoft.VisualStudio.2022.BuildTools
 
+        # Install Visual Studio Build Tools with no confirmation prompts
+        winget install -e --id Microsoft.VisualStudio.2022.BuildTools --accept-source-agreements --accept-package-agreements
     - name: Verify Installation
       run: |
         # Check that the Visual Studio Build Tools were installed correctly
