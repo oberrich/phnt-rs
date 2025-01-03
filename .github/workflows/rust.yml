@@ -45,6 +45,15 @@ jobs:
         Start-Process -FilePath "$env:RUNNER_TEMP\install-git-arm64.exe" -ArgumentList "/VERYSILENT" -NoNewWindow -Wait
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\cmd" -Encoding utf8
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\bin" -Encoding utf8
+    - name: Download and install LLVM
+      run: |
+        Invoke-WebRequest -Uri https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.5/LLVM-19.1.5-woa64.exe -OutFile LLVM-19.1.5-woa64.exe
+        Start-Process -FilePath .\LLVM-19.1.5-woa64.exe -ArgumentList '/S', '/D=C:\LLVM' -Wait
+
+    - name: Set up libclang for bindgen
+      run: |
+        $env:LIBCLANG="C:\LLVM\bin\libclang.dll"
+        [System.Environment]::SetEnvironmentVariable("LIBCLANG", $env:LIBCLANG, [System.EnvironmentVariableTarget]::Machine)
 
     - uses: actions/checkout@v4
     - name: Install Rust
