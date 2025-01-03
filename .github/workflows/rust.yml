@@ -39,6 +39,8 @@ jobs:
     - name: Build
       shell: cmd
       run: |
+        where git
+        git --exec-path
         dir "C:/Program Files/Git/bin/"
         cargo build -vv -F regenerate --target ${{ matrix.target }}
     - name: Extract architecture from target triple and move bindings
