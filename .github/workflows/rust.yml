@@ -23,7 +23,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        shell: $GHCUP_MSYS2\\usr\\bin\\bash.exe
+        shell: C:\ghcup\msys64\usr\bin\bash.exe
     steps:
     - name: Install WinGet
       shell: powershell
@@ -38,7 +38,7 @@ jobs:
     - name: Build
       shell: cmd
       run: |
-        dir ${{ env.GHCUP_MSYS2 }}\\usr\\bin
+        dir C:\ghcup\msys64\usr\bin
         cargo build -vv -F regenerate --target ${{ matrix.target }}
     - name: Extract architecture from target triple and move bindings
       shell: bash
