@@ -31,7 +31,6 @@ jobs:
             "--includeRecommended",
             "--includeOptional",
             "--norestart",
-            "--passive",
             "--verbosity detailed",
             "--wait"
         )
