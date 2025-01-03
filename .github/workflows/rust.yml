@@ -23,6 +23,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Download and install Visual Studio Installer
+      if: matrix.os == 'windows-11-preview_aarch64'
       run: |
         Write-Host "Downloading Visual Studio Build Tools..."
         Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_buildtools.exe" -OutFile "$env:RUNNER_TEMP\vs_buildtools.exe"
