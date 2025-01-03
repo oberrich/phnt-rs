@@ -22,25 +22,29 @@ jobs:
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Download and install Visual Studio Installer
+    - name: Check if winget is installed
+      id: check-winget
+      shell: powershell
+      run: |
+        if (-Not (Get-Command "winget" -ErrorAction SilentlyContinue)) {
+          Write-Output "Winget is not installed."
+          exit 1
+        } else {
+          Write-Output "Winget is installed."
+        }
+
+    - name: Install App Installer if winget is missing
+      if: failure() # Runs if the previous step fails
+      shell: powershell
+      run: |
+        Invoke-WebRequest -Uri https://aka.ms/getwinget -OutFile WinGet.msixbundle
+        Add-AppxPackage -Path WinGet.msixbundle
+
+    - name: Install Build Tools
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
-        Write-Host "Downloading Visual Studio Build Tools..."
-        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_buildtools.exe" -OutFile "$env:RUNNER_TEMP\vs_buildtools.exe"
-        Write-Host "Download complete."
-
-        Write-Host "Starting Visual Studio Build Tools installation..."
-        $arguments = @(
-          '--add Microsoft.VisualStudio.Component.VC.CoreBuildTools',
-          '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64',
-          '--add Microsoft.VisualStudio.Component.VC.Llvm.Clang',
-          '--quiet',
-          '--wait',
-          '--norestart'
-        )
-        Start-Process -Wait -NoNewWindow -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList $arguments
-        Get-ChildItem -Path "C:\Program Files (x86)\Microsoft Visual Studio\2022\" -Recurse -Depth 6
-        
+        winget install Microsoft.VisualStudio.2022.BuildTools --force --override "--wait --passive --add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
+          
     - name: Install Rust (nightly, aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
