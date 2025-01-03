@@ -34,6 +34,7 @@ jobs:
         $arguments = @(
           '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64',
           '--add Microsoft.VisualStudio.Component.VC.Llvm.Clang',
+          '--add Microsoft.VisualStudio.Component.Windows11SDK.22000',
           '--quiet',
           '--wait',
           '--norestart'
