@@ -23,8 +23,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Install Git
-      shell: powershell
       if: matrix.os == 'windows-11-preview_aarch64'
+      shell: powershell
       run: |
         Set-ExecutionPolicy Bypass -Scope Process -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
@@ -35,9 +35,9 @@ jobs:
         Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
         refreshenv
         where bash
-    - name: Install Rustup with Nightly Toolchain
-      shell: powershell
+    - name: Install Rust (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
+      shell: powershell
       run: |
         # Download rustup-init.exe
         Invoke-WebRequest -Uri "https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe" -OutFile "$env:RUNNER_TEMP\rustup-init.exe"
@@ -45,15 +45,13 @@ jobs:
         # Run the installer with nightly as the default toolchain
         & "$env:RUNNER_TEMP\rustup-init.exe" -y --default-toolchain nightly
         
-        # Reload environment variables
-        refreshenv
-
         # Verify installation
         rustc --version
         cargo --version
         
     - uses: actions/checkout@v4
     - name: Install Rust
+      if: matrix.os != 'windows-11-preview_aarch64'
       uses: dtolnay/rust-toolchain@nightly
       with:
         targets: ${{ matrix.target }}
