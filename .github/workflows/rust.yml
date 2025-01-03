@@ -23,7 +23,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        shell: C:\Program Files\Git\bin\bash.exe
+        shell: "C:/Program Files/Git/bin/bash.exe"
     steps:
     - name: Install WinGet
       shell: powershell
@@ -38,7 +38,7 @@ jobs:
     - name: Build
       shell: cmd
       run: |
-        dir C:\Program Files\Git\bin\
+        dir "C:/Program Files/Git/bin/"
         cargo build -vv -F regenerate --target ${{ matrix.target }}
     - name: Extract architecture from target triple and move bindings
       shell: bash
