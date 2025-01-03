@@ -32,21 +32,17 @@ jobs:
             "--norestart",
             "--wait"
         )
-        $vsInstaller = "$env:RUNNER_TEMP\vs_buildtools.exe"
         Write-Host "Downloading Visual Studio Build Tools..."
-        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_buildtools.exe" -OutFile $vsInstaller
+        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_buildtools.exe" -OutFile "$env:RUNNER_TEMP\vs_buildtools.exe"
         Write-Host "Download complete."
 
         Write-Host "Starting Visual Studio Build Tools installation..."
-        $process = Start-Process -FilePath $vsInstaller -ArgumentList $arguments -NoNewWindow -PassThru
+        & "$env:RUNNER_TEMP\vs_buildtools.exe" $arguments
 
-        Write-Host "Waiting for the process to complete..."
         $process | Wait-Process
-        Write-Host "Process exit code: $($process.ExitCode)"
-
-        if ($process.ExitCode -ne 0) {
-          Write-Host "Installation failed with exit code $($process.ExitCode)."
-          exit $process.ExitCode
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "Installation failed with exit code $LASTEXITCODE."
+          exit $LASTEXITCODE
         }
 
         Write-Host "Visual Studio installation complete."
