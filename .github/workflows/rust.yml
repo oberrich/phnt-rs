@@ -31,7 +31,18 @@ jobs:
 
         Write-Host "Starting Visual Studio Build Tools installation..."
 
-        Start-Process -Wait -NoNewWindow -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList '--add Microsoft.VisualStudio.Component.Clang --add Microsoft.VisualStudio.Component.VC.tools.arm64 --wait --includeRecommended --quiet --norestart'
+        $arguments = @(
+          '--add Microsoft.VisualStudio.Component.VC.CoreBuildTools',
+          '--add Microsoft.VisualStudio.Component.VC.14.42.17.12.ARM64',
+          '--add Microsoft.VisualStudio.Component.Windows11SDK.22621',
+          '--add Microsoft.VisualStudio.Component.VC.Llvm.Clang',
+          '--add Microsoft.VisualStudio.Component.VC.Llvm.ClangToolset',
+          '--add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Llvm.Clang',
+          '--quiet',
+          '--wait',
+          '--norestart'
+        )
+        Start-Process -Wait -NoNewWindow -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList $arguments
         Get-ChildItem -Path "C:\Program Files (x86)\Microsoft Visual Studio" -Recurse -Depth 3
     - name: Install Rust (nightly, aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
