@@ -43,7 +43,7 @@ jobs:
           '--includeRecommended',
           '--quiet',
           '--wait',
-          '--norestart',
+          '--norestart'
         )
 
         Start-Process -Wait -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList $arguments
