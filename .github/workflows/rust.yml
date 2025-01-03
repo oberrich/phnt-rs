@@ -36,12 +36,15 @@ jobs:
         Write-Host "Download complete."
 
         Write-Host "Starting Visual Studio Build Tools installation..."
-        Start-Process -Wait -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList $arguments
-        if ($LASTEXITCODE -ne 0) {
-          Write-Host "Installation failed with exit code $LASTEXITCODE."
-          exit $LASTEXITCODE
-        }
+        Start-Process -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList $arguments -Wait -PassThru -NoNewWindow
+        $exitCode = $process.ExitCode
+        Write-Host "Installation completed with exit code $exitCode"
     
+        if ($exitCode -ne 0) {
+            Write-Host "Installation failed with exit code $exitCode."
+            exit $exitCode
+        }
+
         Write-Host "Visual Studio installation complete."
     - name: Download and install Git for Windows (ARM64)
       if: matrix.os == 'windows-11-preview_aarch64'
