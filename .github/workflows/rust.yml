@@ -25,11 +25,11 @@ jobs:
     - name: Download and install Visual Studio Installer
       run: |
         Write-Host "Downloading Visual Studio Build Tools..."
-        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_buildtools.exe" -OutFile "$env:RUNNER_TEMP\vs_buildtools.exe"
+        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_community.exe" -OutFile "$env:RUNNER_TEMP\vs_buildtools.exe"
         Write-Host "Download complete."
 
         Write-Host "Starting Visual Studio Build Tools installation..."
-        Start-Process -Wait -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList '--wait --add Microsoft.VisualStudio.Workload.MSBuildTools --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --includeOptional --quiet --norestart'
+        Start-Process -Wait -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList '--wait --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.Llvm.Clang --add Microsoft.VisualStudio.Component.VC.Llvm.ClangToolset --add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Llvm.Clang --includeRecommended --passive --norestart'
 
         Write-Host "Visual Studio installation complete."
     - name: Install Rust (nightly, aarch64)
