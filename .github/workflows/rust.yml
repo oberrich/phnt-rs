@@ -25,9 +25,9 @@ jobs:
     - name: Download and install Visual Studio Installer
       run: |
        $arguments = @(
-            "--add Microsoft.VisualStudio.Workload.NativeDesktop",
+            "--add Microsoft.VisualStudio.Workload.UniversalBuildTools",
+            "--add Microsoft.VisualStudio.Workload.VCTools",
             "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64",
-            "--add Microsoft.VisualStudio.Component.Windows11SDK.22000",
             "--includeRecommended",
             "--includeOptional",
             "--norestart",
