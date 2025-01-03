@@ -41,7 +41,7 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: pwsh
       run: |
-        $vsWherePath = "$env:ProgramFiles(x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+        $vsWherePath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
         if (Test-Path $vsWherePath) {
           # Run vswhere to verify the installation
           & $vsWherePath -latest -property installationPath
