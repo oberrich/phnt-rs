@@ -26,16 +26,11 @@ jobs:
       shell: powershell
       run: |
         irm https://github.com/asheroto/winget-install/releases/latest/download/winget-install.ps1 | iex
-    - name: Install Git
-      continue-on-error: true
-      shell: powershell
-      run: |
-        winget install -e --id Git.Git --disable-interactivity --accept-source-agreements
-        Get-ChildItem -Path Env:
     - uses: actions/checkout@v4
     - name: Install Rust
       uses: dtolnay/rust-toolchain@nightly
       with:
+        shell: ${{ env.GHCUP_MSYS2 }}\\bash.exe
         targets: ${{ matrix.target }}
         components: rustfmt
     - name: Build
