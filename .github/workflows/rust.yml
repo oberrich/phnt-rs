@@ -32,6 +32,13 @@ jobs:
         Start-Process "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList "--add Microsoft.VisualStudio.Workload.UniversalBuildTools --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.VC.Llvm.Clang --add Microsoft.VisualStudio.Component.VC.Llvm.ClangToolset --includeRecommended --includeOptional --passive --quiet --norestart --wait" -Wait -NoNewWindow
 
         Write-Host "Visual Studio installation complete."
+    - name: Install Rust (nightly, aarch64)
+      if: matrix.os == 'windows-11-preview_aarch64'
+      run: |
+        Add-Content -Path $env:GITHUB_PATH -Value "$env:USERPROFILE\.cargo\bin" -Encoding utf8
+        Invoke-WebRequest -Uri "https://win.rustup.rs/aarch64" -OutFile "$env:RUNNER_TEMP\rustup-init.exe"
+        & "$env:RUNNER_TEMP\rustup-init.exe" --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
+
     - name: Download and install Git for Windows (ARM64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
@@ -39,12 +46,6 @@ jobs:
         Start-Process -FilePath "$env:RUNNER_TEMP\install-git-arm64.exe" -ArgumentList "/VERYSILENT" -NoNewWindow -Wait
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\cmd" -Encoding utf8
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\bin" -Encoding utf8
-    - name: Install Rust (nightly, aarch64)
-      if: matrix.os == 'windows-11-preview_aarch64'
-      run: |
-        Add-Content -Path $env:GITHUB_PATH -Value "$env:USERPROFILE\.cargo\bin" -Encoding utf8
-        Invoke-WebRequest -Uri "https://win.rustup.rs/aarch64" -OutFile "$env:RUNNER_TEMP\rustup-init.exe"
-        & "$env:RUNNER_TEMP\rustup-init.exe" --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
 
     - uses: actions/checkout@v4
     - name: Install Rust
