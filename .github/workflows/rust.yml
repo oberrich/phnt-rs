@@ -25,7 +25,8 @@ jobs:
     - name: Download and install Visual Studio Installer
       run: |
        $arguments = @(
-            "--add Microsoft.VisualStudio.Component.Clang",
+            "--add Microsoft.VisualStudio.Component.VC.Llvm.Clang",
+            "--add Microsoft.VisualStudio.Component.VC.Llvm.ClangToolset",
             "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64",
             "--includeRecommended",
             "--norestart",
