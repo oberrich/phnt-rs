@@ -21,6 +21,9 @@ jobs:
           - os: windows-2025
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ env.GHCUP_MSYS2 }}\\bash.exe
     steps:
     - name: Install WinGet
       shell: powershell
@@ -30,7 +33,6 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@nightly
       with:
-        shell: ${{ env.GHCUP_MSYS2 }}\\bash.exe
         targets: ${{ matrix.target }}
         components: rustfmt
     - name: Build
