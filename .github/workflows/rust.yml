@@ -25,7 +25,7 @@ jobs:
     - name: Download and install Visual Studio Installer
       run: |
         Write-Host "Downloading Visual Studio Build Tools..."
-        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_community.exe" -OutFile "$env:RUNNER_TEMP\vs_buildtools.exe"
+        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_buildtools.exe" -OutFile "$env:RUNNER_TEMP\vs_buildtools.exe"
         Write-Host "Download complete."
 
         Write-Host "Starting Visual Studio Build Tools installation..."
