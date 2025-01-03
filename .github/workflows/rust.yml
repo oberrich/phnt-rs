@@ -32,7 +32,7 @@ jobs:
         Write-Host "Starting Visual Studio Build Tools installation..."
 
         $arguments = @(
-          '--add Microsoft.VisualStudio.Component.VC.14.29.16.11.ARM64',
+          '--add Microsoft.VisualStudio.Component.VC.ARM64',
           '--add Microsoft.VisualStudio.Component.VC.Llvm.Clang',
           '--quiet',
           '--wait',
