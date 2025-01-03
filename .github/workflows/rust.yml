@@ -39,6 +39,7 @@ jobs:
         where bash
     - uses: actions/checkout@v4
     - name: Install Rust
+      if: matrix.os != 'windows-11-preview_aarch64'
       uses: dtolnay/rust-toolchain@nightly
       with:
         targets: ${{ matrix.target }}
