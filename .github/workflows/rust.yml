@@ -29,7 +29,7 @@ jobs:
         Write-Host "Download complete."
 
         Write-Host "Starting Visual Studio Build Tools installation..."
-        Start-Process -Wait -NoNewWindow -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList '--norestart --passive --downloadThenInstall --includeRecommended --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.MSBuildTools --add Microsoft.VisualStudio.Component.VC.Tools.ARM64'
+        Start-Process -Wait -NoNewWindow -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList '--norestart --passive --quiet --downloadThenInstall --includeRecommended --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.MSBuildTools --add Microsoft.VisualStudio.Component.VC.Tools.ARM64'
 
         Write-Host "Visual Studio installation complete."
     - name: Install Rust (nightly, aarch64)
