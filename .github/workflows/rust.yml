@@ -37,17 +37,13 @@ jobs:
         refreshenv
         where bash
     - name: Download and install Visual Studio Installer
+      if: matrix.os == 'windows-11-preview_aarch64'
       run: |
-        # Define the temporary folder path
-        $tempFolder = $env:RUNNER_TEMP
-        # Download the Visual Studio Installer for ARM64 to the temporary folder
-        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_installer_arm64.exe" -OutFile "$tempFolder\vs_installer.exe"
-
-        # Run the installer with necessary components for C++ development
-        Start-Process -FilePath "$tempFolder\vs_installer.exe" -ArgumentList "--quiet --wait --add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended --norestart" -NoNewWindow -Wait
-
+        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_installer_arm64.exe" -OutFile "$env:RUNNER_TEMP\vs_installer.exe"
+        Start-Process -FilePath "$env:RUNNER_TEMP\vs_installer.exe" -ArgumentList "--quiet --wait --add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended --norestart" -NoNewWindow -Wait
         Write-Host "Visual Studio installation complete."
     - name: Add msbuild to PATH
+      if: matrix.os == 'windows-11-preview_aarch64'
       uses: microsoft/setup-msbuild@v2
       with:
         msbuild-architecture: arm64
