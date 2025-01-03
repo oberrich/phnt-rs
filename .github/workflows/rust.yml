@@ -21,9 +21,6 @@ jobs:
           - os: windows-2025
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        shell: "C:/Program Files/Git/bin/bash.exe"
     steps:
     - name: Install Git
       shell: powershell
