@@ -25,10 +25,22 @@ jobs:
     - name: Install Build Tools
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
+        $InstallerPath = "$env:RUNNER_TEMP\AppInstaller.msixbundle"
+
+        # Download the Winget installer to the temp folder
+        Invoke-WebRequest -Uri "https://aka.ms/getwinget" -OutFile $InstallerPath
+
+        # Close conflicting processes
         Get-Process Microsoft.DesktopAppInstaller -ErrorAction SilentlyContinue | Stop-Process -Force
         Get-Process AppInstaller -ErrorAction SilentlyContinue | Stop-Process -Force
-        Stop-Process -Name explorer -Force
-        Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
+        Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+
+        # Install the App Installer
+        Add-AppxPackage -Path $InstallerPath
+
+        # Verify installation
+        winget --version
+        
         winget install Microsoft.VisualStudio.2022.BuildTools --force --override "--wait --passive --add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
           
     - name: Install Rust (nightly, aarch64)
