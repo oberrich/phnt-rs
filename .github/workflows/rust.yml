@@ -21,9 +21,6 @@ jobs:
           - os: windows-2025
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        shell: "C:\\Program Files\\Git\\usr\\bin\\bash.exe"
     steps:
     - name: Install Git
       shell: powershell
@@ -33,6 +30,7 @@ jobs:
         iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
         choco install -y --no-progress git.install
         echo "C:\Program Files\Git\cmd" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        refreshenv
     - uses: actions/checkout@v4
     - name: Install Rust
       uses: dtolnay/rust-toolchain@nightly
@@ -40,13 +38,13 @@ jobs:
         targets: ${{ matrix.target }}
         components: rustfmt
     - name: Build
-      shell: cmd
       run: |
         where git
         git --exec-path
         dir "C:/Program Files/Git/usr/bin/"
         cargo build -vv -F regenerate --target ${{ matrix.target }}
     - name: Extract architecture from target triple and move bindings
+      shell: bash
       run: |
           # Extract architecture (i686, x86_64 or aarch64) from target triple
           ARCH=$(echo "${{ matrix.target }}" | cut -d'-' -f1)
@@ -77,7 +75,6 @@ jobs:
         name: ${{ env.ARCH }}_bindgen.rs
         path: src/ffi/${{ env.ARCH }}_bindgen.rs
     - name: Run tests
-      shell: cmd
       run: cargo test -vv -F regenerate --target ${{ matrix.target }}
       
   commit-and-push:
