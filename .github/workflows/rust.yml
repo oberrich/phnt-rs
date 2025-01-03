@@ -27,6 +27,7 @@ jobs:
       run: |
         irm https://github.com/asheroto/winget-install/releases/latest/download/winget-install.ps1 | iex
         winget install -e --id Git.Git --disable-interactivity --accept-source-agreements
+        Get-ChildItem -Path Env:
     - uses: actions/checkout@v4
     - name: Install Rust
       uses: dtolnay/rust-toolchain@nightly
