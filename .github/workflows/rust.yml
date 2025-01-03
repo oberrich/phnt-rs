@@ -30,25 +30,16 @@ jobs:
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
         iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
         choco install git.install --params "'/GitAndUnixToolsOnPath /WindowsTerminal /NoAutoCrlf'" -y --no-progress
-        choco install visualstudio2022buildtools --package-parameters '--add Microsoft.VisualStudio.Workload.MSVC --add Microsoft.VisualStudio.Component.Windows10SDK.19041' --yes --no-progress
         Get-Content C:\ProgramData\chocolatey\logs\chocolatey.log
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\cmd" -Encoding utf8
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\bin" -Encoding utf8
         Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
         refreshenv
         where bash
-    - name: Verify Visual Studio Build Tools Installation
-      if: matrix.os == 'windows-11-preview_aarch64'
-      shell: powershell
-      run: |
-        $vsWherePath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
-        if (Test-Path $vsWherePath) {
-          # Run vswhere to verify the installation
-          & $vsWherePath -latest -property installationPath
-        } else {
-          Write-Error "vswhere.exe was not found. Visual Studio Build Tools may not have installed correctly."
-          exit 1
-        }
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v2
+      with:
+        msbuild-architecture: arm64
     - name: Install Rust (nightly, aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
