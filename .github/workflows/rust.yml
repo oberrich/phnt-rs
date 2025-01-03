@@ -31,8 +31,9 @@ jobs:
     - name: Install Build Tools
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
-        choco install visualstudio2022buildtools --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US" --confirm
-          
+        choco install -y visualstudio2022buildtools
+        choco install -y visualstudio2022-workload-nativedesktop --package-parameters "--add Microsoft.VisualStudio.Component.VC.Llvm.Clang --add Microsoft.VisualStudio.Component.VC.Llvm.ClangToolset"
+
     - name: Install Rust (nightly, aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
