@@ -25,8 +25,30 @@ jobs:
     - name: Download and install Visual Studio Installer
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
-        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_buildtools.exe" -OutFile "$env:RUNNER_TEMP\vs_buildtools.exe"
-        Start-Process -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList "--add Microsoft.VisualStudio.Component.Clang", "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64", "--includeRecommended, "--norestart", "--wait" -NoNewWindow -PassThru
+       $arguments = @(
+            "--add Microsoft.VisualStudio.Component.Clang",
+            "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64",
+            "--includeRecommended",
+            "--norestart",
+            "--wait"
+        )
+        $vsInstaller = "$env:RUNNER_TEMP\vs_buildtools.exe"
+        Write-Host "Downloading Visual Studio Build Tools..."
+        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_buildtools.exe" -OutFile $vsInstaller
+        Write-Host "Download complete."
+
+        Write-Host "Starting Visual Studio Build Tools installation..."
+        $process = Start-Process -FilePath $vsInstaller -ArgumentList $arguments -NoNewWindow -PassThru
+
+        Write-Host "Waiting for the process to complete..."
+        $process | Wait-Process
+        Write-Host "Process exit code: $($process.ExitCode)"
+
+        if ($process.ExitCode -ne 0) {
+          Write-Host "Installation failed with exit code $($process.ExitCode)."
+          exit $process.ExitCode
+        }
+
         Write-Host "Visual Studio installation complete."
     - name: Download and install Git for Windows (ARM64)
       if: matrix.os == 'windows-11-preview_aarch64'
