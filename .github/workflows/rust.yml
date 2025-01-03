@@ -25,10 +25,19 @@ jobs:
     - name: Install Build Tools
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
+        # Ensure NuGet Provider is Installed
         Install-PackageProvider -Name NuGet -Force | Out-Null
+    
+        # Install Microsoft.UI.Xaml.2.8 via NuGet
+        nuget install Microsoft.UI.Xaml -Version 2.8.3 -OutputDirectory .\XamlPackage
+    
+        # Find and Install the Appx File
+        $xamlPath = Get-ChildItem -Path .\XamlPackage -Recurse -Filter "*.appx" | Select-Object -First 1 -ExpandProperty FullName
+        Add-AppxPackage -Path $xamlPath
+    
+        # Repair WinGet Package Manager
         Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery | Out-Null
         Repair-WinGetPackageManager -IncludePrerelease
-
 
         # Verify installation
         winget --version
