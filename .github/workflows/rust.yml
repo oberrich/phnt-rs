@@ -25,7 +25,9 @@ jobs:
     - name: Download and install Visual Studio Installer
       run: |
        $arguments = @(
-            "--add Microsoft.VisualStudio.Workload.NativeDesktop"
+            "--add Microsoft.VisualStudio.Workload.NativeDesktop",
+            "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+            "--add Microsoft.VisualStudio.Component.Windows11SDK.22000"
             "--includeRecommended",
             "--includeOptional",
             "--norestart",
@@ -38,7 +40,7 @@ jobs:
         Write-Host "Download complete."
 
         Write-Host "Starting Visual Studio Build Tools installation..."
-        Start-Process -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList $arguments -Wait -PassThru -NoNewWindow
+        Start-Process -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList $arguments -Wait -NoNewWindow
         
         Write-Host "Visual Studio installation complete."
     - name: Download and install Git for Windows (ARM64)
