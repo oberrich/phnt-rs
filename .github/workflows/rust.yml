@@ -40,7 +40,7 @@ jobs:
       run: |
         echo "%USERPROFILE%\.cargo\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         Invoke-WebRequest -Uri https://win.rustup.rs/aarch64 -OutFile rustup-init.exe
-        .\rustup-init.exe -y --default-toolchain nightly
+        &"%USERPROFILE%\.cargo\bin\rustup-init.exe" -y --default-toolchain nightly
         
     - name: Install Rust 2 (nightly, aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
