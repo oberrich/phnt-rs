@@ -32,6 +32,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install Rust
       uses: dtolnay/rust-toolchain@nightly
+      continue-on-error: true
       with:
         targets: ${{ matrix.target }}
         components: rustfmt
@@ -72,6 +73,7 @@ jobs:
         name: ${{ env.ARCH }}_bindgen.rs
         path: src/ffi/${{ env.ARCH }}_bindgen.rs
     - name: Run tests
+      shell: cmd
       run: cargo test -vv -F regenerate --target ${{ matrix.target }}
       
   commit-and-push:
