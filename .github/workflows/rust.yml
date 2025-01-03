@@ -44,10 +44,9 @@ jobs:
       run: |
         where git
         git --exec-path
-        dir "C:/Program Files/Git/bin/"
+        dir "C:/Program Files/Git/usr/bin/"
         cargo build -vv -F regenerate --target ${{ matrix.target }}
     - name: Extract architecture from target triple and move bindings
-      shell: bash
       run: |
           # Extract architecture (i686, x86_64 or aarch64) from target triple
           ARCH=$(echo "${{ matrix.target }}" | cut -d'-' -f1)
