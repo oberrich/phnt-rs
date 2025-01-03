@@ -25,6 +25,9 @@ jobs:
     - name: Install Build Tools
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
+        Get-Process Microsoft.DesktopAppInstaller -ErrorAction SilentlyContinue | Stop-Process -Force
+        Get-Process AppInstaller -ErrorAction SilentlyContinue | Stop-Process -Force
+        Stop-Process -Name explorer -Force
         Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
         winget install Microsoft.VisualStudio.2022.BuildTools --force --override "--wait --passive --add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
           
