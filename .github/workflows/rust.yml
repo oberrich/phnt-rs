@@ -55,16 +55,8 @@ jobs:
       run: |
         Add-Content -Path $env:GITHUB_PATH -Value "$env:USERPROFILE\.cargo\bin" -Encoding utf8
         Invoke-WebRequest -Uri "https://win.rustup.rs/aarch64" -OutFile "$env:RUNNER_TEMP\rustup-init.exe"
-        & "$env:RUNNER_TEMP\rustup-init.exe" -y --default-toolchain nightly
+        & "$env:RUNNER_TEMP\rustup-init.exe" --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
 
-    - name: Install Rust 2 (nightly, aarch64)
-      if: matrix.os == 'windows-11-preview_aarch64'
-      run: |
-        where cargo
-        where rustc
-        where rustup
-        rustup toolchain install nightly
-        rustup target add aarch64-pc-windows-msvc --toolchain nightly
     - uses: actions/checkout@v4
     - name: Install Rust
       if: matrix.os != 'windows-11-preview_aarch64'
