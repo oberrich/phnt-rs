@@ -23,31 +23,22 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Download and install Git for Windows (ARM64)
+      if: matrix.os == 'windows-11-preview_aarch64'
       run: |
-        Set-ExecutionPolicy Bypass -Scope Process -Force
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-        choco install git.install --params "'/GitAndUnixToolsOnPath /WindowsTerminal /NoAutoCrlf'" -y --no-progress
-        Get-Content C:\ProgramData\chocolatey\logs\chocolatey.log
+        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+        irm get.scoop.sh | iex
+        scoop install git llvm@18.1.8
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\cmd" -Encoding utf8
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\bin" -Encoding utf8
-        Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
-        refreshenv
+    - name: Verify LLVM installation
+      if: matrix.os == 'windows-11-preview_aarch64'
+      run: llvm --version
     - name: Download and install Visual Studio Installer
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
         Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_community.exe" -OutFile "$env:RUNNER_TEMP\vs_community.exe"
         Start-Process -FilePath "$env:RUNNER_TEMP\vs_community.exe" -ArgumentList "--quiet --wait --add Microsoft.VisualStudio.Workload.UniversalBuildTools --includeRecommended --norestart" -NoNewWindow -Wait
         Write-Host "Visual Studio installation complete."
-    - name: Download and Install LLVM
-      if: matrix.os == 'windows-11-preview_aarch64'
-      run: |
-        Invoke-WebRequest -Uri "https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/LLVM-18.1.8-woa64.exe" -OutFile "$env:RUNNER_TEMP\LLVM-18.1.8-woa64.exe"
-        Start-Process -Wait -FilePath "$env:RUNNER_TEMP\LLVM-18.1.8-woa64.exe" -ArgumentList "/quiet"
-        Write-Host "LLVM installation complete."
-    - name: Verify LLVM installation
-      if: matrix.os == 'windows-11-preview_aarch64'
-      run: llvm --version
     - name: Install Rust (nightly, aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
