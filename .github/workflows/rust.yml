@@ -22,18 +22,28 @@ jobs:
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
+    - name: Download LLVM Installer
+      run: |
+        Invoke-WebRequest -Uri "https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.5/LLVM-19.1.5-woa64.exe" -OutFile "LLVM-19.1.5-woa64.exe"
+        Start-Process -FilePath "LLVM-19.1.5-woa64.exe" -ArgumentList '/S' -NoNewWindow -Wait  # The /S flag runs the installer silently
+          
+        $llvmPath = "C:\Program Files\LLVM\bin\clang.exe"
+        if (Test-Path $llvmPath) {
+          Write-Host "LLVM is installed successfully."
+        } else {
+          Write-Host "LLVM installation failed."
+          exit 1
+        }
     - name: Install Chocolatey
       run: |
         Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
         Add-Content -Path $env:GITHUB_PATH -Value "C:\ProgramData\chocolatey\bin" -Encoding utf8
 
-
     - name: Install Build Tools
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
         choco install visualstudio2022buildtools -y --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
-        choco install llvm -y
-        
+
     - name: Install Rust (nightly, aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
