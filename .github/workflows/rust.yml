@@ -27,7 +27,7 @@ jobs:
        $arguments = @(
             "--add Microsoft.VisualStudio.Workload.NativeDesktop",
             "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64",
-            "--add Microsoft.VisualStudio.Component.Windows11SDK.22000"
+            "--add Microsoft.VisualStudio.Component.Windows11SDK.22000",
             "--includeRecommended",
             "--includeOptional",
             "--norestart",
