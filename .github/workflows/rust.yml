@@ -22,10 +22,13 @@ jobs:
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Install cygwin
+    - name: Install WinGet
       shell: powershell
       run: |
         irm https://github.com/asheroto/winget-install/releases/latest/download/winget-install.ps1 | iex
+    - name: Install Git
+      shell: powershell
+      run: |
         winget install -e --id Git.Git --disable-interactivity --accept-source-agreements
         Get-ChildItem -Path Env:
     - uses: actions/checkout@v4
