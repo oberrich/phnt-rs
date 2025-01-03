@@ -34,11 +34,22 @@ jobs:
         Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
         refreshenv
         where bash
-    - name: Install Rustup
+    - name: Install Rustup with Nightly Toolchain
       shell: powershell
       run: |
+        # Download rustup-init.exe
         Invoke-WebRequest -Uri "https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe" -OutFile "$env:RUNNER_TEMP\rustup-init.exe"
-        echo "$env:RUNNER_TEMP" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        
+        # Run the installer with nightly as the default toolchain
+        & "$env:RUNNER_TEMP\rustup-init.exe" -y --default-toolchain nightly
+        
+        # Reload environment variables
+        refreshenv
+
+        # Verify installation
+        rustc --version
+        cargo --version
+        
     - uses: actions/checkout@v4
     - name: Install Rust
       uses: dtolnay/rust-toolchain@nightly
