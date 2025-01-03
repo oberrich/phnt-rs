@@ -30,12 +30,12 @@ jobs:
 
         Write-Host "Starting Visual Studio Build Tools installation..."
         Start-Process "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList "`
-              --add Microsoft.VisualStudio.Workload.NativeDesktop `
+              --add Microsoft.VisualStudio.Workload.UniversalBuildTools `
               --add Microsoft.VisualStudio.Workload.VCTools `
-              --add Microsoft.VisualStudio.Component.VC.Tools.arm64 `
+              --add Microsoft.VisualStudio.Component.VC.Tools.ARM64 `
               --add Microsoft.VisualStudio.Component.VC.Llvm.Clang `
               --add Microsoft.VisualStudio.Component.VC.Llvm.ClangToolset `
-              --includeRecommended --passive --quiet --norestart --wait" -Wait
+              --includeRecommended --includeOptional --passive --quiet --norestart --wait" -Wait
               
         Write-Host "Visual Studio installation complete."
     - name: Download and install Git for Windows (ARM64)
