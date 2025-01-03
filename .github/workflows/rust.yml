@@ -27,7 +27,7 @@ jobs:
       run: |
         Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
         irm get.scoop.sh | iex
-        scoop install git llvm@18.1.8
+        scoop install 7zip make git swig ccache llvm@18.1.8 cmake ninja python@3.11.9 perl
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\cmd" -Encoding utf8
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\bin" -Encoding utf8
     - name: Verify LLVM installation
