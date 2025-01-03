@@ -37,7 +37,7 @@ jobs:
         Write-Host "Download complete."
 
         Write-Host "Starting Visual Studio Build Tools installation..."
-        Start-Process -FilePath $installerPath -ArgumentList $arguments -Wait -NoNewWindow
+        Start-Process -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList $arguments -Wait -NoNewWindow
     
         if ($LASTEXITCODE -ne 0) {
           Write-Host "Installation failed with exit code $LASTEXITCODE."
