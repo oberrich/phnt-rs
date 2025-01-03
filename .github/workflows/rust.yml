@@ -33,7 +33,8 @@ jobs:
             "--includeRecommended",
             "--norestart",
             "--verbosity detailed",
-            "--wait"
+            "--wait",
+            "--passive"
         )
         Write-Host "Downloading Visual Studio Build Tools..."
         Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_buildtools.exe" -OutFile "$env:RUNNER_TEMP\vs_buildtools.exe"
