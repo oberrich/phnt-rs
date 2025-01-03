@@ -23,7 +23,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        shell: ${{ env.GHCUP_MSYS2 }}\\bash.exe
+        shell: ${{ env.GHCUP_MSYS2 }}\\usr\\bin\\bash.exe
     steps:
     - name: Install WinGet
       shell: powershell
@@ -37,7 +37,9 @@ jobs:
         components: rustfmt
     - name: Build
       shell: cmd
-      run: cargo build -vv -F regenerate --target ${{ matrix.target }}
+      run: |
+        dir ${{ env.GHCUP_MSYS2 }}\\usr\\bin
+        cargo build -vv -F regenerate --target ${{ matrix.target }}
     - name: Extract architecture from target triple and move bindings
       shell: bash
       run: |
