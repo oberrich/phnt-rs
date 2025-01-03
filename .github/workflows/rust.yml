@@ -39,7 +39,7 @@ jobs:
         where bash
     - name: Verify Visual Studio Build Tools Installation
       if: matrix.os == 'windows-11-preview_aarch64'
-      shell: pwsh
+      shell: powershell
       run: |
         $vsWherePath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
         if (Test-Path $vsWherePath) {
