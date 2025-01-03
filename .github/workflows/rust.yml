@@ -22,12 +22,10 @@ jobs:
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Install winget
-      uses: Cyberboss/install-winget@v1
-
     - name: Install Build Tools
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
+        Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
         winget install Microsoft.VisualStudio.2022.BuildTools --force --override "--wait --passive --add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
           
     - name: Install Rust (nightly, aarch64)
