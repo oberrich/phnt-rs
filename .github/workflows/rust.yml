@@ -22,6 +22,12 @@ jobs:
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
+    - name: Download and install Visual Studio Installer
+      if: matrix.os == 'windows-11-preview_aarch64'
+      run: |
+        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_buildtools.exe" -OutFile "$env:RUNNER_TEMP\vs_buildtools.exe"
+        Start-Process -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList "--add Microsoft.VisualStudio.Component.Clang --add Microsoft.VisualStudio.Component.VC.tools.arm64 --includeRecommended --norestart --wait" -NoNewWindow -Wait
+        Write-Host "Visual Studio installation complete."
     - name: Download and install Git for Windows (ARM64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
@@ -29,20 +35,6 @@ jobs:
         Start-Process -FilePath "$env:RUNNER_TEMP\install-git-arm64.exe" -ArgumentList "/VERYSILENT" -NoNewWindow -Wait
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\cmd" -Encoding utf8
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\bin" -Encoding utf8
-    - name: Download and install Visual Studio Installer
-      if: matrix.os == 'windows-11-preview_aarch64'
-      run: |
-        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_buildtools.exe" -OutFile "$env:RUNNER_TEMP\vs_buildtools.exe"
-        Start-Process -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList `
-          "--add Microsoft.VisualStudio.Workload.UniversalBuildTools", `
-          "--add Microsoft.VisualStudio.Component.VC.Llvm.Clang", `
-          "--add Microsoft.VisualStudio.Workload.MSBuildTools", `
-          "--add Microsoft.VisualStudio.Workload.VCTool", `
-          "--add Microsoft.VisualStudio.Workload.UniversalBuildTools", `
-          "--add Microsoft.VisualStudio.Component.Windows11SDK.22000", `
-          "--includeRecommended --includeOptional --norestart --wait" `
-          -NoNewWindow -Wait
-        Write-Host "Visual Studio installation complete."
     - name: Install Rust (nightly, aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
