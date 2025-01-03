@@ -35,6 +35,23 @@ jobs:
         Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
         refreshenv
         where bash
+    - name: Install Visual Studio Build Tools using winget
+      shell: pwsh
+      run: |
+        # Ensure winget is available (this step is usually not required on modern Windows runners)
+        if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+          Write-Host "winget is not installed. Installing now..."
+          Invoke-WebRequest -Uri https://aka.ms/Microsoft.AppInstaller -OutFile "$env:TEMP\AppInstaller.msi"
+          Start-Process msiexec.exe -ArgumentList "/i", "$env:TEMP\AppInstaller.msi", "/quiet", "/norestart" -Wait
+        }
+        
+        # Install Visual Studio Build Tools
+        winget install -e --id Microsoft.VisualStudio.2022.BuildTools
+
+    - name: Verify Installation
+      run: |
+        # Check that the Visual Studio Build Tools were installed correctly
+        & "$env:ProgramFiles(x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\vswhere.exe" -latest -property installationPath
     - name: Install Rust (nightly, aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
