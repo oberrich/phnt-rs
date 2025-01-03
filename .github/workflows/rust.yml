@@ -22,23 +22,8 @@ jobs:
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Check if winget is installed
-      id: check-winget
-      shell: powershell
-      run: |
-        if (-Not (Get-Command "winget" -ErrorAction SilentlyContinue)) {
-          Write-Output "Winget is not installed."
-          exit 1
-        } else {
-          Write-Output "Winget is installed."
-        }
-
-    - name: Install App Installer if winget is missing
-      if: failure() # Runs if the previous step fails
-      shell: powershell
-      run: |
-        Invoke-WebRequest -Uri https://aka.ms/getwinget -OutFile WinGet.msixbundle
-        Add-AppxPackage -Path WinGet.msixbundle
+    - name: Install winget
+      uses: Cyberboss/install-winget@v1
 
     - name: Install Build Tools
       if: matrix.os == 'windows-11-preview_aarch64'
