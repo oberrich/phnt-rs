@@ -23,7 +23,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        shell: ${{ env.GHCUP_MSYS2 }}\\usr\\bin\\bash.exe
+        shell: $GHCUP_MSYS2\\usr\\bin\\bash.exe
     steps:
     - name: Install WinGet
       shell: powershell
