@@ -25,7 +25,7 @@ jobs:
     - name: Download LLVM Installer
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
-        Invoke-WebRequest -Uri "https://sourceforge.net/projects/the-llvm-compiler.mirror/files/llvmorg-19.1.5/LLVM-19.1.5-woa64.exe/download" -OutFile "LLVM-19.1.5-woa64.exe"
+        Invoke-WebRequest -Uri "https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.3/LLVM-19.1.3-woa64.exe#/dl.7" -OutFile "LLVM-19.1.5-woa64.exe"
         Write-Host "LLVM finished downloading."
         Start-Process -FilePath "LLVM-19.1.5-woa64.exe" -ArgumentList '/S' -NoNewWindow -Wait  # The /S flag runs the installer silently
           
