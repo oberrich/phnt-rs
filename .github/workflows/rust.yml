@@ -39,7 +39,7 @@ jobs:
           '--norestart'
         )
         Start-Process -Wait -NoNewWindow -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList $arguments
-        Get-ChildItem -Path "C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC\Tools" -Recurse -Depth 3
+        Get-ChildItem -Path "C:\Program Files (x86)\Microsoft Visual Studio\2022\" -Recurse -Depth 6
         
     - name: Install Rust (nightly, aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
