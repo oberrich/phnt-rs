@@ -31,6 +31,7 @@ jobs:
         iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
         choco install git.install --params "'/GitAndUnixToolsOnPath /WindowsTerminal /NoAutoCrlf'" -y --no-progress
         choco install visualstudio2022buildtools --yes --no-progress
+        Get-Content C:\ProgramData\chocolatey\logs\chocolatey.log
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\cmd" -Encoding utf8
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\bin" -Encoding utf8
         Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
