@@ -25,19 +25,15 @@ jobs:
     - name: Download and install Git for Windows (ARM64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
-        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-        irm get.scoop.sh | iex
-        scoop install 7zip make git swig ccache llvm@18.1.8 cmake ninja python@3.11.9 perl
+        Invoke-WebRequest -Uri "https://github.com/git-for-windows/git/releases/download/v2.48.0-rc1.windows.1/Git-2.48.0-rc1-arm64.exe" -OutFile "$env:RUNNER_TEMP\install-git-arm64.exe"
+        Start-Process -FilePath "$env:RUNNER_TEMP\install-git-arm64.exe" -ArgumentList "/VERYSILENT" -NoNewWindow -Wait
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\cmd" -Encoding utf8
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\bin" -Encoding utf8
-    - name: Verify LLVM installation
-      if: matrix.os == 'windows-11-preview_aarch64'
-      run: llvm --version
     - name: Download and install Visual Studio Installer
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
         Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_community.exe" -OutFile "$env:RUNNER_TEMP\vs_community.exe"
-        Start-Process -FilePath "$env:RUNNER_TEMP\vs_community.exe" -ArgumentList "--quiet --wait --add Microsoft.VisualStudio.Workload.UniversalBuildTools --includeRecommended --norestart" -NoNewWindow -Wait
+        Start-Process -FilePath "$env:RUNNER_TEMP\vs_community.exe" -ArgumentList "--quiet --wait --add Microsoft.VisualStudio.Workload.UniversalBuildTools --add Microsoft.VisualStudio.Component.VC.Llvm.Clang --includeRecommended --norestart" -NoNewWindow -Wait
         Write-Host "Visual Studio installation complete."
     - name: Install Rust (nightly, aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
