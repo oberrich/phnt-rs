@@ -62,6 +62,7 @@ jobs:
         where cargo
         where rustc
         where rustup
+        rustup toolchain install nightly
         rustup target add aarch64-pc-windows-msvc --toolchain nightly
     - uses: actions/checkout@v4
     - name: Install Rust
