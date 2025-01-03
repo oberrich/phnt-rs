@@ -40,7 +40,7 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
         Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_community.exe" -OutFile "$env:RUNNER_TEMP\vs_community.exe"
-        Start-Process -FilePath "$env:RUNNER_TEMP\vs_community.exe" -ArgumentList "--quiet --wait --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.Tools.arm64 --add Microsoft.VisualStudio.Component.Windows10SDK.arm64 --includeRecommended --norestart" -NoNewWindow -Wait
+        Start-Process -FilePath "$env:RUNNER_TEMP\vs_community.exe" -ArgumentList "--quiet --wait --add Microsoft.VisualStudio.Workload.UniversalBuildTools --includeRecommended --norestart" -NoNewWindow -Wait
         Write-Host "Visual Studio installation complete."
     - name: Install Rust (nightly, aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
