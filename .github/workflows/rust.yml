@@ -26,6 +26,7 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
         # Ensure NuGet Provider is Installed
+        Install-Package NuGet.CommandLine
         Install-PackageProvider -Name NuGet -Force | Out-Null
     
         # Install Microsoft.UI.Xaml.2.8 via NuGet
