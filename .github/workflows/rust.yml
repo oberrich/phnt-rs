@@ -32,7 +32,7 @@ jobs:
             "--includeOptional",
             "--norestart",
             "--passive",
-            "--quiet",
+            "--verbosity detailed",
             "--wait"
         )
         Write-Host "Downloading Visual Studio Build Tools..."
