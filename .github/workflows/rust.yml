@@ -78,8 +78,8 @@ jobs:
       
     - name: Build
       run: |
-        "PHNT_MODE=PHNT_MODE_USER" | Out-File -FilePath $env:GITHUB_ENV -Append
-        "PHNT_VERSION=PHNT_WIN11_24H2" | Out-File -FilePath $env:GITHUB_ENV -Append
+        $env:PHNT_VERSION="PHNT_WIN11_24H2"
+        $env:PHNT_MODE="PHNT_MODE_USER"
         cargo build -vv -F regenerate --target ${{ matrix.target }}
         
     - name: Extract architecture from target triple and move bindings
