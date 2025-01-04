@@ -22,18 +22,20 @@ jobs:
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Download LLVM
+    - name: Download LLVM (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       uses: robinraju/release-downloader@v1
       with:
         repository: 'llvm/llvm-project'
         tag: 'llvmorg-19.1.5'
         filename: 'LLVM-19.1.5-woa64.exe'
-    - name: Install LLVM
+        
+    - name: Install LLVM (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
         Start-Process -FilePath "LLVM-19.1.5-woa64.exe" -ArgumentList '/S' -NoNewWindow -Wait  # The /S flag runs the installer silently
-    - name: Install Build Tools
+        
+    - name: Install Build Tools (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
         Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol =System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
@@ -55,23 +57,28 @@ jobs:
         repository: 'git-for-windows/git'
         tag: 'v2.48.0-rc1.windows.1'
         filename: 'Git-2.48.0-rc1-arm64.exe'
+        
     - name: Install Git for Windows (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
         Start-Process -FilePath "Git-2.48.0-rc1-arm64.exe" -ArgumentList "/VERYSILENT" -NoNewWindow -Wait
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\cmd" -Encoding utf8
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\bin" -Encoding utf8
+        
     - name: Install Rust
       if: matrix.os != 'windows-11-preview_aarch64'
       uses: dtolnay/rust-toolchain@nightly
       with:
         targets: ${{ matrix.target }}
         components: rustfmt
+        
     - name: Checkout repository
       uses: actions/checkout@v4
+      
     - name: Build
       run: |
         cargo build -vv -F regenerate --target ${{ matrix.target }}
+        
     - name: Extract architecture from target triple and move bindings
       shell: bash
       run: |
@@ -103,6 +110,7 @@ jobs:
       with:
         name: ${{ env.ARCH }}_bindgen.rs
         path: src/ffi/${{ env.ARCH }}_bindgen.rs
+        
     - name: Run tests
       run: cargo test -vv -F regenerate --target ${{ matrix.target }}
       
@@ -113,16 +121,19 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        
       - name: Download generated files
         uses: actions/download-artifact@v4
         with:
           pattern: "*bindgen.rs"
           path: src/ffi
           merge-multiple: true
+          
       - name: Configure Git
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
+          
       - name: Commit and push changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
