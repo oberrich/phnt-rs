@@ -33,7 +33,7 @@ jobs:
     - name: Install LLVM (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
-        Start-Process -FilePath "LLVM-19.1.5-woa64.exe" -ArgumentList '/S' -NoNewWindow -Wait  # The /S flag runs the installer silently
+        Start-Process -FilePath "LLVM-19.1.5-woa64.exe" -ArgumentList '/S' -NoNewWindow -Wait
         
     - name: Install Build Tools (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
@@ -42,7 +42,7 @@ jobs:
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
         iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1')) 
         Add-Content -Path $env:GITHUB_PATH -Value "C:\ProgramData\chocolatey\bin" -Encoding utf8
-        choco install visualstudio2022buildtools -y --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
+        choco install visualstudio2022buildtools -y --no-progress --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
 
     - name: Install Nightly Rust (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
