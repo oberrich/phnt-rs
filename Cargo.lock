@@ -134,6 +134,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "doxygen-bindgen"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "60c9730e9e05d9b724245c1c0d62e06f2465d1f802e54ce1f1b53aa1f4e6c940"
+dependencies = [
+ "yap",
+]
+
+[[package]]
 name = "either"
 version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -262,10 +271,10 @@ dependencies = [
  "bindgen",
  "chrono",
  "cty",
+ "doxygen-bindgen",
  "nt-string",
  "regex",
  "windows-sys",
- "yap",
 ]
 
 [[package]]

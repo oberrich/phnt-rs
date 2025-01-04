@@ -35,99 +35,6 @@ fn main() {
 
 #[cfg_attr(docsrs, doc(cfg(feature = "regenerate")))]
 #[cfg(feature = "regenerate")]
-mod doxygen {
-   use yap::{IntoTokens, Tokens};
-   static SEPS: [char; 5] = [' ', '\t', '\r', '\n', '['];
-
-   fn format_ref(str: String) -> String {
-      assert!(!str.contains(' '));
-      // Don't turn URIs into code refs
-      if !str.contains("://") {
-         format!("[`{}`]", str)
-      } else {
-         str
-      }
-   }
-
-   fn take_word(toks: &mut impl Tokens<Item = char>) -> String {
-      toks
-         .take_while(|&c| !SEPS.into_iter().any(|s| c == s))
-         .collect::<String>()
-   }
-
-   fn skip_whitespace(toks: &mut impl Tokens<Item = char>) {
-      toks.skip_while(|c| c.is_ascii_whitespace());
-   }
-
-   pub fn transform(str: &str) -> String {
-      let mut res: Vec<String> = vec![];
-      let mut toks = str.into_tokens();
-      let mut first_param = true;
-      let mut first_see_also = true;
-
-      skip_whitespace(&mut toks);
-      while let Some(tok) = toks.next() {
-         if "@\\".chars().any(|c| c == tok) {
-            let tag = take_word(&mut toks);
-            skip_whitespace(&mut toks);
-            match tag.as_str() {
-               "param" => {
-                  if first_param {
-                     res.push("# Arguments\n\n".to_owned());
-                     first_param = false;
-                  }
-
-                  let (mut argument, mut attributes) = (take_word(&mut toks), "".to_owned());
-                  if argument.is_empty() {
-                     assert_eq!(toks.next().expect("has more input"), '[');
-                     attributes = toks.take_while(|&c| c != ']').collect::<String>();
-                     assert_eq!(toks.next().expect("has more input"), ']');
-                     attributes = format!(" [{}] ", attributes);
-                     skip_whitespace(&mut toks);
-                     argument = take_word(&mut toks);
-                  }
-
-                  res.push(format!("* `{}`{} -", argument, attributes));
-               }
-               "c" | "p" => res.push(format!("`{}`", take_word(&mut toks))),
-               "ref" => res.push(format_ref(take_word(&mut toks))),
-               "see" | "sa" => {
-                  if first_see_also {
-                     res.push("# See also\n\n".to_owned());
-                     first_see_also = false;
-                  }
-
-                  res.push(format!("> {}", format_ref(take_word(&mut toks))));
-               }
-               "a" | "e" | "em" => res.push(format!("_{}_", take_word(&mut toks))),
-               "b" => res.push(format!("**{}**", take_word(&mut toks))),
-               "note" => res.push("> **Note:** ".to_owned()),
-               "since" => res.push("> Available since: ".to_owned()),
-               "deprecated" => res.push("> **Deprecated** ".to_owned()),
-               "remark" | "remarks" => res.push("> ".to_owned()),
-               "li" => res.push("- ".to_owned()),
-               "par" => res.push("# ".to_owned()),
-               "returns" | "return" | "result" => res.push("# Returns\n\n".to_owned()),
-               "{" => { /* group start, not implemented  */ }
-               "}" => { /* group end, not implemented */ }
-               "brief" | "short" => {}
-               _ => {
-                  res.push(format!("{tok}{tag} "));
-               }
-            }
-         } else if tok == '\n' {
-            skip_whitespace(&mut toks);
-            res.push(format!("{tok}"));
-         } else {
-            res.push(format!("{tok}"));
-         }
-      }
-      res.join("")
-   }
-}
-
-#[cfg_attr(docsrs, doc(cfg(feature = "regenerate")))]
-#[cfg(feature = "regenerate")]
 mod regen {
    use regex::Regex;
    use std::collections::HashMap;
@@ -141,21 +48,11 @@ mod regen {
 
    impl ParseCallbacks for ProcessComments {
       fn process_comment(&self, comment: &str) -> Option<String> {
-         match std::panic::catch_unwind(|| crate::doxygen::transform(comment)) {
+         match doxygen_bindgen::transform(comment) {
             Ok(res) => Some(res),
             Err(err) => {
-               println!(
-                  "cargo:warning=Problem processing comment: {}\n{}",
-                  comment,
-                  if let Some(msg) = err.downcast_ref::<String>() {
-                     msg.as_str()
-                  } else if let Some(msg) = err.downcast_ref::<&str>() {
-                     msg
-                  } else {
-                     "Unknown panic type"
-                  }
-               );
-               Some(comment.to_owned())
+               println!("cargo:warning=Problem processing doxygen comment: {comment}\n{err}");
+               None
             }
          }
       }
