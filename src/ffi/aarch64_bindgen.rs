@@ -1,14 +1,16 @@
-// Generated at 2025-01-04 02:10:22.988224300 +00:00
+// Generated at 2025-01-04 02:23:43.394629100 +00:00
 #[cfg(not(target_arch = "aarch64"))]
 compile_error!("These bindings can only be used on `aarch64` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.");
 
 use cty;
+pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
 pub use windows_sys::Win32::Foundation::BOOL as BOOL;
 pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
-pub use windows_sys::Win32::Foundation::BOOLEAN as BOOLEAN;
-pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
 pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
+pub use windows_sys::Win32::Foundation::BOOLEAN as BOOLEAN;
 
+pub const PHNT_VERSION: u32 = self::PHNT_WIN11_24H2;
+pub const PHNT_MODE: u32 = self::PHNT_MODE_USER;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -186,8 +188,6 @@ pub const PHNT_WIN11: u32 = 114;
 pub const PHNT_WIN11_22H2: u32 = 115;
 pub const PHNT_WIN11_23H2: u32 = 116;
 pub const PHNT_WIN11_24H2: u32 = 117;
-pub const PHNT_MODE: u32 = 1;
-pub const PHNT_VERSION: u32 = 117;
 pub const MAXUCHAR: u32 = 255;
 pub const MAXUSHORT: u32 = 65535;
 pub const MAXULONG: u32 = 4294967295;
