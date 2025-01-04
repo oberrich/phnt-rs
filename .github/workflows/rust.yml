@@ -28,7 +28,7 @@ jobs:
       with:
         repository: 'llvm/llvm-project'
         tag: 'llvmorg-19.1.5'
-        filename: 'LLVM-19.1.5-woa64.exe'
+        fileName: 'LLVM-19.1.5-woa64.exe'
         
     - name: Install LLVM (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
@@ -57,7 +57,7 @@ jobs:
       with:
         repository: 'git-for-windows/git'
         tag: 'v2.48.0-rc1.windows.1'
-        filename: 'Git-2.48.0-rc1-arm64.exe'
+        fileName: 'Git-2.48.0-rc1-arm64.exe'
         
     - name: Install Git for Windows (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
