@@ -1,13 +1,13 @@
-// Generated at 2025-01-03 23:53:50.295990700 +00:00
+// Generated at 2025-01-04 00:49:32.215479400 +00:00
 #[cfg(not(target_arch = "x86_64"))]
 compile_error!("These bindings can only be used on `x86_64` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.");
 
 use cty;
-pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
 pub use windows_sys::Win32::Foundation::BOOL as BOOL;
 pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
-pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
 pub use windows_sys::Win32::Foundation::BOOLEAN as BOOLEAN;
+pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
+pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
 
 
 #[repr(C)]
@@ -75448,7 +75448,7 @@ unsafe extern "C" {
    ) -> NTSTATUS;
    pub fn BcdCopyObjects(
       BcdStoreHandle: HANDLE,
-      Characteristics: BCD_OBJECT_DESCRIPTION,
+      Characteristics: PBCD_OBJECT_DESCRIPTION,
       BcdCopyFlags: BCD_COPY_FLAGS,
       TargetStoreHandle: HANDLE,
    ) -> NTSTATUS;
@@ -79875,7 +79875,7 @@ unsafe extern "C" {
    pub fn RtlFlsGetValue(FlsIndex: ULONG, FlsData: *mut PVOID) -> NTSTATUS;
    pub fn RtlFlsGetValue2(FlsIndex: ULONG) -> PVOID;
    pub fn RtlFlsSetValue(FlsIndex: ULONG, FlsData: PVOID) -> NTSTATUS;
-   pub fn RtlProcessFlsData(ProcessHandle: HANDLE, FlsData: PPVOID) -> NTSTATUS;
+   pub fn RtlProcessFlsData(ProcessHandle: HANDLE, FlsData: *mut PVOID) -> NTSTATUS;
    pub fn RtlTlsAlloc(TlsIndex: PULONG) -> NTSTATUS;
    pub fn RtlTlsFree(TlsIndex: ULONG) -> NTSTATUS;
    pub fn RtlTlsSetValue(TlsIndex: ULONG, TlsData: PVOID) -> NTSTATUS;
