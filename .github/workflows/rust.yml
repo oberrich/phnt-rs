@@ -42,6 +42,7 @@ jobs:
         Write-Host "winget is installed successfully."
         winget install Microsoft.VisualStudio.2022.Community --override "--quiet --add Microsoft.VisualStudio.Workload.NativeDesktop"
         Write-Host "vs2022 is installed successfully."
+        $env:PATH = [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine)
         Start-Process -FilePath "LLVM-19.1.5-woa64.exe" -ArgumentList '/S' -NoNewWindow -Wait  # The /S flag runs the installer silently
         
         $llvmPath = "C:\Program Files\LLVM\bin\clang.exe"
