@@ -26,11 +26,11 @@ Crate Overview
   - [Functions][docs.rs/ext/functions]
   - [Macros][docs.rs/ext/macros]
 
-[github.com]:               https://github.com/oberrich/phnt-rs
-[github.com/ci]:            https://github.com/oberrich/phnt-rs/actions/workflows/rust.yml
-[github.com/ci/img]:        https://github.com/oberrich/phnt-rs/actions/workflows/rust.yml/badge.svg
+[github.com]:               https://github.com/delulusoft/phnt-rs
+[github.com/ci]:            https://github.com/delulusoft/phnt-rs/actions/workflows/rust.yml
+[github.com/ci/img]:        https://github.com/delulusoft/phnt-rs/actions/workflows/rust.yml/badge.svg
 [github.com/phnt_nightly]:  https://github.com/oberrich/phnt_nightly
-[github.com/src/build.rs]:  https://github.com/oberrich/phnt-rs/blob/master/src/build.rs
+[github.com/src/build.rs]:  https://github.com/delulusoft/phnt-rs/blob/master/src/build.rs
 [github.com/sysinf]:        https://github.com/winsiderss/systeminformer
 [github.com/sysinf/phnt]:   https://github.com/winsiderss/systeminformer/tree/master/phnt
 
