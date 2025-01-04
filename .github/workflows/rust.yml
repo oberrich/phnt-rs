@@ -78,6 +78,8 @@ jobs:
       
     - name: Build
       run: |
+        "PHNT_MODE=PHNT_MODE_USER" | Out-File -FilePath $env:GITHUB_ENV -Append
+        "PHNT_VERSION=PHNT_WIN11_24H2" | Out-File -FilePath $env:GITHUB_ENV -Append
         cargo build -vv -F regenerate --target ${{ matrix.target }}
         
     - name: Extract architecture from target triple and move bindings
@@ -93,8 +95,6 @@ jobs:
         fi
         # Set the architecture as an environment variable
         echo "ARCH=$ARCH" >> $GITHUB_ENV
-        echo "PHNT_MODE=PHNT_MODE_USER" >> $GITHUB_ENV
-        echo "PHNT_VERSION = PHNT_WIN11_24H2" >> $GITHUB_ENV
         
         # Path to the generated binding
         GENERATED_BINDING=$(find target/${{ matrix.target }}/debug/build -type f -name "${ARCH}_bindgen.rs")
