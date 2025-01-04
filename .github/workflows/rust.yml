@@ -33,18 +33,11 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
         Start-Process -FilePath "LLVM-19.1.5-woa64.exe" -ArgumentList '/S' -NoNewWindow -Wait  # The /S flag runs the installer silently
-        
-        $llvmPath = "C:\Program Files\LLVM\bin\clang.exe"
-        if (Test-Path $llvmPath) {
-          Write-Host "LLVM is installed successfully."
-        } else {
-          Write-Host "LLVM installation failed."
-          exit 1
-        }
     - name: Install Build Tools
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
-        Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+        Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol =System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
+        iex ((New-ObjecSystem.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'
         Add-Content -Path $env:GITHUB_PATH -Value "C:\ProgramData\chocolatey\bin" -Encoding utf8
         choco install visualstudio2022buildtools -y --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
 
@@ -68,41 +61,42 @@ jobs:
         Start-Process -FilePath "Git-2.48.0-rc1-arm64.exe" -ArgumentList "/VERYSILENT" -NoNewWindow -Wait
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\cmd" -Encoding utf8
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\bin" -Encoding utf8
-    - uses: actions/checkout@v4
     - name: Install Rust
       if: matrix.os != 'windows-11-preview_aarch64'
       uses: dtolnay/rust-toolchain@nightly
       with:
         targets: ${{ matrix.target }}
         components: rustfmt
+    - name: Checkout repository
+      uses: actions/checkout@v4
     - name: Build
       run: |
         cargo build -vv -F regenerate --target ${{ matrix.target }}
     - name: Extract architecture from target triple and move bindings
       shell: bash
       run: |
-          # Extract architecture (i686, x86_64 or aarch64) from target triple
-          ARCH=$(echo "${{ matrix.target }}" | cut -d'-' -f1)
-          echo "Extracted architecture: $ARCH"
-
-          # Map i686 to x86
-          if [ "$ARCH" == "i686" ]; then
-            ARCH="x86"
-          fi
-          # Set the architecture as an environment variable
-          echo "ARCH=$ARCH" >> $GITHUB_ENV
-
-          # Path to the generated binding
-          GENERATED_BINDING=$(find target/${{ matrix.target }}/debug/build -type f -name "${ARCH}_bindgen.rs")
-
-          if [ -z "$GENERATED_BINDING" ]; then
-            echo "Error: Generated binding file not found for $ARCH."
-            exit 1
-          fi
-
-          # Move the generated file to the repository directory
-          cp "$GENERATED_BINDING" "src/ffi/${ARCH}_bindgen.rs"
-          echo "Moved $GENERATED_BINDING to src/ffi/${ARCH}_bindgen.rs"
+        # Extract architecture (i686, x86_64 or aarch64) from target triple
+        ARCH=$(echo "${{ matrix.target }}" | cut -d'-' -f1)
+        echo "Extracted architecture: $ARCH"
+        
+        # Map i686 to x86
+        if [ "$ARCH" == "i686" ]; then
+          ARCH="x86"
+        fi
+        # Set the architecture as an environment variable
+        echo "ARCH=$ARCH" >> $GITHUB_ENV
+        
+        # Path to the generated binding
+        GENERATED_BINDING=$(find target/${{ matrix.target }}/debug/build -type f -name "${ARCH}_bindgen.rs")
+        
+        if [ -z "$GENERATED_BINDING" ]; then
+          echo "Error: Generated binding file not found for $ARCH."
+          exit 1
+        fi
+        
+        # Move the generated file to the repository directory
+        cp "$GENERATED_BINDING" "src/ffi/${ARCH}_bindgen.rs"
+        echo "Moved $GENERATED_BINDING to src/ffi/${ARCH}_bindgen.rs"
           
     - name: Upload generated file as artifact
       uses: actions/upload-artifact@v4
