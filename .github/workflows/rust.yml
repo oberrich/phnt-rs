@@ -76,11 +76,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       
-    - name: Build
+    - name: Run tests and generate bindings
       run: |
         $env:PHNT_VERSION="PHNT_WIN11_24H2"
         $env:PHNT_MODE="PHNT_MODE_USER"
-        cargo build -vv -F regenerate --target ${{ matrix.target }}
+        cargo test --release -vv -F regenerate --target ${{ matrix.target }}
         
     - name: Extract architecture from target triple and move bindings
       shell: bash
@@ -114,9 +114,6 @@ jobs:
         name: ${{ env.ARCH }}_bindgen.rs
         path: src/ffi/${{ env.ARCH }}_bindgen.rs
         
-    - name: Run tests
-      run: cargo test -vv -F regenerate --target ${{ matrix.target }}
-      
   commit-and-push:
     runs-on: ubuntu-latest
     needs: bindgen
