@@ -38,8 +38,9 @@ jobs:
     - name: Install Build Tools (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
-        Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol =System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
-        iex ((New-ObjecSystem.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1')) 
         Add-Content -Path $env:GITHUB_PATH -Value "C:\ProgramData\chocolatey\bin" -Encoding utf8
         choco install visualstudio2022buildtools -y --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
 
