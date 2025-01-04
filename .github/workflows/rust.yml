@@ -97,7 +97,7 @@ jobs:
         echo "ARCH=$ARCH" >> $GITHUB_ENV
         
         # Path to the generated binding
-        GENERATED_BINDING=$(find target/${{ matrix.target }}/debug/build -type f -name "${ARCH}_bindgen.rs")
+        GENERATED_BINDING=$(find target/${{ matrix.target }}/release/build -type f -name "${ARCH}_bindgen.rs")
         
         if [ -z "$GENERATED_BINDING" ]; then
           echo "Error: Generated binding file not found for $ARCH."
