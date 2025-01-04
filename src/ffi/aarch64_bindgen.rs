@@ -1,13 +1,13 @@
-// Generated at 2025-01-04 02:38:37.847216700 +00:00
+// Generated at 2025-01-04 20:32:16.275615600 +00:00
 #[cfg(not(target_arch = "aarch64"))]
 compile_error!("These bindings can only be used on `aarch64` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.");
 
 use cty;
-pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
-pub use windows_sys::Win32::Foundation::BOOL as BOOL;
-pub use windows_sys::Win32::Foundation::BOOLEAN as BOOLEAN;
 pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
 pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
+pub use windows_sys::Win32::Foundation::BOOL as BOOL;
+pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
+pub use windows_sys::Win32::Foundation::BOOLEAN as BOOLEAN;
 
 pub const PHNT_VERSION: u32 = self::PHNT_WIN11_24H2;
 pub const PHNT_MODE: u32 = self::PHNT_MODE_USER;
