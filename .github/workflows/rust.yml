@@ -23,12 +23,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Download LLVM
+      if: matrix.os == 'windows-11-preview_aarch64'
       uses: robinraju/release-downloader@v1
       with:
         repository: 'llvm/llvm-project'
         tag: 'llvmorg-19.1.5'
         filename: 'LLVM-19.1.5-woa64.exe'
-    - name: Download LLVM Installer
+    - name: Install LLVM
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
         Start-Process -FilePath "LLVM-19.1.5-woa64.exe" -ArgumentList '/S' -NoNewWindow -Wait  # The /S flag runs the installer silently
@@ -48,20 +49,27 @@ jobs:
     - name: Install Build Tools
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
-        choco install visualstudio2022buildtools -y --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
+        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vs_buildtools.exe" -OutFile "$env:RUNNER_TEMP\vs_buildtools.exe"
+        Start-Process -FilePath "$env:RUNNER_TEMP\vs_buildtools.exe" -ArgumentList "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621" -Wait
 
-    - name: Install Rust (nightly, aarch64)
+    - name: Install Nightly Rust (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
         Add-Content -Path $env:GITHUB_PATH -Value "$env:USERPROFILE\.cargo\bin" -Encoding utf8
         Invoke-WebRequest -Uri "https://win.rustup.rs/aarch64" -OutFile "$env:RUNNER_TEMP\rustup-init.exe"
         & "$env:RUNNER_TEMP\rustup-init.exe" --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
 
-    - name: Download and install Git for Windows (ARM64)
+    - name: Download Git for Windows (aarch64)
+      if: matrix.os == 'windows-11-preview_aarch64'
+      uses: robinraju/release-downloader@v1
+      with:
+        repository: 'git-for-windows/git'
+        tag: 'v2.48.0-rc1.windows.1'
+        filename: 'Git-2.48.0-rc1-arm64.exe'
+    - name: Install Git for Windows (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
-        Invoke-WebRequest -Uri "https://github.com/git-for-windows/git/releases/download/v2.48.0-rc1.windows.1/Git-2.48.0-rc1-arm64.exe" -OutFile "$env:RUNNER_TEMP\install-git-arm64.exe"
-        Start-Process -FilePath "$env:RUNNER_TEMP\install-git-arm64.exe" -ArgumentList "/VERYSILENT" -NoNewWindow -Wait
+        Start-Process -FilePath "Git-2.48.0-rc1-arm64.exe" -ArgumentList "/VERYSILENT" -NoNewWindow -Wait
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\cmd" -Encoding utf8
         Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\bin" -Encoding utf8
     - uses: actions/checkout@v4
