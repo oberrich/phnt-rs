@@ -29,6 +29,12 @@ jobs:
         repository: 'llvm/llvm-project'
         tag: 'llvmorg-19.1.5'
         filename: 'LLVM-19.1.5-woa64.exe'
+
+    - name: Install Chocolatey
+      run: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+        Add-Content -Path $env:GITHUB_PATH -Value "C:\ProgramData\chocolatey\bin" -Encoding utf8
+
     - name: Install LLVM
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
@@ -45,11 +51,6 @@ jobs:
           Write-Host "LLVM installation failed."
           exit 1
         }
-    - name: Install Chocolatey
-      run: |
-        Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-        Add-Content -Path $env:GITHUB_PATH -Value "C:\ProgramData\chocolatey\bin" -Encoding utf8
-
     - name: Install Build Tools
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
