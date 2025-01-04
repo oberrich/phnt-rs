@@ -1,13 +1,14 @@
-// Generated at 2025-01-02 07:53:50.768164700 +01:00
+// Generated at 2025-01-03 23:53:50.295990700 +00:00
 #[cfg(not(target_arch = "x86_64"))]
 compile_error!("These bindings can only be used on `x86_64` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.");
 
 use cty;
 pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
+pub use windows_sys::Win32::Foundation::BOOL as BOOL;
 pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
-pub use windows_sys::Win32::Foundation::BOOL;
-pub use windows_sys::Win32::Foundation::BOOLEAN;
-pub use windows_sys::Win32::Foundation::NTSTATUS;
+pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
+pub use windows_sys::Win32::Foundation::BOOLEAN as BOOLEAN;
+
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -517,7 +518,6 @@ pub const MEM_EXECUTE_OPTION_EXECUTE_DISPATCH_ENABLE: u32 = 16;
 pub const MEM_EXECUTE_OPTION_IMAGE_DISPATCH_ENABLE: u32 = 32;
 pub const MEM_EXECUTE_OPTION_DISABLE_EXCEPTION_CHAIN_VALIDATION: u32 = 64;
 pub const MEM_EXECUTE_OPTION_VALID_FLAGS: u32 = 127;
-pub const VM_PREFETCH_TO_WORKING_SET: u32 = 1;
 pub const MAP_PROCESS: u32 = 1;
 pub const MAP_SYSTEM: u32 = 2;
 pub const TERMINATE_ENCLAVE_VALID_FLAGS: u32 = 5;
@@ -967,11 +967,6 @@ pub const FILE_RENAME_FORCE_RESIZE_SOURCE_SR: u32 = 256;
 pub const FILE_RENAME_FORCE_RESIZE_SR: u32 = 384;
 pub const FILE_SKIP_SET_USER_EVENT_ON_FAST_IO: u32 = 4;
 pub const CHECKSUM_ENFORCEMENT_OFF: u32 = 1;
-pub const LX_FILE_METADATA_HAS_UID: u32 = 1;
-pub const LX_FILE_METADATA_HAS_GID: u32 = 2;
-pub const LX_FILE_METADATA_HAS_MODE: u32 = 4;
-pub const LX_FILE_METADATA_HAS_DEVICE_ID: u32 = 8;
-pub const LX_FILE_CASE_SENSITIVE_DIR: u32 = 16;
 pub const FILE_ID_GLOBAL_TX_DIR_INFO_FLAG_WRITELOCKED: u32 = 1;
 pub const FILE_ID_GLOBAL_TX_DIR_INFO_FLAG_VISIBLE_TO_TX: u32 = 2;
 pub const FILE_ID_GLOBAL_TX_DIR_INFO_FLAG_VISIBLE_OUTSIDE_TX: u32 = 4;
@@ -993,7 +988,6 @@ pub const SSINFO_FLAGS_NO_SEEK_PENALTY: u32 = 4;
 pub const SSINFO_FLAGS_TRIM_ENABLED: u32 = 8;
 pub const SSINFO_FLAGS_BYTE_ADDRESSABLE: u32 = 16;
 pub const SSINFO_OFFSET_UNKNOWN: u32 = 4294967295;
-pub const FLUSH_FLAGS_FLUSH_AND_PURGE: u32 = 8;
 pub const FILE_QUERY_RESTART_SCAN: u32 = 1;
 pub const FILE_QUERY_RETURN_SINGLE_ENTRY: u32 = 2;
 pub const FILE_QUERY_INDEX_SPECIFIED: u32 = 4;
@@ -1463,9 +1457,6 @@ pub const HASH_STRING_ALGORITHM_INVALID: u32 = 4294967295;
 pub const RTL_FIND_CHAR_IN_UNICODE_STRING_START_AT_END: u32 = 1;
 pub const RTL_FIND_CHAR_IN_UNICODE_STRING_COMPLEMENT_CHAR_SET: u32 = 2;
 pub const RTL_FIND_CHAR_IN_UNICODE_STRING_CASE_INSENSITIVE: u32 = 4;
-pub const COMPRESSION_FORMAT_LZ4: u32 = 6;
-pub const COMPRESSION_FORMAT_DEFLATE: u32 = 7;
-pub const COMPRESSION_FORMAT_ZLIB: u32 = 8;
 pub const COMPRESSION_FORMAT_MAX: u32 = 8;
 pub const COMPRESSION_ENGINE_MAX: u32 = 512;
 pub const COMPRESSION_FORMAT_MASK: u32 = 255;
@@ -1675,8 +1666,6 @@ pub const IMAGE_DVRT_ARM64X_FIXUP_SIZE_4BYTES: u32 = 2;
 pub const IMAGE_DVRT_ARM64X_FIXUP_SIZE_8BYTES: u32 = 3;
 pub const IMAGE_DYNAMIC_RELOCATION_ARM64X: u32 = 6;
 pub const IMAGE_DYNAMIC_RELOCATION_MM_SHARED_USER_DATA_VA: u32 = 2147352576;
-pub const IMAGE_DLLCHARACTERISTICS_EX_FORWARD_CFI_COMPAT: u32 = 64;
-pub const IMAGE_DLLCHARACTERISTICS_EX_HOTPATCH_COMPATIBLE: u32 = 128;
 pub const SE_MIN_WELL_KNOWN_PRIVILEGE: u32 = 2;
 pub const SE_CREATE_TOKEN_PRIVILEGE: u32 = 2;
 pub const SE_ASSIGNPRIMARYTOKEN_PRIVILEGE: u32 = 3;
@@ -5059,14 +5048,80 @@ impl _PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY__bindgen_ty_1__bindgen_ty_1 
       }
    }
    #[inline]
+   pub fn DisallowFsctlSystemCalls(&self) -> DWORD {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_DisallowFsctlSystemCalls(&mut self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(2usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn DisallowFsctlSystemCalls_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            2usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_DisallowFsctlSystemCalls_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            2usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
+   pub fn AuditDisallowFsctlSystemCalls(&self) -> DWORD {
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u32) }
+   }
+   #[inline]
+   pub fn set_AuditDisallowFsctlSystemCalls(&mut self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         self._bitfield_1.set(3usize, 1u8, val as u64)
+      }
+   }
+   #[inline]
+   pub unsafe fn AuditDisallowFsctlSystemCalls_raw(this: *const Self) -> DWORD {
+      unsafe {
+         ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
+            ::core::ptr::addr_of!((*this)._bitfield_1),
+            3usize,
+            1u8,
+         ) as u32)
+      }
+   }
+   #[inline]
+   pub unsafe fn set_AuditDisallowFsctlSystemCalls_raw(this: *mut Self, val: DWORD) {
+      unsafe {
+         let val: u32 = ::core::mem::transmute(val);
+         <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
+            ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+            3usize,
+            1u8,
+            val as u64,
+         )
+      }
+   }
+   #[inline]
    pub fn ReservedFlags(&self) -> DWORD {
-      unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 30u8) as u32) }
+      unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 28u8) as u32) }
    }
    #[inline]
    pub fn set_ReservedFlags(&mut self, val: DWORD) {
       unsafe {
          let val: u32 = ::core::mem::transmute(val);
-         self._bitfield_1.set(2usize, 30u8, val as u64)
+         self._bitfield_1.set(4usize, 28u8, val as u64)
       }
    }
    #[inline]
@@ -5074,8 +5129,8 @@ impl _PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY__bindgen_ty_1__bindgen_ty_1 
       unsafe {
          ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 4usize]>>::raw_get(
             ::core::ptr::addr_of!((*this)._bitfield_1),
-            2usize,
-            30u8,
+            4usize,
+            28u8,
          ) as u32)
       }
    }
@@ -5085,8 +5140,8 @@ impl _PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY__bindgen_ty_1__bindgen_ty_1 
          let val: u32 = ::core::mem::transmute(val);
          <__BindgenBitfieldUnit<[u8; 4usize]>>::raw_set(
             ::core::ptr::addr_of_mut!((*this)._bitfield_1),
-            2usize,
-            30u8,
+            4usize,
+            28u8,
             val as u64,
          )
       }
@@ -5095,6 +5150,8 @@ impl _PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY__bindgen_ty_1__bindgen_ty_1 
    pub fn new_bitfield_1(
       DisallowWin32kSystemCalls: DWORD,
       AuditDisallowWin32kSystemCalls: DWORD,
+      DisallowFsctlSystemCalls: DWORD,
+      AuditDisallowFsctlSystemCalls: DWORD,
       ReservedFlags: DWORD,
    ) -> __BindgenBitfieldUnit<[u8; 4usize]> {
       let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 4usize]> = Default::default();
@@ -5108,7 +5165,17 @@ impl _PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY__bindgen_ty_1__bindgen_ty_1 
             unsafe { ::core::mem::transmute(AuditDisallowWin32kSystemCalls) };
          AuditDisallowWin32kSystemCalls as u64
       });
-      __bindgen_bitfield_unit.set(2usize, 30u8, {
+      __bindgen_bitfield_unit.set(2usize, 1u8, {
+         let DisallowFsctlSystemCalls: u32 =
+            unsafe { ::core::mem::transmute(DisallowFsctlSystemCalls) };
+         DisallowFsctlSystemCalls as u64
+      });
+      __bindgen_bitfield_unit.set(3usize, 1u8, {
+         let AuditDisallowFsctlSystemCalls: u32 =
+            unsafe { ::core::mem::transmute(AuditDisallowFsctlSystemCalls) };
+         AuditDisallowFsctlSystemCalls as u64
+      });
+      __bindgen_bitfield_unit.set(4usize, 28u8, {
          let ReservedFlags: u32 = unsafe { ::core::mem::transmute(ReservedFlags) };
          ReservedFlags as u64
       });
@@ -8462,7 +8529,9 @@ pub enum _JOBOBJECTINFOCLASS {
    JobObjectReserved25Information = 47,
    JobObjectReserved26Information = 48,
    JobObjectReserved27Information = 49,
-   MaxJobObjectInfoClass = 50,
+   JobObjectReserved28Information = 50,
+   JobObjectNetworkAccountingInformation = 51,
+   MaxJobObjectInfoClass = 52,
 }
 pub use self::_JOBOBJECTINFOCLASS as JOBOBJECTINFOCLASS;
 #[repr(i32)]
@@ -8497,7 +8566,8 @@ pub struct _XSTATE_CONFIGURATION {
    pub EnabledUserVisibleSupervisorFeatures: DWORD64,
    pub ExtendedFeatureDisableFeatures: DWORD64,
    pub AllNonLargeFeatureSize: DWORD,
-   pub Spare: DWORD,
+   pub MaxSveVectorLength: WORD,
+   pub Spare1: WORD,
 }
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -9032,7 +9102,10 @@ pub enum POWER_MONITOR_REQUEST_REASON {
    MonitorRequestReasonPdcSignalSensorsHumanPresence = 52,
    MonitorRequestReasonBatteryPreCritical = 53,
    MonitorRequestReasonUserInputTouch = 54,
-   MonitorRequestReasonMax = 55,
+   MonitorRequestReasonAusterityBatteryDrain = 55,
+   MonitorRequestReasonDozeRestrictedStandby = 56,
+   MonitorRequestReasonSmartRestrictedStandby = 57,
+   MonitorRequestReasonMax = 58,
 }
 #[repr(C, packed(2))]
 #[derive(Debug, Default, Copy, Clone)]
@@ -9720,10 +9793,9 @@ pub enum _RTL_SYSTEM_GLOBAL_DATA_ID {
    GlobalDataIdLastSystemRITEventTickCount = 13,
    GlobalDataIdConsoleSharedDataFlags = 14,
    GlobalDataIdNtSystemRootDrive = 15,
-   GlobalDataIdQpcShift = 16,
-   GlobalDataIdQpcBypassEnabled = 17,
-   GlobalDataIdQpcData = 18,
-   GlobalDataIdQpcBias = 19,
+   GlobalDataIdQpcBypassEnabled = 16,
+   GlobalDataIdQpcData = 17,
+   GlobalDataIdQpcBias = 18,
 }
 pub use self::_RTL_SYSTEM_GLOBAL_DATA_ID as RTL_SYSTEM_GLOBAL_DATA_ID;
 #[repr(C)]
@@ -9997,7 +10069,7 @@ pub struct _TP_CALLBACK_INSTANCE {
 }
 pub type PTP_CALLBACK_INSTANCE = *mut _TP_CALLBACK_INSTANCE;
 pub type PTP_SIMPLE_CALLBACK =
-   ::core::option::Option<unsafe extern "C" fn(Instance: PTP_CALLBACK_INSTANCE, Context: PVOID)>;
+   ::core::option::Option<unsafe extern "C" fn(arg1: PTP_CALLBACK_INSTANCE, arg2: PVOID)>;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _TP_POOL {
@@ -10032,7 +10104,7 @@ pub struct _TP_CLEANUP_GROUP {
 }
 pub type PTP_CLEANUP_GROUP = *mut _TP_CLEANUP_GROUP;
 pub type PTP_CLEANUP_GROUP_CANCEL_CALLBACK =
-   ::core::option::Option<unsafe extern "C" fn(ObjectContext: PVOID, CleanupContext: PVOID)>;
+   ::core::option::Option<unsafe extern "C" fn(arg1: PVOID, arg2: PVOID)>;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _TP_CALLBACK_ENVIRON_V3 {
@@ -10208,7 +10280,7 @@ pub struct _TP_WORK {
 }
 pub type PTP_WORK = *mut _TP_WORK;
 pub type PTP_WORK_CALLBACK = ::core::option::Option<
-   unsafe extern "C" fn(Instance: PTP_CALLBACK_INSTANCE, Context: PVOID, Work: PTP_WORK),
+   unsafe extern "C" fn(arg1: PTP_CALLBACK_INSTANCE, arg2: PVOID, arg3: PTP_WORK),
 >;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -10217,7 +10289,7 @@ pub struct _TP_TIMER {
 }
 pub type PTP_TIMER = *mut _TP_TIMER;
 pub type PTP_TIMER_CALLBACK = ::core::option::Option<
-   unsafe extern "C" fn(Instance: PTP_CALLBACK_INSTANCE, Context: PVOID, Timer: PTP_TIMER),
+   unsafe extern "C" fn(arg1: PTP_CALLBACK_INSTANCE, arg2: PVOID, arg3: PTP_TIMER),
 >;
 pub type TP_WAIT_RESULT = DWORD;
 #[repr(C)]
@@ -10228,10 +10300,10 @@ pub struct _TP_WAIT {
 pub type PTP_WAIT = *mut _TP_WAIT;
 pub type PTP_WAIT_CALLBACK = ::core::option::Option<
    unsafe extern "C" fn(
-      Instance: PTP_CALLBACK_INSTANCE,
-      Context: PVOID,
-      Wait: PTP_WAIT,
-      WaitResult: TP_WAIT_RESULT,
+      arg1: PTP_CALLBACK_INSTANCE,
+      arg2: PVOID,
+      arg3: PTP_WAIT,
+      arg4: TP_WAIT_RESULT,
    ),
 >;
 #[repr(C)]
@@ -11138,6 +11210,8 @@ impl Default for _WNODE_HEADER {
 pub type WNODE_HEADER = _WNODE_HEADER;
 pub type PWNODE_HEADER = *mut _WNODE_HEADER;
 pub type TRACEHANDLE = ULONG64;
+pub type PROCESSTRACE_HANDLE = ULONG64;
+pub type CONTROLTRACE_ID = ULONG64;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _EVENT_TRACE_HEADER {
@@ -43677,14 +43751,6 @@ pub type PROCESS_MEMBERSHIP_INFORMATION = _PROCESS_MEMBERSHIP_INFORMATION;
 pub type PPROCESS_MEMBERSHIP_INFORMATION = *mut _PROCESS_MEMBERSHIP_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
-pub struct _PROCESS_NETWORK_COUNTERS {
-   pub BytesIn: ULONG64,
-   pub BytesOut: ULONG64,
-}
-pub type PROCESS_NETWORK_COUNTERS = _PROCESS_NETWORK_COUNTERS;
-pub type PPROCESS_NETWORK_COUNTERS = *mut _PROCESS_NETWORK_COUNTERS;
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
 pub struct _PROCESS_TEB_VALUE_INFORMATION {
    pub ThreadId: ULONG,
    pub TebOffset: ULONG,
@@ -43794,7 +43860,7 @@ impl Default for _THREAD_TEB_INFORMATION {
 }
 pub type THREAD_TEB_INFORMATION = _THREAD_TEB_INFORMATION;
 pub type PTHREAD_TEB_INFORMATION = *mut _THREAD_TEB_INFORMATION;
-#[doc = "The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data"]
+#[doc = "The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _COUNTER_READING {
@@ -43812,9 +43878,9 @@ impl Default for _COUNTER_READING {
       }
    }
 }
-#[doc = "The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data"]
+#[doc = "The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data"]
 pub type COUNTER_READING = _COUNTER_READING;
-#[doc = "The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data"]
+#[doc = "The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data"]
 pub type PCOUNTER_READING = *mut _COUNTER_READING;
 #[doc = "The THREAD_PERFORMANCE_DATA structure aggregates various performance metrics for a thread.\n> https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-performance_data"]
 #[repr(C)]
@@ -43844,7 +43910,7 @@ impl Default for _THREAD_PERFORMANCE_DATA {
 pub type THREAD_PERFORMANCE_DATA = _THREAD_PERFORMANCE_DATA;
 #[doc = "The THREAD_PERFORMANCE_DATA structure aggregates various performance metrics for a thread.\n> https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-performance_data"]
 pub type PTHREAD_PERFORMANCE_DATA = *mut _THREAD_PERFORMANCE_DATA;
-#[doc = "The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata"]
+#[doc = "The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _THREAD_PROFILING_INFORMATION {
@@ -43862,9 +43928,9 @@ impl Default for _THREAD_PROFILING_INFORMATION {
       }
    }
 }
-#[doc = "The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata"]
+#[doc = "The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata"]
 pub type THREAD_PROFILING_INFORMATION = _THREAD_PROFILING_INFORMATION;
-#[doc = "The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata"]
+#[doc = "The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata"]
 pub type PTHREAD_PROFILING_INFORMATION = *mut _THREAD_PROFILING_INFORMATION;
 #[repr(C)]
 #[repr(align(16))]
@@ -46781,30 +46847,6 @@ impl Default for _JOBOBJECT_PAGE_PRIORITY_LIMIT {
 }
 pub type JOBOBJECT_PAGE_PRIORITY_LIMIT = _JOBOBJECT_PAGE_PRIORITY_LIMIT;
 pub type PJOBOBJECT_PAGE_PRIORITY_LIMIT = *mut _JOBOBJECT_PAGE_PRIORITY_LIMIT;
-#[repr(C)]
-pub struct _SERVERSILO_DIAGNOSTIC_INFORMATION {
-   pub ExitStatus: NTSTATUS,
-   pub CriticalProcessName: [WCHAR; 15usize],
-}
-impl Default for _SERVERSILO_DIAGNOSTIC_INFORMATION {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type SERVERSILO_DIAGNOSTIC_INFORMATION = _SERVERSILO_DIAGNOSTIC_INFORMATION;
-pub type PSERVERSILO_DIAGNOSTIC_INFORMATION = *mut _SERVERSILO_DIAGNOSTIC_INFORMATION;
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct _JOBOBJECT_NETWORK_ACCOUNTING_INFORMATION {
-   pub DataBytesIn: ULONG64,
-   pub DataBytesOut: ULONG64,
-}
-pub type JOBOBJECT_NETWORK_ACCOUNTING_INFORMATION = _JOBOBJECT_NETWORK_ACCOUNTING_INFORMATION;
-pub type PJOBOBJECT_NETWORK_ACCOUNTING_INFORMATION = *mut _JOBOBJECT_NETWORK_ACCOUNTING_INFORMATION;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -48506,62 +48548,6 @@ pub type FILE_ID_ALL_EXTD_BOTH_DIR_INFORMATION = _FILE_ID_ALL_EXTD_BOTH_DIR_INFO
 pub type PFILE_ID_ALL_EXTD_BOTH_DIR_INFORMATION = *mut _FILE_ID_ALL_EXTD_BOTH_DIR_INFORMATION;
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub struct _FILE_STAT_INFORMATION {
-   pub FileId: LARGE_INTEGER,
-   pub CreationTime: LARGE_INTEGER,
-   pub LastAccessTime: LARGE_INTEGER,
-   pub LastWriteTime: LARGE_INTEGER,
-   pub ChangeTime: LARGE_INTEGER,
-   pub AllocationSize: LARGE_INTEGER,
-   pub EndOfFile: LARGE_INTEGER,
-   pub FileAttributes: ULONG,
-   pub ReparseTag: ULONG,
-   pub NumberOfLinks: ULONG,
-   pub EffectiveAccess: ACCESS_MASK,
-}
-impl Default for _FILE_STAT_INFORMATION {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type FILE_STAT_INFORMATION = _FILE_STAT_INFORMATION;
-pub type PFILE_STAT_INFORMATION = *mut _FILE_STAT_INFORMATION;
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct _FILE_STAT_BASIC_INFORMATION {
-   pub FileId: LARGE_INTEGER,
-   pub CreationTime: LARGE_INTEGER,
-   pub LastAccessTime: LARGE_INTEGER,
-   pub LastWriteTime: LARGE_INTEGER,
-   pub ChangeTime: LARGE_INTEGER,
-   pub AllocationSize: LARGE_INTEGER,
-   pub EndOfFile: LARGE_INTEGER,
-   pub FileAttributes: ULONG,
-   pub ReparseTag: ULONG,
-   pub NumberOfLinks: ULONG,
-   pub DeviceType: ULONG,
-   pub DeviceCharacteristics: ULONG,
-   pub Reserved: ULONG,
-   pub VolumeSerialNumber: LARGE_INTEGER,
-   pub FileId128: FILE_ID_128,
-}
-impl Default for _FILE_STAT_BASIC_INFORMATION {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type FILE_STAT_BASIC_INFORMATION = _FILE_STAT_BASIC_INFORMATION;
-pub type PFILE_STAT_BASIC_INFORMATION = *mut _FILE_STAT_BASIC_INFORMATION;
-#[repr(C)]
-#[derive(Copy, Clone)]
 pub struct _FILE_MEMORY_PARTITION_INFORMATION {
    pub OwnerPartitionHandle: HANDLE,
    pub Flags: _FILE_MEMORY_PARTITION_INFORMATION__bindgen_ty_1,
@@ -48599,38 +48585,6 @@ impl Default for _FILE_MEMORY_PARTITION_INFORMATION {
 pub type FILE_MEMORY_PARTITION_INFORMATION = _FILE_MEMORY_PARTITION_INFORMATION;
 pub type PFILE_MEMORY_PARTITION_INFORMATION = *mut _FILE_MEMORY_PARTITION_INFORMATION;
 #[repr(C)]
-#[derive(Copy, Clone)]
-pub struct _FILE_STAT_LX_INFORMATION {
-   pub FileId: LARGE_INTEGER,
-   pub CreationTime: LARGE_INTEGER,
-   pub LastAccessTime: LARGE_INTEGER,
-   pub LastWriteTime: LARGE_INTEGER,
-   pub ChangeTime: LARGE_INTEGER,
-   pub AllocationSize: LARGE_INTEGER,
-   pub EndOfFile: LARGE_INTEGER,
-   pub FileAttributes: ULONG,
-   pub ReparseTag: ULONG,
-   pub NumberOfLinks: ULONG,
-   pub EffectiveAccess: ACCESS_MASK,
-   pub LxFlags: ULONG,
-   pub LxUid: ULONG,
-   pub LxGid: ULONG,
-   pub LxMode: ULONG,
-   pub LxDeviceIdMajor: ULONG,
-   pub LxDeviceIdMinor: ULONG,
-}
-impl Default for _FILE_STAT_LX_INFORMATION {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type FILE_STAT_LX_INFORMATION = _FILE_STAT_LX_INFORMATION;
-pub type PFILE_STAT_LX_INFORMATION = *mut _FILE_STAT_LX_INFORMATION;
-#[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _FILE_STORAGE_RESERVE_ID_INFORMATION {
    pub StorageReserveId: STORAGE_RESERVE_ID,
@@ -48646,13 +48600,6 @@ impl Default for _FILE_STORAGE_RESERVE_ID_INFORMATION {
 }
 pub type FILE_STORAGE_RESERVE_ID_INFORMATION = _FILE_STORAGE_RESERVE_ID_INFORMATION;
 pub type PFILE_STORAGE_RESERVE_ID_INFORMATION = *mut _FILE_STORAGE_RESERVE_ID_INFORMATION;
-#[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
-pub struct _FILE_CASE_SENSITIVE_INFORMATION {
-   pub Flags: ULONG,
-}
-pub type FILE_CASE_SENSITIVE_INFORMATION = _FILE_CASE_SENSITIVE_INFORMATION;
-pub type PFILE_CASE_SENSITIVE_INFORMATION = *mut _FILE_CASE_SENSITIVE_INFORMATION;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -66600,8 +66547,6 @@ pub enum _PROCESS_ACTIVITY_TYPE {
    ProcessActivityTypeMax = 1,
 }
 pub use self::_PROCESS_ACTIVITY_TYPE as PROCESS_ACTIVITY_TYPE;
-pub type PROCESSTRACE_HANDLE = ULONG64;
-pub type CONTROLTRACE_ID = ULONG64;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _WMI_TRACE_PACKET {
@@ -74909,7 +74854,7 @@ unsafe extern "C" {
       Flags: ULONG,
       GetFileSizeFromLoadAsDataTable: BOOLEAN,
    );
-   #[doc = "The NtDelayExecution routine suspends the current thread until the specified condition is met.\n# Arguments\n\n* `Alertable` - The function returns when either the time-out period has elapsed or when the APC function is called.\n* `DelayInterval` - The time interval for which execution is to be suspended, in milliseconds.\n- A value of zero causes the thread to relinquish the remainder of its time slice to any other thread that is ready to run.\n- If there are no other threads ready to run, the function returns immediately, and the thread continues execution.\n- A value of INFINITE indicates that the suspension should not time out.\n# Returns\n\nNTSTATUS Successful or errant status. The return value is STATUS_USER_APC when Alertable is TRUE, and the function returned due to one or more I/O completion callback functions.\n> Note that a ready thread is not guaranteed to run immediately. Consequently, the thread will not run until some arbitrary time after the sleep interval elapses,\nbased upon the system \"tick\" frequency and the load factor from other processes.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleepex"]
+   #[doc = "The NtDelayExecution routine suspends the current thread until the specified condition is met.\n# Arguments\n\n* `Alertable` - The function returns when either the time-out period has elapsed or when the APC function is called.\n* `DelayInterval` - The time interval for which execution is to be suspended, in milliseconds.\n- A value of zero causes the thread to relinquish the remainder of its time slice to any other thread that is ready to run.\n- If there are no other threads ready to run, the function returns immediately, and the thread continues execution.\n- A value of INFINITE indicates that the suspension should not time out.\n# Returns\n\nNTSTATUS Successful or errant status. The return value is STATUS_USER_APC when Alertable is TRUE, and the function returned due to one or more I/O completion callback functions.\n> Note that a ready thread is not guaranteed to run immediately. Consequently, the thread will not run until some arbitrary time after the sleep interval elapses,\nbased upon the system \"tick\" frequency and the load factor from other processes.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleepex"]
    pub fn NtDelayExecution(Alertable: BOOLEAN, DelayInterval: PLARGE_INTEGER) -> NTSTATUS;
    #[doc = "Retrieves the value of the specified firmware environment variable.\nThe user account that the app is running under must have the SE_SYSTEM_ENVIRONMENT_NAME privilege.\n# Arguments\n\n* `VariableName` - The name of the firmware environment variable. The pointer must not be NULL.\n* `VariableValue` - A pointer to a buffer that receives the value of the specified firmware environment variable.\n* `ValueLength` - The size of the `VariableValue` buffer, in bytes.\n* `ReturnLength` - If the function succeeds, the return length is the number of bytes stored in the `VariableValue` buffer.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQuerySystemEnvironmentValue(
@@ -74971,7 +74916,7 @@ unsafe extern "C" {
       Data: PVOID,
       DataSize: ULONG,
    ) -> NTSTATUS;
-   #[doc = "The NtCreateEvent routine creates an event object, sets the initial state of the event to the specified value,\nand opens a handle to the object with the specified desired access.\n# Arguments\n\n* `EventHandle` - A pointer to a variable that receives the event object handle.\n* `DesiredAccess` - The access mask that specifies the requested access to the event object.\n* `ObjectAttributes` - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n* `EventType` - The type of the event, which can be SynchronizationEvent or a NotificationEvent.\n* `InitialState` - The initial state of the event object.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-zwcreateevent"]
+   #[doc = "The NtCreateEvent routine creates an event object, sets the initial state of the event to the specified value,\nand opens a handle to the object with the specified desired access.\n# Arguments\n\n* `EventHandle` - A pointer to a variable that receives the event object handle.\n* `DesiredAccess` - The access mask that specifies the requested access to the event object.\n* `ObjectAttributes` - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n* `EventType` - The type of the event, which can be SynchronizationEvent or a NotificationEvent.\n* `InitialState` - The initial state of the event object.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-zwcreateevent"]
    pub fn NtCreateEvent(
       EventHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -74993,9 +74938,9 @@ unsafe extern "C" {
    pub fn NtSetEventBoostPriority(EventHandle: HANDLE) -> NTSTATUS;
    #[doc = "The NtClearEvent routine sets an event object to the not-signaled state.\n# Arguments\n\n* `EventHandle` - A handle to the event object.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtClearEvent(EventHandle: HANDLE) -> NTSTATUS;
-   #[doc = "The NtResetEvent routine sets an event object to the not-signaled state and optionally returns the previous state.\n# Arguments\n\n* `EventHandle` - A handle to the event object.\n* `PreviousState` - A pointer to a variable that receives the previous state of the event object.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent"]
+   #[doc = "The NtResetEvent routine sets an event object to the not-signaled state and optionally returns the previous state.\n# Arguments\n\n* `EventHandle` - A handle to the event object.\n* `PreviousState` - A pointer to a variable that receives the previous state of the event object.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent"]
    pub fn NtResetEvent(EventHandle: HANDLE, PreviousState: PLONG) -> NTSTATUS;
-   #[doc = "The NtPulseEvent routine sets an event object to the signaled state and then resets it to the not-signaled state after releasing the appropriate number of waiting threads.\n# Arguments\n\n* `EventHandle` - A handle to the event object.\n* `PreviousState` - A pointer to a variable that receives the previous state of the event object.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-pulseevent"]
+   #[doc = "The NtPulseEvent routine sets an event object to the signaled state and then resets it to the not-signaled state after releasing the appropriate number of waiting threads.\n# Arguments\n\n* `EventHandle` - A handle to the event object.\n* `PreviousState` - A pointer to a variable that receives the previous state of the event object.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-pulseevent"]
    pub fn NtPulseEvent(EventHandle: HANDLE, PreviousState: PLONG) -> NTSTATUS;
    #[doc = "The NtQueryEvent routine retrieves information about an event object.\n# Arguments\n\n* `EventHandle` - A handle to the event object.\n* `EventInformationClass` - The type of information to be retrieved.\n* `EventInformation` - A pointer to a buffer that receives the requested information.\n* `EventInformationLength` - The size of the buffer pointed to by EventInformation.\n* `ReturnLength` - A pointer to a variable that receives the size of the data returned in the buffer.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQueryEvent(
@@ -75261,9 +75206,9 @@ unsafe extern "C" {
       PacketsReturned: PULONG,
       DeferredWork: PWORKER_FACTORY_DEFERRED_WORK,
    ) -> NTSTATUS;
-   #[doc = "The NtQuerySystemTime routine obtains the current system time.\n# Arguments\n\n* `SystemTime` - A pointer to a LARGE_INTEGER structure that receives the system time. This is a 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 (UTC).\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntquerysystemtime"]
+   #[doc = "The NtQuerySystemTime routine obtains the current system time.\n# Arguments\n\n* `SystemTime` - A pointer to a LARGE_INTEGER structure that receives the system time. This is a 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 (UTC).\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntquerysystemtime"]
    pub fn NtQuerySystemTime(SystemTime: PLARGE_INTEGER) -> NTSTATUS;
-   #[doc = "The NtSetSystemTime routine sets the current system time and date. The system time is expressed in Coordinated Universal Time (UTC).\n# Arguments\n\n* `SystemTime` - A pointer to a LARGE_INTEGER structure that that contains the new system date and time.\n* `PreviousTime` - A pointer to a LARGE_INTEGER structure that that contains the previous system time.\n# Returns\n\nNTSTATUS Successful or errant status.\n> The calling process must have the SE_SYSTEMTIME_NAME privilege.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-setsystemtime"]
+   #[doc = "The NtSetSystemTime routine sets the current system time and date. The system time is expressed in Coordinated Universal Time (UTC).\n# Arguments\n\n* `SystemTime` - A pointer to a LARGE_INTEGER structure that that contains the new system date and time.\n* `PreviousTime` - A pointer to a LARGE_INTEGER structure that that contains the previous system time.\n# Returns\n\nNTSTATUS Successful or errant status.\n> The calling process must have the SE_SYSTEMTIME_NAME privilege.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-setsystemtime"]
    pub fn NtSetSystemTime(SystemTime: PLARGE_INTEGER, PreviousTime: PLARGE_INTEGER) -> NTSTATUS;
    #[doc = "The NtQueryTimerResolution routine retrieves the range and current value of the system interrupt timer.\n# Arguments\n\n* `MaximumTime` - The maximum timer resolution, in 100-nanosecond units.\n* `MinimumTime` - The minimum timer resolution, in 100-nanosecond units.\n* `CurrentTime` - The current timer resolution, in 100-nanosecond units.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQueryTimerResolution(
@@ -78303,19 +78248,19 @@ unsafe extern "C" {
       PassContext: BOOLEAN,
       AlreadySuspended: BOOLEAN,
    ) -> NTSTATUS;
-   #[doc = "Registers a vectored exception handler.\n# Arguments\n\n* `First` - If this parameter is TRUE, the handler is the first handler in the list.\n* `Handler` - A pointer to the vectored exception handler to be called.\n# Returns\n\nA handle to the vectored exception handler.\n# See also\n\n\thttps://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredexceptionhandler"]
+   #[doc = "Registers a vectored exception handler.\n# Arguments\n\n* `First` - If this parameter is TRUE, the handler is the first handler in the list.\n* `Handler` - A pointer to the vectored exception handler to be called.\n# Returns\n\nA handle to the vectored exception handler.\n# See also\n\n> https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredexceptionhandler"]
    pub fn RtlAddVectoredExceptionHandler(
       First: ULONG,
       Handler: PVECTORED_EXCEPTION_HANDLER,
    ) -> PVOID;
-   #[doc = "Removes a vectored exception handler.\n# Arguments\n\n* `Handle` - A handle to the vectored exception handler to remove.\n# Returns\n\nThe function returns 0 if the handler is removed, or -1 if the handler is not found.\n# See also\n\n\thttps://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredexceptionhandler"]
+   #[doc = "Removes a vectored exception handler.\n# Arguments\n\n* `Handle` - A handle to the vectored exception handler to remove.\n# Returns\n\nThe function returns 0 if the handler is removed, or -1 if the handler is not found.\n# See also\n\n> https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredexceptionhandler"]
    pub fn RtlRemoveVectoredExceptionHandler(Handle: PVOID) -> ULONG;
-   #[doc = "Registers a vectored continue handler.\n# Arguments\n\n* `First` - If this parameter is TRUE, the handler is the first handler in the list.\n* `Handler` - A pointer to the vectored exception handler to be called.\n# Returns\n\nA handle to the vectored continue handler.\n# See also\n\n\thttps://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredcontinuehandler"]
+   #[doc = "Registers a vectored continue handler.\n# Arguments\n\n* `First` - If this parameter is TRUE, the handler is the first handler in the list.\n* `Handler` - A pointer to the vectored exception handler to be called.\n# Returns\n\nA handle to the vectored continue handler.\n# See also\n\n> https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredcontinuehandler"]
    pub fn RtlAddVectoredContinueHandler(
       First: ULONG,
       Handler: PVECTORED_EXCEPTION_HANDLER,
    ) -> PVOID;
-   #[doc = "Removes a vectored continue handler.\n# Arguments\n\n* `Handle` - A handle to the vectored continue handler to remove.\n# Returns\n\nThe function returns 0 if the handler is removed, or -1 if the handler is not found.\n# See also\n\n\thttps://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredcontinuehandler"]
+   #[doc = "Removes a vectored continue handler.\n# Arguments\n\n* `Handle` - A handle to the vectored continue handler to remove.\n# Returns\n\nThe function returns 0 if the handler is removed, or -1 if the handler is not found.\n# See also\n\n> https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredcontinuehandler"]
    pub fn RtlRemoveVectoredContinueHandler(Handle: PVOID) -> ULONG;
    pub fn RtlSetUnhandledExceptionFilter(
       UnhandledExceptionFilter: PRTLP_UNHANDLED_EXCEPTION_FILTER,
@@ -79244,16 +79189,16 @@ unsafe extern "C" {
       CapabilityGroupSid: PSID,
       CapabilitySid: PSID,
    ) -> NTSTATUS;
-   #[doc = "The RtlCreateSecurityDescriptor routine initializes a new absolute-format security descriptor.\nOn return, the security descriptor is initialized with no system ACL, no discretionary ACL, no owner, no primary group, and all control flags set to zero.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the buffer for the [`SECURITY_DESCRIPTOR`] to be initialized.\n* `Revision` - Specifies the revision level to assign to the security descriptor. Set this parameter to SECURITY_DESCRIPTOR_REVISION.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlcreatesecuritydescriptor"]
+   #[doc = "The RtlCreateSecurityDescriptor routine initializes a new absolute-format security descriptor.\nOn return, the security descriptor is initialized with no system ACL, no discretionary ACL, no owner, no primary group, and all control flags set to zero.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the buffer for the [`SECURITY_DESCRIPTOR`] to be initialized.\n* `Revision` - Specifies the revision level to assign to the security descriptor. Set this parameter to SECURITY_DESCRIPTOR_REVISION.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlcreatesecuritydescriptor"]
    pub fn RtlCreateSecurityDescriptor(
       SecurityDescriptor: PSECURITY_DESCRIPTOR,
       Revision: ULONG,
    ) -> NTSTATUS;
-   #[doc = "The RtlValidSecurityDescriptor routine checks a given security descriptor's validity.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the [`SECURITY_DESCRIPTOR`] to be checked.\n# Returns\n\nReturns TRUE if the security descriptor is valid, or FALSE otherwise.\n> The routine checks the validity of an absolute-format security descriptor. To check the validity of a self-relative security descriptor, use the [`RtlValidRelativeSecurityDescriptor`] routine instead.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidsecuritydescriptor"]
+   #[doc = "The RtlValidSecurityDescriptor routine checks a given security descriptor's validity.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the [`SECURITY_DESCRIPTOR`] to be checked.\n# Returns\n\nReturns TRUE if the security descriptor is valid, or FALSE otherwise.\n> The routine checks the validity of an absolute-format security descriptor. To check the validity of a self-relative security descriptor, use the [`RtlValidRelativeSecurityDescriptor`] routine instead.\n# See also\n\n> https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidsecuritydescriptor"]
    pub fn RtlValidSecurityDescriptor(SecurityDescriptor: PSECURITY_DESCRIPTOR) -> BOOLEAN;
-   #[doc = "The RtlLengthSecurityDescriptor routine returns the size of a given security descriptor.\n# Arguments\n\n* `SecurityDescriptor` - A pointer to a [`SECURITY_DESCRIPTOR`] structure whose length the function retrieves.\n# Returns\n\nReturns the length, in bytes, of the SECURITY_DESCRIPTOR structure.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtllengthsecuritydescriptor"]
+   #[doc = "The RtlLengthSecurityDescriptor routine returns the size of a given security descriptor.\n# Arguments\n\n* `SecurityDescriptor` - A pointer to a [`SECURITY_DESCRIPTOR`] structure whose length the function retrieves.\n# Returns\n\nReturns the length, in bytes, of the SECURITY_DESCRIPTOR structure.\n# See also\n\n> https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtllengthsecuritydescriptor"]
    pub fn RtlLengthSecurityDescriptor(SecurityDescriptor: PSECURITY_DESCRIPTOR) -> ULONG;
-   #[doc = "The RtlValidRelativeSecurityDescriptor routine checks the validity of a self-relative security descriptor.\n# Arguments\n\n* `SecurityDescriptorInput` - A pointer to the buffer that contains the security descriptor in self-relative format.\nThe buffer must begin with a SECURITY_DESCRIPTOR structure, which is followed by the rest of the security descriptor data.\n* `SecurityDescriptorLength` - The size of the SecurityDescriptorInput structure.\n* `RequiredInformation` - A SECURITY_INFORMATION value that specifies the information that is required to be contained in the security descriptor.\n# Returns\n\nRtlValidRelativeSecurityDescriptor returns TRUE if the security descriptor is valid and includes the information that the RequiredInformation parameter specifies. Otherwise, this routine returns FALSE.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidrelativesecuritydescriptor"]
+   #[doc = "The RtlValidRelativeSecurityDescriptor routine checks the validity of a self-relative security descriptor.\n# Arguments\n\n* `SecurityDescriptorInput` - A pointer to the buffer that contains the security descriptor in self-relative format.\nThe buffer must begin with a SECURITY_DESCRIPTOR structure, which is followed by the rest of the security descriptor data.\n* `SecurityDescriptorLength` - The size of the SecurityDescriptorInput structure.\n* `RequiredInformation` - A SECURITY_INFORMATION value that specifies the information that is required to be contained in the security descriptor.\n# Returns\n\nRtlValidRelativeSecurityDescriptor returns TRUE if the security descriptor is valid and includes the information that the RequiredInformation parameter specifies. Otherwise, this routine returns FALSE.\n# See also\n\n> https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidrelativesecuritydescriptor"]
    pub fn RtlValidRelativeSecurityDescriptor(
       SecurityDescriptorInput: PSECURITY_DESCRIPTOR,
       SecurityDescriptorLength: ULONG,
@@ -79306,19 +79251,19 @@ unsafe extern "C" {
       Sacl: *mut PACL,
       SaclDefaulted: PBOOLEAN,
    ) -> NTSTATUS;
-   #[doc = "The RtlSetOwnerSecurityDescriptor routine sets the owner information of an absolute-format security descriptor. It replaces any owner information that is already present in the security descriptor.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the SECURITY_DESCRIPTOR structure whose owner is to be set. RtlSetOwnerSecurityDescriptor replaces any existing owner with the new owner.\n* `Owner` - Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.\n- `This` pointer, not the SID structure itself, is copied into the security descriptor.\n- `If` this parameter is NULL, RtlSetOwnerSecurityDescriptor clears the security descriptor's owner information. This marks the security descriptor as having no owner.\n* `OwnerDefaulted` - Set to TRUE if the owner information is derived from a default mechanism.\n- `If` this value is TRUE, it is default information. RtlSetOwnerSecurityDescriptor sets the SE_OWNER_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.\n- `If` this parameter is FALSE, the SE_OWNER_DEFAULTED flag is cleared.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetownersecuritydescriptor"]
+   #[doc = "The RtlSetOwnerSecurityDescriptor routine sets the owner information of an absolute-format security descriptor. It replaces any owner information that is already present in the security descriptor.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the SECURITY_DESCRIPTOR structure whose owner is to be set. RtlSetOwnerSecurityDescriptor replaces any existing owner with the new owner.\n* `Owner` - Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.\n- `This` pointer, not the SID structure itself, is copied into the security descriptor.\n- `If` this parameter is NULL, RtlSetOwnerSecurityDescriptor clears the security descriptor's owner information. This marks the security descriptor as having no owner.\n* `OwnerDefaulted` - Set to TRUE if the owner information is derived from a default mechanism.\n- `If` this value is TRUE, it is default information. RtlSetOwnerSecurityDescriptor sets the SE_OWNER_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.\n- `If` this parameter is FALSE, the SE_OWNER_DEFAULTED flag is cleared.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetownersecuritydescriptor"]
    pub fn RtlSetOwnerSecurityDescriptor(
       SecurityDescriptor: PSECURITY_DESCRIPTOR,
       Owner: PSID,
       OwnerDefaulted: BOOLEAN,
    ) -> NTSTATUS;
-   #[doc = "The RtlGetOwnerSecurityDescriptor routine returns the owner information for a given security descriptor.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the SECURITY_DESCRIPTOR structure.\n* `Owner` - Pointer to an address to receive a pointer to the owner security identifier (SID). If the security descriptor does not currently contain an owner SID, Owner receives NULL.\n* `OwnerDefaulted` - Pointer to a Boolean variable that receives TRUE if the owner information is derived from a default mechanism, FALSE otherwise. Valid only if Owner receives a non-NULL value.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlgetownersecuritydescriptor"]
+   #[doc = "The RtlGetOwnerSecurityDescriptor routine returns the owner information for a given security descriptor.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the SECURITY_DESCRIPTOR structure.\n* `Owner` - Pointer to an address to receive a pointer to the owner security identifier (SID). If the security descriptor does not currently contain an owner SID, Owner receives NULL.\n* `OwnerDefaulted` - Pointer to a Boolean variable that receives TRUE if the owner information is derived from a default mechanism, FALSE otherwise. Valid only if Owner receives a non-NULL value.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlgetownersecuritydescriptor"]
    pub fn RtlGetOwnerSecurityDescriptor(
       SecurityDescriptor: PSECURITY_DESCRIPTOR,
       Owner: *mut PSID,
       OwnerDefaulted: PBOOLEAN,
    ) -> NTSTATUS;
-   #[doc = "The RtlSetGroupSecurityDescriptor routine sets the primary group information of an absolute-format security descriptor. It replaces any primary group information that is already present in the security descriptor.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the SECURITY_DESCRIPTOR structure whose primary group is to be set. RtlSetGroupSecurityDescriptor replaces any existing primary group with the new primary group.\n* `Group` - Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.\n- `This` pointer, not the SID structure itself, is copied into the security descriptor.\n- `If` Group is NULL, RtlSetGroupSecurityDescriptor clears the security descriptor's primary group information. This marks the security descriptor as having no primary group.\n* `GroupDefaulted` - Set this Boolean variable to TRUE if the primary group information is derived from a default mechanism.\n- `If` this parameter is TRUE, RtlSetGroupSecurityDescriptor sets the SE_GROUP_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.\n- `If` this parameter is FALSE, RtlSetGroupSecurityDescriptor clears the SE_GROUP_DEFAULTED flag.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n\thttps://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetgroupsecuritydescriptor"]
+   #[doc = "The RtlSetGroupSecurityDescriptor routine sets the primary group information of an absolute-format security descriptor. It replaces any primary group information that is already present in the security descriptor.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the SECURITY_DESCRIPTOR structure whose primary group is to be set. RtlSetGroupSecurityDescriptor replaces any existing primary group with the new primary group.\n* `Group` - Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.\n- `This` pointer, not the SID structure itself, is copied into the security descriptor.\n- `If` Group is NULL, RtlSetGroupSecurityDescriptor clears the security descriptor's primary group information. This marks the security descriptor as having no primary group.\n* `GroupDefaulted` - Set this Boolean variable to TRUE if the primary group information is derived from a default mechanism.\n- `If` this parameter is TRUE, RtlSetGroupSecurityDescriptor sets the SE_GROUP_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.\n- `If` this parameter is FALSE, RtlSetGroupSecurityDescriptor clears the SE_GROUP_DEFAULTED flag.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetgroupsecuritydescriptor"]
    pub fn RtlSetGroupSecurityDescriptor(
       SecurityDescriptor: PSECURITY_DESCRIPTOR,
       Group: PSID,
