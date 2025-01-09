@@ -42,11 +42,6 @@ jobs:
       shell: powershell
       run: |
         Add-Content -Path $env:GITHUB_PATH -Value "${{ github.workspace }}/nushell" -Encoding utf8
-
-    - name: Choco help
-      uses: crazy-max/ghaction-chocolatey@v3
-      with:
-        args: -h
     - if: matrix.os == 'windows-11-preview_aarch64'
       uses: robinraju/release-downloader@v1
       with:
@@ -63,13 +58,13 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
         # Download Chocolatey installer via HTTP
-        # let choco_installer_url = "https://community.chocolatey.org/api/v2/package/chocolatey/chocolatey.2.4.1.nupkg"
-        # let choco_installer = $"($env.RUNNER_TEMP)\chocolatey.nupkg"
-        # http get $choco_installer_url | save $choco_installer
+        let choco_installer_url = "https://community.chocolatey.org/api/v2/package/chocolatey/chocolatey.2.4.1.nupkg"
+        let choco_installer = $"($env.RUNNER_TEMP)\chocolatey.nupkg"
+        http get $choco_installer_url | save $choco_installer
 
         # Extract and install Chocolatey using Nushell's package management commands
-        # unzip $choco_installer -d "C:\ProgramData\chocolatey"
-        # $env.GITHUB_PATH = $"($env.GITHUB_PATH);C:\ProgramData\chocolatey\bin"
+        unzip $choco_installer -d "C:\ProgramData\chocolatey"
+        $env.GITHUB_PATH = $"($env.GITHUB_PATH);C:\ProgramData\chocolatey\bin"
 
         # Use Chocolatey to install Visual Studio Build Tools
         choco install visualstudio2022buildtools -y --no-progress --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
