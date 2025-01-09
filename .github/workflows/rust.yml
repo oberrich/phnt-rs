@@ -25,9 +25,10 @@ jobs:
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: hustcer/setup-nu@main
+    - if: matrix.os != 'windows-11-preview_aarch64'
+      uses: hustcer/setup-nu@main
       with:
-        version: '0.101.0'
+        version: '*'
     - if: matrix.os == 'windows-11-preview_aarch64'
       uses: robinraju/release-downloader@v1
       with:
@@ -50,8 +51,7 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell
       run: |
-        # Install NuShell using msiexec with the provided MSI file
-        msiexec /i "nu-0.101.0-aarch64-pc-windows-msvc.msi" -ArgumentList "/quiet" -NoNewWindow -Wait
+        Start-Process msiexec -ArgumentList "/i `"${{ github.workspace }}/nu-0.101.0-aarch64-pc-windows-msvc.msi`" /passive /quiet" -NoNewWindow -Wait
 
         # Check the return code of the msiexec command
         if ($LASTEXITCODE -eq 0) {
