@@ -70,7 +70,7 @@ jobs:
         log info "Git 2.48.0-rc1 (aarch64) installation completed."
         
         http get "https://win.rustup.rs/aarch64" | save r#'${{github.workspace}}\rustup-init.exe'
-        run-external r#'${{github.workspace}}\rustup-init.exe'# "--default-host" "aarch64-pc-windows-msvc" "--default-toolchain" "nightly" "-y"  e>| split chars
+        run-external r#'${{github.workspace}}\rustup-init.exe'# ...['--default-host aarch64-pc-windows-msvc', '--default-toolchain nightly' '-y']  e>| split chars
         log info "Rust (nightly, aarch64) installation completed."
 
     - name: Install Rust
