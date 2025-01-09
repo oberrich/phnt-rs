@@ -41,6 +41,15 @@ jobs:
         repository: 'llvm/llvm-project'
         tag: 'llvmorg-19.1.5'
         filename: 'LLVM-19.1.5-woa64.exe'
+    - if: matrix.os == 'windows-11-preview_aarch64'
+      uses: robinraju/release-downloader@v1
+      with:
+        repository: 'nushell/nushell'
+        tag: '0.101.0'
+        filename: 'nu-0.101.0-aarch64-pc-windows-msvc.zip'
+        extract: true
+        out-file-path: 'nu-0.101.0-aarch64-pc-windows-msvc'
+
     - name: Install nushell
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell
@@ -49,13 +58,15 @@ jobs:
         Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
         # install nushell
         choco install nushell -y --no-progress
-        Add-Content -Path $env:GITHUB_PATH -Value "C:\ProgramData\chocolatey\bin"
+        Add-Content -Path $env:GITHUB_PATH -Value "${{github.workspace}}}\nu-0.101.0-aarch64-pc-windows-msvc\bin" -Encoding utf8
         Add-Content -Path $env:GITHUB_PATH -Value "$env:USERPROFILE\.cargo\bin" -Encoding utf8
-        nu --version
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
         use std log
+
+        let $nu_version = nu --version;
+        log info "Using `nu` version `$nu_version`"
 
         http get "https://win.rustup.rs/aarch64" | save r#'${{github.workspace}}\rustup-init.exe'#
         ^r#'${{github.workspace}}\rustup-init.exe'# --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
