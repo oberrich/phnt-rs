@@ -41,7 +41,7 @@ jobs:
       shell: powershell
       run: |
         dir ${{ github.workspace }}
-        $env.PATH += ${{ github.workspace }}
+        $env.PATH += "${{ github.workspace }}"
         nu --version
         echo "NuShell 0.101.0 installed successfully."
     - if: matrix.os == 'windows-11-preview_aarch64'
