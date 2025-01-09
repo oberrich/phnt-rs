@@ -22,7 +22,9 @@ rustc-args = ["--cfg", "docsrs"]
 regex   = { version = "1.11.1", optional = true }
 bindgen = { version = "0.71.1", optional = true }
 chrono  = { version = "0.4.39", optional = true }
-doxygen-bindgen = { version = "0.1.1", optional = true }
+doxygen-bindgen = { version = "0.1.2", optional = true }
+syn = {version = "2.0.94"}
+quote = "1.0.38"
 
 [dependencies.windows-sys]
 version = "0.59.0"

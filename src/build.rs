@@ -153,7 +153,7 @@ mod regen {
             .default_enum_style(bindgen::EnumVariation::Rust {
                non_exhaustive: true,
             })
-            .default_alias_style(::bindgen::AliasVariation::TypeAlias)
+            .default_alias_style(bindgen::AliasVariation::TypeAlias)
             .default_macro_constant_type(bindgen::MacroTypeVariation::Unsigned)
             .default_non_copy_union_style(bindgen::NonCopyUnionStyle::ManuallyDrop)
             .translate_enum_integer_types(true)
