@@ -92,12 +92,11 @@ jobs:
       run: |
         let $arch = '${{ matrix.target }}' | split row '-' | first
         let $arch = if $arch == 'i686' { 'x86' } else { $arch }
-        echo "ARCH={arch}" | save $env.GITHUB_ENV --append
+        echo $'ARCH=($arch)' | save $env.GITHUB_ENV --append
 
-        let output = glob target/${{ matrix.target }}/release/build/**/{env.ARCH}_bindgen.rs | first
-
-        cp $output src/ffi/{env.ARCH}_bindgen.rs
-        echo "Moved {output} to src/ffi/{env.ARCH}_bindgen.rs"
+        let output = glob target/i686-pc-windows-msvc/debug/build/**/${{ env.ARCH }}_bindgen.rs | first
+        cp $output src/ffi/${{ env.ARCH }}_bindgen.rs
+        echo $"Moved ($output) to src/ffi/${{ env.ARCH }}_bindgen.rs"
 
     - name: Upload generated file as artifact
       uses: actions/upload-artifact@v4
