@@ -25,8 +25,7 @@ jobs:
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
-    - if: matrix.os != 'windows-11-preview_aarch64'
-      uses: hustcer/setup-nu@main
+    - uses: hustcer/setup-nu@main
       with:
         version: '*'
     - if: matrix.os == 'windows-11-preview_aarch64'
