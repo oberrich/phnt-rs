@@ -51,7 +51,8 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell
       run: |
-        msiexec /i $"($env.RUNNER_TEMP)/nu-0.101.0-aarch64-pc-windows-msvc.msi" -ArgumentList "/quiet" -NoNewWindow -Wait
+        msiexec /i "($env:RUNNER_TEMP)/nu-0.101.0-aarch64-pc-windows-msvc.msi" -ArgumentList "/quiet" -NoNewWindow -Wait
+        nu --version
         echo "NuShell 0.101.0 installed successfully."
     - name: Install Build Tools (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
