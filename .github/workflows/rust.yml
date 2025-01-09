@@ -50,7 +50,7 @@ jobs:
     - if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
-        Start-Process -FilePath msiexec.exe -ArgumentList '/i', "${{github.workspace}}\nu-0.101.0-${{ matrix.target }}.msi", '/qn', '/L*v', 'nu-install.log', 'ALLUSERS=1' -NoNewWindow -Wait
+        Start-Process -FilePath msiexec.exe -ArgumentList '/i "${{github.workspace}}\nu-0.101.0-${{ matrix.target }}.msi" ALLUSERS=1', '/qn', '/L*v', 'nu-install.log', -NoNewWindow -Wait
         Write-Host "nu installation log:"
         Get-Content nu-install.log
 
