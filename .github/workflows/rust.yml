@@ -41,8 +41,7 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell
       run: |
-        Add-Content -Path $env:GITHUB_PATH -Value "${{ github.workspace }}/nushell" -Encoding utf8
-        nu --version
+        Add-Content -Path $env:GITHUB_PATH -Value "${{ github.workspace }}\nushell" -Encoding utf8
     - if: matrix.os == 'windows-11-preview_aarch64'
       uses: robinraju/release-downloader@v1
       with:
@@ -58,6 +57,7 @@ jobs:
     - name: Install Build Tools (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
+        nu --version
         # Download Chocolatey installer via HTTP
         let choco_installer_url = "https://community.chocolatey.org/api/v2/package/chocolatey/chocolatey.2.4.1.nupkg"
         let choco_installer = $"($env.RUNNER_TEMP)\chocolatey.nupkg"
