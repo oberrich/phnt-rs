@@ -102,11 +102,11 @@ jobs:
       run: |
         let $arch = "${{ matrix.target }}" | split row '-' | first
         let $arch = if $arch == 'i686' { 'x86' } else { $arch }
-        let-env ARCH = $arch
+        $env.ARCH = $arch
 
-        let $output = ls target/${{ matrix.target }}/release/build/**/${{ env.ARCH }}_bindgen.rs | first
-        cp $output "src/ffi/${{ env.ARCH }}_bindgen.rs"
-        echo "Moved $($output) to src/ffi/${{ env.ARCH }}_bindgen.rs"
+        let $output = ls $"target/${{ matrix.target }}/release/build/**/($env.ARCH)_bindgen.rs" | first
+        cp $output $"src/ffi/($env.ARCH)_bindgen.rs"
+        echo $"Moved ($output) to src/ffi/($env.ARCH)_bindgen.rs"
 
     - name: Upload generated file as artifact
       uses: actions/upload-artifact@v4
