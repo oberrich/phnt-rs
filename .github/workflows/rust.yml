@@ -47,16 +47,17 @@ jobs:
         repository: 'nushell/nushell'
         tag: '0.101.0'
         filename: 'nu-0.101.0-${{ matrix.target }}.msi'
-    - if: matrix.os == 'windows-11-preview_aarch64'
+    - name: "Install nushell"
+      if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
         Start-Process -FilePath msiexec.exe -ArgumentList @(
-            '/i', '${{github.workspace}}\nu-0.101.0-${{ matrix.target }}.msi',
-            'ALLUSERS=1',
-            '/qn',
-            '/L*v', 'nu-install.log')
-          -NoNewWindow -Wait
-          
+          '/i', '${{github.workspace}}\nu-0.101.0-${{ matrix.target }}.msi',
+          'ALLUSERS=1',
+          '/qn',
+          '/L*v', 'nu-install.log'
+        ) -NoNewWindow -Wait
+
         Write-Host "nu installation log:"
         Get-Content nu-install.log
 
