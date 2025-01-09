@@ -94,10 +94,10 @@ jobs:
         let $arch = if $arch == 'i686' { 'x86' } else { $arch }
         echo $'ARCH=($arch)' | save $env.GITHUB_ENV --append
         with-env { ARCH: $arch } {
-          echo ${{ env.ARCH }}
-          let output = glob target/${{ matrix.target }}/release/build/**/${{ env.ARCH }}_bindgen.rs | first
-          cp $output src/ffi/${{ env.ARCH }}_bindgen.rs
-          echo $"Moved ($output) to src/ffi/${{ env.ARCH }}_bindgen.rs"
+          echo $'($env.ARCH)'
+          let output = glob $'target/${{ matrix.target }}/release/build/**/($env.ARCH)_bindgen.rs' | first
+          cp $output $'src/ffi/($env.ARCH)_bindgen.rs'
+          echo $'Moved ($output) to src/ffi/($env.ARCH)_bindgen.rs'
         }
 
     - name: Upload generated file as artifact
