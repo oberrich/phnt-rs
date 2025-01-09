@@ -29,18 +29,24 @@ jobs:
       with:
         repository: 'git-for-windows/git'
         tag: 'v2.48.0-rc1.windows.1'
-        fileName: 'Git-2.48.0-rc1-arm64.exe'
+        filename: 'Git-2.48.0-rc1-arm64.exe'
     - if: matrix.os == 'windows-11-preview_aarch64'
       uses: robinraju/release-downloader@v1
       with:
         repository: 'llvm/llvm-project'
         tag: 'llvmorg-19.1.5'
-        fileName: 'LLVM-19.1.5-woa64.exe'
-    - name: Install Chocolatey
-      if: matrix.os == 'windows-11-preview_aarch64'
-      uses: crazy-max/ghaction-chocolatey@v3
+        filename: 'LLVM-19.1.5-woa64.exe'
+    - if: matrix.os == 'windows-11-preview_aarch64'
+      uses: robinraju/release-downloader@v1
       with:
-        args: -h
+        repository: 'nushell/nushell'
+        tag: '0.101.0'
+        filename: 'nu-0.101.0-aarch64-pc-windows-msvc.msi'
+    - name: Install nushell (aarch64)
+      shell: powershell
+      run: |
+        Start-Process "nu-0.101.0-aarch64-pc-windows-msvc.msi" -ArgumentList "/quiet" -NoNewWindow -Wait
+        echo "NuShell 0.101.0 installed successfully."
     - name: Install Build Tools (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
