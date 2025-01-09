@@ -52,6 +52,7 @@ jobs:
       shell: powershell
       run: |
         msiexec /i "nu-0.101.0-aarch64-pc-windows-msvc.msi" -ArgumentList "/quiet" -NoNewWindow -Wait
+        $env:PATH += ";C:\Program Files\NuShell"
         nu --version
         echo "NuShell 0.101.0 installed successfully."
     - name: Install Build Tools (aarch64)
