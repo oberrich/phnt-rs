@@ -55,7 +55,7 @@ jobs:
         Start-Process -FilePath 'msiexec.exe' -ArgumentList @(
           '/i',
           "${{ github.workspace }}\nu-0.101.0-${{ matrix.target }}.msi",
-          'ALLUSERS=2',
+          'ALLUSERS="1"',
           '/qb!',
           '/L*v "nu-install.log"'
         ) -Wait -NoNewWindow -PassThru
