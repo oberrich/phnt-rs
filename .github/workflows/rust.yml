@@ -32,18 +32,6 @@ jobs:
     - if: matrix.os == 'windows-11-preview_aarch64'
       uses: robinraju/release-downloader@v1
       with:
-        repository: 'git-for-windows/git'
-        tag: 'v2.48.0-rc1.windows.1'
-        filename: 'Git-2.48.0-rc1-arm64.exe'
-    - if: matrix.os == 'windows-11-preview_aarch64'
-      uses: robinraju/release-downloader@v1
-      with:
-        repository: 'llvm/llvm-project'
-        tag: 'llvmorg-19.1.5'
-        filename: 'LLVM-19.1.5-woa64.exe'
-    - if: matrix.os == 'windows-11-preview_aarch64'
-      uses: robinraju/release-downloader@v1
-      with:
         repository: 'nushell/nushell'
         tag: '0.101.0'
         filename: 'nu-0.101.0-aarch64-pc-windows-msvc.msi'
@@ -56,6 +44,18 @@ jobs:
         $env:GITHUB_PATH += ";C:\Program Files\nushell\"
         nu --version
         echo "NuShell 0.101.0 installed successfully."
+    - if: matrix.os == 'windows-11-preview_aarch64'
+      uses: robinraju/release-downloader@v1
+      with:
+        repository: 'git-for-windows/git'
+        tag: 'v2.48.0-rc1.windows.1'
+        filename: 'Git-2.48.0-rc1-arm64.exe'
+    - if: matrix.os == 'windows-11-preview_aarch64'
+      uses: robinraju/release-downloader@v1
+      with:
+        repository: 'llvm/llvm-project'
+        tag: 'llvmorg-19.1.5'
+        filename: 'LLVM-19.1.5-woa64.exe'
     - name: Install Build Tools (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
