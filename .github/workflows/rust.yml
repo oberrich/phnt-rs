@@ -119,7 +119,7 @@ jobs:
 
         let $output = ls target/${{ matrix.target }}/release/build
           | where name ends-with "${{ env.ARCH }}_bindgen.rs"
-          | first?;
+          | first;
         
         if $output { 
           cp $output "src/ffi/${{ env.ARCH }}_bindgen.rs"
