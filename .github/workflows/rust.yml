@@ -64,7 +64,7 @@ jobs:
 
         # Extract and install Chocolatey using Nushell's package management commands
         # unzip $choco_installer -d "C:\ProgramData\chocolatey"
-        # set-env GITHUB_PATH = $"($env.RUNNER_TEMP);C:\ProgramData\chocolatey\bin"
+        # $env.GITHUB_PATH = $"($env.GITHUB_PATH);C:\ProgramData\chocolatey\bin"
 
         # Use Chocolatey to install Visual Studio Build Tools
         choco install visualstudio2022buildtools -y --no-progress --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
@@ -73,7 +73,7 @@ jobs:
         echo "LLVM 19.1.5 (aarch64) installation completed."
 
         run $"($env.RUNNER_TEMP)/Git-2.48.0-rc1-arm64.exe" /VERYSILENT
-        set-env GITHUB_PATH = $"($env.GITHUB_PATH);C:\Program Files\Git\cmd;C:\Program Files\Git\bin"
+        $env.GITHUB_PATH = $"($env.GITHUB_PATH);;C:\Program Files\Git\cmd;C:\Program Files\Git\bin"
         echo "Git 2.48.0-rc1 (aarch64) installation completed."
         
         http get "https://win.rustup.rs/aarch64" | save $"($env.RUNNER_TEMP)/rustup-init.exe"
@@ -100,7 +100,7 @@ jobs:
       run: |
         let $arch = "${{ matrix.target }}" | split row '-' | first;
         let $arch = if $arch == 'i686' { 'x86' } else { $arch };
-        $arch | save-env --name ARCH
+        $env.ARCH = $arch;
 
         let $output = ls target/${{ matrix.target }}/release/build
           | where name ends-with "${{ env.ARCH }}_bindgen.rs"
