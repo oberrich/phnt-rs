@@ -51,32 +51,32 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell
       run: |
-        Start-Process "nu-0.101.0-aarch64-pc-windows-msvc.msi" -ArgumentList "/quiet" -NoNewWindow -Wait
+        msiexec /i $"($env.RUNNER_TEMP)/nu-0.101.0-aarch64-pc-windows-msvc.msi" -ArgumentList "/quiet" -NoNewWindow -Wait
         echo "NuShell 0.101.0 installed successfully."
     - name: Install Build Tools (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
         # Download Chocolatey installer via HTTP
         # let choco_installer_url = "https://community.chocolatey.org/api/v2/package/chocolatey/"
-        # let choco_installer = "$env:RUNNER_TEMP\chocolatey.nupkg"
+        # let choco_installer = $"($env.RUNNER_TEMP)\chocolatey.nupkg"
         # http get $choco_installer_url | save $choco_installer
 
         # Extract and install Chocolatey using Nushell's package management commands
         # unzip $choco_installer -d "C:\ProgramData\chocolatey"
-        # set-env GITHUB_PATH = "$env:GITHUB_PATH;C:\ProgramData\chocolatey\bin"
+        # set-env GITHUB_PATH = $"($env.RUNNER_TEMP);C:\ProgramData\chocolatey\bin"
 
         # Use Chocolatey to install Visual Studio Build Tools
         choco install visualstudio2022buildtools -y --no-progress --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
         echo "Visual Studio 2022 Build Tools (aarch64) installation completed."
-        run "$env:RUNNER_TEMP/LLVM-19.1.5-woa64.exe" /S
+        run $"($env.RUNNER_TEMP)/LLVM-19.1.5-woa64.exe" /S
         echo "LLVM 19.1.5 (aarch64) installation completed."
 
-        run "$env:RUNNER_TEMP/Git-2.48.0-rc1-arm64.exe" /VERYSILENT
-        set-env GITHUB_PATH = "$env:GITHUB_PATH;C:\Program Files\Git\cmd;C:\Program Files\Git\bin"
+        run $"($env.RUNNER_TEMP)/Git-2.48.0-rc1-arm64.exe" /VERYSILENT
+        set-env GITHUB_PATH = $"($env.GITHUB_PATH);C:\Program Files\Git\cmd;C:\Program Files\Git\bin"
         echo "Git 2.48.0-rc1 (aarch64) installation completed."
         
-        http get "https://win.rustup.rs/aarch64" | save "$env:RUNNER_TEMP/rustup-init.exe"
-        run "$env:RUNNER_TEMP/rustup-init.exe" --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
+        http get "https://win.rustup.rs/aarch64" | save $"($env.RUNNER_TEMP)/rustup-init.exe"
+        run $"($env.RUNNER_TEMP)/rustup-init.exe" --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
         echo "Rust (nightly, aarch64) installation completed."
 
     - name: Install Rust
