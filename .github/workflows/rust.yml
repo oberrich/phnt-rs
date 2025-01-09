@@ -51,7 +51,7 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell
       run: |
-        Start-Process msiexec -ArgumentList "/i `"${{ github.workspace }}/nu-0.101.0-aarch64-pc-windows-msvc.msi`" /passive /quiet" -NoNewWindow -Wait
+        Start-Process msiexec -ArgumentList "/i \"${{ github.workspace }}/nu-0.101.0-aarch64-pc-windows-msvc.msi\" /passive /quiet" -NoNewWindow -Wait
 
         # Check the return code of the msiexec command
         if ($LASTEXITCODE -eq 0) {
