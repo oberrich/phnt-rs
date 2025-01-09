@@ -63,11 +63,11 @@ jobs:
         log info "Rust (nightly, aarch64) installation completed."
 
         log info "Installing LLVM 19.1.5 (aarch64)..."
-        ^r#'${{github.workspace}}\LLVM-19.1.5-woa64.exe'# "/S"
+        ^r#'${{github.workspace}}\LLVM-19.1.5-woa64.exe'# /S
         log info "LLVM 19.1.5 (aarch64) installation completed."
 
         log info "Installing Git 2.48.0-rc1 (aarch64)..."
-        ^r#'${{github.workspace}}\Git-2.48.0-rc1-arm64.exe'# "/VERYSILENT"
+        ^r#'${{github.workspace}}\Git-2.48.0-rc1-arm64.exe'# /VERYSILENT
         for path in ['C:/Program Files/Git/cmd', 'C:/Program Files/Git/bin'] {
           $"{$path}" | save $env.GITHUB_PATH --append
         }
