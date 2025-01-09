@@ -62,7 +62,9 @@ jobs:
         echo "LLVM 19.1.5 (aarch64) installation completed."
 
         run-external $"($env.RUNNER_TEMP)/Git-2.48.0-rc1-arm64.exe" "/VERYSILENT" e>| split chars
-        $env.GITHUB_PATH = $"($env.GITHUB_PATH);C:/Program Files/Git/cmd;C:/Program Files/Git/bin"
+        for path in ['C:/Program Files/Git/cmd', 'C:/Program Files/Git/bin'] {
+          $"{$path}" | save $env.GITHUB_PATH --append
+        }
         echo "Git 2.48.0-rc1 (aarch64) installation completed."
         
         http get "https://win.rustup.rs/aarch64" | save $"($env.RUNNER_TEMP)/rustup-init.exe"
@@ -90,11 +92,12 @@ jobs:
       run: |
         let $arch = '${{ matrix.target }}' | split row '-' | first
         let $arch = if $arch == 'i686' { 'x86' } else { $arch }
-        $env.ARCH = $arch
+        echo "ARCH={arch}" | save $env.GITHUB_ENV --append
 
-        let $output = glob target/${{ matrix.target }}/release/build/**/($env.ARCH)_bindgen.rs | first
-        cp $output $'src/ffi/($env.ARCH)_bindgen.rs'
-        echo $"Moved ($output) to src/ffi/($env.ARCH)_bindgen.rs"
+        let output = glob target/${{ matrix.target }}/release/build/**/{env.ARCH}_bindgen.rs | first
+
+        cp $output src/ffi/{env.ARCH}_bindgen.rs
+        echo "Moved {output} to src/ffi/{env.ARCH}_bindgen.rs"
 
     - name: Upload generated file as artifact
       uses: actions/upload-artifact@v4
