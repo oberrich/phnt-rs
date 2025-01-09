@@ -1,12 +1,11 @@
-// Generated at 2025-01-09 03:57:45.718696600 +00:00
+// Generated at 2025-01-09 05:25:06.833886700 +00:00
 #[cfg(not(target_arch = "x86"))]
 compile_error!("These bindings can only be used on `x86` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.");
 
-use cty;
-pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
 pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
-pub use windows_sys::Win32::Foundation::BOOLEAN as BOOLEAN;
+pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
 pub use windows_sys::Win32::Foundation::BOOL as BOOL;
+pub use windows_sys::Win32::Foundation::BOOLEAN as BOOLEAN;
 pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
 
 pub const PHNT_VERSION: u32 = self::PHNT_WIN11_24H2;
@@ -3000,8 +2999,8 @@ pub const MOFCI_RESERVED0: u32 = 1;
 pub const MOFCI_RESERVED1: u32 = 2;
 pub const MOFCI_RESERVED2: u32 = 4;
 pub const CPI_NEWPROCESSWINDOW: u32 = 1;
-pub type va_list = *mut cty::c_char;
-pub type wchar_t = cty::c_ushort;
+pub type va_list = *mut ::core::ffi::c_char;
+pub type wchar_t = ::core::ffi::c_ushort;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -3012,37 +3011,37 @@ pub enum _EXCEPTION_DISPOSITION {
    ExceptionCollidedUnwind = 3,
 }
 pub use self::_EXCEPTION_DISPOSITION as EXCEPTION_DISPOSITION;
-pub type ULONG = cty::c_ulong;
+pub type ULONG = ::core::ffi::c_ulong;
 pub type PULONG = *mut ULONG;
-pub type USHORT = cty::c_ushort;
+pub type USHORT = ::core::ffi::c_ushort;
 pub type PUSHORT = *mut USHORT;
-pub type UCHAR = cty::c_uchar;
+pub type UCHAR = ::core::ffi::c_uchar;
 pub type PUCHAR = *mut UCHAR;
-pub type DWORD = cty::c_ulong;
-pub type BYTE = cty::c_uchar;
-pub type WORD = cty::c_ushort;
+pub type DWORD = ::core::ffi::c_ulong;
+pub type BYTE = ::core::ffi::c_uchar;
+pub type WORD = ::core::ffi::c_ushort;
 pub type PBOOL = *mut BOOL;
 pub type PDWORD = *mut DWORD;
-pub type LPVOID = *mut cty::c_void;
-pub type UINT = cty::c_uint;
-pub type ULONG32 = cty::c_uint;
-pub type UINT_PTR = cty::c_uint;
-pub type LONG_PTR = cty::c_long;
-pub type ULONG_PTR = cty::c_ulong;
-pub type PULONG_PTR = *mut cty::c_ulong;
+pub type LPVOID = *mut ::core::ffi::c_void;
+pub type UINT = ::core::ffi::c_uint;
+pub type ULONG32 = ::core::ffi::c_uint;
+pub type UINT_PTR = ::core::ffi::c_uint;
+pub type LONG_PTR = ::core::ffi::c_long;
+pub type ULONG_PTR = ::core::ffi::c_ulong;
+pub type PULONG_PTR = *mut ::core::ffi::c_ulong;
 pub type SIZE_T = ULONG_PTR;
 pub type PSIZE_T = *mut ULONG_PTR;
-pub type LONG64 = cty::c_longlong;
-pub type PLONG64 = *mut cty::c_longlong;
-pub type ULONG64 = cty::c_ulonglong;
-pub type PULONG64 = *mut cty::c_ulonglong;
-pub type DWORD64 = cty::c_ulonglong;
-pub type PDWORD64 = *mut cty::c_ulonglong;
+pub type LONG64 = ::core::ffi::c_longlong;
+pub type PLONG64 = *mut ::core::ffi::c_longlong;
+pub type ULONG64 = ::core::ffi::c_ulonglong;
+pub type PULONG64 = *mut ::core::ffi::c_ulonglong;
+pub type DWORD64 = ::core::ffi::c_ulonglong;
+pub type PDWORD64 = *mut ::core::ffi::c_ulonglong;
 pub type KAFFINITY = ULONG_PTR;
-pub type PVOID = *mut cty::c_void;
-pub type CHAR = cty::c_char;
-pub type SHORT = cty::c_short;
-pub type LONG = cty::c_long;
+pub type PVOID = *mut ::core::ffi::c_void;
+pub type CHAR = ::core::ffi::c_char;
+pub type SHORT = ::core::ffi::c_short;
+pub type LONG = ::core::ffi::c_long;
 pub type WCHAR = wchar_t;
 pub type PWCHAR = *mut WCHAR;
 pub type PWCH = *mut WCHAR;
@@ -3078,14 +3077,14 @@ pub struct _GROUP_AFFINITY {
 }
 pub type GROUP_AFFINITY = _GROUP_AFFINITY;
 pub type PGROUP_AFFINITY = *mut _GROUP_AFFINITY;
-pub type HANDLE = *mut cty::c_void;
+pub type HANDLE = *mut ::core::ffi::c_void;
 pub type PHANDLE = *mut HANDLE;
-pub type CCHAR = cty::c_char;
+pub type CCHAR = ::core::ffi::c_char;
 pub type LCID = DWORD;
 pub type PLCID = PDWORD;
 pub type LANGID = WORD;
-pub type LONGLONG = cty::c_longlong;
-pub type ULONGLONG = cty::c_ulonglong;
+pub type LONGLONG = ::core::ffi::c_longlong;
+pub type ULONGLONG = ::core::ffi::c_ulonglong;
 pub type PULONGLONG = *mut ULONGLONG;
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -3199,10 +3198,10 @@ pub type PLIST_ENTRY32 = *mut LIST_ENTRY32;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _GUID {
-   pub Data1: cty::c_ulong,
-   pub Data2: cty::c_ushort,
-   pub Data3: cty::c_ushort,
-   pub Data4: [cty::c_uchar; 8usize],
+   pub Data1: ::core::ffi::c_ulong,
+   pub Data2: ::core::ffi::c_ushort,
+   pub Data3: ::core::ffi::c_ushort,
+   pub Data4: [::core::ffi::c_uchar; 8usize],
 }
 pub type GUID = _GUID;
 pub type LPGUID = *mut GUID;
@@ -3215,7 +3214,7 @@ pub type PEXCEPTION_ROUTINE = ::core::option::Option<
       arg4: PVOID,
    ) -> EXCEPTION_DISPOSITION,
 >;
-pub type __C_ASSERT__ = [cty::c_char; 1usize];
+pub type __C_ASSERT__ = [::core::ffi::c_char; 1usize];
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _XSAVE_AREA_HEADER {
@@ -9973,68 +9972,68 @@ pub type LPARAM = LONG_PTR;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct HRGN__ {
-   pub unused: cty::c_int,
+   pub unused: ::core::ffi::c_int,
 }
 pub type HRGN = *mut HRGN__;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct HWINSTA__ {
-   pub unused: cty::c_int,
+   pub unused: ::core::ffi::c_int,
 }
 pub type HWINSTA = *mut HWINSTA__;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct HWND__ {
-   pub unused: cty::c_int,
+   pub unused: ::core::ffi::c_int,
 }
 pub type HWND = *mut HWND__;
-pub type HGDIOBJ = *mut cty::c_void;
+pub type HGDIOBJ = *mut ::core::ffi::c_void;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct HACCEL__ {
-   pub unused: cty::c_int,
+   pub unused: ::core::ffi::c_int,
 }
 pub type HACCEL = *mut HACCEL__;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct HBITMAP__ {
-   pub unused: cty::c_int,
+   pub unused: ::core::ffi::c_int,
 }
 pub type HBITMAP = *mut HBITMAP__;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct HDC__ {
-   pub unused: cty::c_int,
+   pub unused: ::core::ffi::c_int,
 }
 pub type HDC = *mut HDC__;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct HDESK__ {
-   pub unused: cty::c_int,
+   pub unused: ::core::ffi::c_int,
 }
 pub type HDESK = *mut HDESK__;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct HICON__ {
-   pub unused: cty::c_int,
+   pub unused: ::core::ffi::c_int,
 }
 pub type HICON = *mut HICON__;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct HMENU__ {
-   pub unused: cty::c_int,
+   pub unused: ::core::ffi::c_int,
 }
 pub type HMENU = *mut HMENU__;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct HWINEVENTHOOK__ {
-   pub unused: cty::c_int,
+   pub unused: ::core::ffi::c_int,
 }
 pub type HWINEVENTHOOK = *mut HWINEVENTHOOK__;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct HMONITOR__ {
-   pub unused: cty::c_int,
+   pub unused: ::core::ffi::c_int,
 }
 pub type HMONITOR = *mut HMONITOR__;
 pub type HCURSOR = HICON;
@@ -10295,8 +10294,8 @@ pub type TIMERPROC = ::core::option::Option<
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct tagMOUSEMOVEPOINT {
-   pub x: cty::c_int,
-   pub y: cty::c_int,
+   pub x: ::core::ffi::c_int,
+   pub y: ::core::ffi::c_int,
    pub time: DWORD,
    pub dwExtraInfo: ULONG_PTR,
 }
@@ -10702,7 +10701,7 @@ pub type PCOMBOBOXINFO = *mut tagCOMBOBOXINFO;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct HRAWINPUT__ {
-   pub unused: cty::c_int,
+   pub unused: ::core::ffi::c_int,
 }
 pub type HRAWINPUT = *mut HRAWINPUT__;
 #[repr(C)]
@@ -11041,7 +11040,7 @@ pub struct _QUAD {
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union _QUAD__bindgen_ty_1 {
-   pub UseThisFieldToCopy: cty::c_longlong,
+   pub UseThisFieldToCopy: ::core::ffi::c_longlong,
    pub DoNotUseThisField: f64,
 }
 impl Default for _QUAD__bindgen_ty_1 {
@@ -11076,14 +11075,14 @@ pub type PQUAD_PTR = *mut _QUAD_PTR;
 pub type LOGICAL = ULONG;
 pub type PLOGICAL = *mut ULONG;
 pub type PNTSTATUS = *mut NTSTATUS;
-pub type CSHORT = cty::c_short;
+pub type CSHORT = ::core::ffi::c_short;
 pub type CLONG = ULONG;
 pub type PCCHAR = *mut CCHAR;
 pub type PCSHORT = *mut CSHORT;
 pub type PCLONG = *mut CLONG;
 pub type PCSZ = PCSTR;
 pub type PPVOID = *mut PVOID;
-pub type PCVOID = *const cty::c_void;
+pub type PCVOID = *const ::core::ffi::c_void;
 pub type KIRQL = UCHAR;
 pub type PKIRQL = *mut UCHAR;
 pub type KPRIORITY = LONG;
@@ -46945,7 +46944,7 @@ pub type PEXTENDED_CREATE_INFORMATION = *mut _EXTENDED_CREATE_INFORMATION;
 #[derive(Debug, Copy, Clone)]
 pub struct _EXTENDED_CREATE_INFORMATION_32 {
    pub ExtendedCreateFlags: LONGLONG,
-   pub EaBuffer: *mut cty::c_void,
+   pub EaBuffer: *mut ::core::ffi::c_void,
    pub EaLength: ULONG,
 }
 impl Default for _EXTENDED_CREATE_INFORMATION_32 {
@@ -59769,7 +59768,7 @@ pub type PWNF_USER_CALLBACK = ::core::option::Option<
       arg2: WNF_CHANGE_STAMP,
       arg3: PWNF_TYPE_ID,
       arg4: PVOID,
-      arg5: *const cty::c_void,
+      arg5: *const ::core::ffi::c_void,
       arg6: ULONG,
    ) -> NTSTATUS,
 >;
@@ -67283,7 +67282,7 @@ pub struct _WMI_THREAD_INFORMATION {
 }
 pub type WMI_THREAD_INFORMATION = _WMI_THREAD_INFORMATION;
 pub type PWMI_THREAD_INFORMATION = *mut _WMI_THREAD_INFORMATION;
-pub type SCHAR = cty::c_schar;
+pub type SCHAR = ::core::ffi::c_schar;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _WMI_EXTENDED_THREAD_INFORMATION {
@@ -72471,7 +72470,7 @@ pub type PPERFINFO_SYSCALL_EXIT_DATA = *mut _PERFINFO_SYSCALL_EXIT_DATA;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _PERFINFO_MARK_INFORMATION {
-   pub Name: [cty::c_char; 1usize],
+   pub Name: [::core::ffi::c_char; 1usize],
 }
 pub type PERFINFO_MARK_INFORMATION = _PERFINFO_MARK_INFORMATION;
 pub type PPERFINFO_MARK_INFORMATION = *mut _PERFINFO_MARK_INFORMATION;
@@ -75071,21 +75070,21 @@ unsafe extern "stdcall" {
    pub fn NtDeleteWnfStateName(StateName: PCWNF_STATE_NAME) -> NTSTATUS;
    pub fn NtUpdateWnfStateData(
       StateName: PCWNF_STATE_NAME,
-      Buffer: *const cty::c_void,
+      Buffer: *const ::core::ffi::c_void,
       Length: ULONG,
       TypeId: PCWNF_TYPE_ID,
-      ExplicitScope: *const cty::c_void,
+      ExplicitScope: *const ::core::ffi::c_void,
       MatchingChangeStamp: WNF_CHANGE_STAMP,
       CheckStamp: LOGICAL,
    ) -> NTSTATUS;
    pub fn NtDeleteWnfStateData(
       StateName: PCWNF_STATE_NAME,
-      ExplicitScope: *const cty::c_void,
+      ExplicitScope: *const ::core::ffi::c_void,
    ) -> NTSTATUS;
    pub fn NtQueryWnfStateData(
       StateName: PCWNF_STATE_NAME,
       TypeId: PCWNF_TYPE_ID,
-      ExplicitScope: *const cty::c_void,
+      ExplicitScope: *const ::core::ffi::c_void,
       ChangeStamp: PWNF_CHANGE_STAMP,
       Buffer: PVOID,
       BufferSize: PULONG,
@@ -75093,7 +75092,7 @@ unsafe extern "stdcall" {
    pub fn NtQueryWnfStateNameInformation(
       StateName: PCWNF_STATE_NAME,
       NameInfoClass: WNF_STATE_NAME_INFORMATION,
-      ExplicitScope: *const cty::c_void,
+      ExplicitScope: *const ::core::ffi::c_void,
       InfoBuffer: PVOID,
       InfoBufferSize: ULONG,
    ) -> NTSTATUS;
@@ -77412,7 +77411,7 @@ unsafe extern "stdcall" {
    pub fn RtlBarrier(Barrier: PRTL_BARRIER, Flags: ULONG) -> BOOLEAN;
    pub fn RtlBarrierForDelete(Barrier: PRTL_BARRIER, Flags: ULONG) -> BOOLEAN;
    pub fn RtlWaitOnAddress(
-      Address: *mut cty::c_void,
+      Address: *mut ::core::ffi::c_void,
       CompareAddress: PVOID,
       AddressSize: SIZE_T,
       Timeout: PLARGE_INTEGER,
@@ -78235,16 +78234,20 @@ unsafe extern "stdcall" {
    ) -> NTSTATUS;
    pub fn RtlValidateUserCallTarget(Address: PVOID, Flags: PULONG);
    pub fn RtlCompareMemory(
-      Source1: *const cty::c_void,
-      Source2: *const cty::c_void,
+      Source1: *const ::core::ffi::c_void,
+      Source2: *const ::core::ffi::c_void,
       Length: SIZE_T,
    ) -> SIZE_T;
    pub fn RtlCompareMemoryUlong(Source: PVOID, Length: SIZE_T, Pattern: ULONG) -> SIZE_T;
    pub fn RtlFillMemoryUlong(Destination: PVOID, Length: SIZE_T, Pattern: ULONG);
    pub fn RtlFillMemoryUlonglong(Destination: PVOID, Length: SIZE_T, Pattern: ULONGLONG);
    pub fn RtlIsZeroMemory(Buffer: PVOID, Length: SIZE_T) -> BOOLEAN;
-   pub fn RtlCrc32(Buffer: *const cty::c_void, Size: usize, InitialCrc: DWORD) -> DWORD;
-   pub fn RtlCrc64(Buffer: *const cty::c_void, Size: usize, InitialCrc: ULONGLONG) -> ULONGLONG;
+   pub fn RtlCrc32(Buffer: *const ::core::ffi::c_void, Size: usize, InitialCrc: DWORD) -> DWORD;
+   pub fn RtlCrc64(
+      Buffer: *const ::core::ffi::c_void,
+      Size: usize,
+      InitialCrc: ULONGLONG,
+   ) -> ULONGLONG;
    pub fn RtlGetSystemGlobalData(
       DataId: RTL_SYSTEM_GLOBAL_DATA_ID,
       Buffer: PVOID,
@@ -79896,9 +79899,9 @@ unsafe extern "stdcall" {
    pub fn RtlPublishWnfStateData(
       StateName: WNF_STATE_NAME,
       TypeId: PCWNF_TYPE_ID,
-      Buffer: *const cty::c_void,
+      Buffer: *const ::core::ffi::c_void,
       Length: ULONG,
-      ExplicitScope: *const cty::c_void,
+      ExplicitScope: *const ::core::ffi::c_void,
    ) -> NTSTATUS;
    pub fn RtlSubscribeWnfStateChangeNotification(
       SubscriptionHandle: *mut PVOID,
@@ -82178,7 +82181,7 @@ unsafe extern "stdcall" {
    pub fn ZwDeleteValueKey(KeyHandle: HANDLE, ValueName: PUNICODE_STRING) -> NTSTATUS;
    pub fn ZwDeleteWnfStateData(
       StateName: PCWNF_STATE_NAME,
-      ExplicitScope: *const cty::c_void,
+      ExplicitScope: *const ::core::ffi::c_void,
    ) -> NTSTATUS;
    pub fn ZwDeleteWnfStateName(StateName: PCWNF_STATE_NAME) -> NTSTATUS;
    pub fn ZwDeviceIoControlFile(
@@ -83196,7 +83199,7 @@ unsafe extern "stdcall" {
    pub fn ZwQueryWnfStateData(
       StateName: PCWNF_STATE_NAME,
       TypeId: PCWNF_TYPE_ID,
-      ExplicitScope: *const cty::c_void,
+      ExplicitScope: *const ::core::ffi::c_void,
       ChangeStamp: PWNF_CHANGE_STAMP,
       Buffer: PVOID,
       BufferSize: PULONG,
@@ -83204,7 +83207,7 @@ unsafe extern "stdcall" {
    pub fn ZwQueryWnfStateNameInformation(
       StateName: PCWNF_STATE_NAME,
       NameInfoClass: WNF_STATE_NAME_INFORMATION,
-      ExplicitScope: *const cty::c_void,
+      ExplicitScope: *const ::core::ffi::c_void,
       InfoBuffer: PVOID,
       InfoBufferSize: ULONG,
    ) -> NTSTATUS;
@@ -83752,10 +83755,10 @@ unsafe extern "stdcall" {
    pub fn ZwUnsubscribeWnfStateChange(StateName: PCWNF_STATE_NAME) -> NTSTATUS;
    pub fn ZwUpdateWnfStateData(
       StateName: PCWNF_STATE_NAME,
-      Buffer: *const cty::c_void,
+      Buffer: *const ::core::ffi::c_void,
       Length: ULONG,
       TypeId: PCWNF_TYPE_ID,
-      ExplicitScope: *const cty::c_void,
+      ExplicitScope: *const ::core::ffi::c_void,
       MatchingChangeStamp: WNF_CHANGE_STAMP,
       CheckStamp: LOGICAL,
    ) -> NTSTATUS;
@@ -84024,7 +84027,7 @@ unsafe extern "stdcall" {
    ) -> ULONG;
    pub fn NtUserDrawAnimatedRects(
       WindowHandle: HWND,
-      idAni: cty::c_int,
+      idAni: ::core::ffi::c_int,
       lprcFrom: *const RECT,
       lprcTo: *const RECT,
    ) -> BOOL;
