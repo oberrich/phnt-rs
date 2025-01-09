@@ -25,6 +25,10 @@ jobs:
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
+    - if: matrix.os != 'windows-11-preview_aarch64'
+      uses: hustcer/setup-nu@main
+      with:
+        version: '*'
     - if: matrix.os == 'windows-11-preview_aarch64'
       uses: robinraju/release-downloader@v1
       with:
@@ -37,12 +41,14 @@ jobs:
         repository: 'llvm/llvm-project'
         tag: 'llvmorg-19.1.5'
         filename: 'LLVM-19.1.5-woa64.exe'
-    - uses: robinraju/release-downloader@v1
+    - if: matrix.os == 'windows-11-preview_aarch64'
+      uses: robinraju/release-downloader@v1
       with:
         repository: 'nushell/nushell'
         tag: '0.101.0'
         filename: 'nu-0.101.0-${{ matrix.target }}.msi'
     - name: "Install nushell"
+      if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
         Start-Process -FilePath msiexec.exe -ArgumentList @(
