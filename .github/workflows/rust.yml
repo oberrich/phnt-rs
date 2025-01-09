@@ -58,7 +58,7 @@ jobs:
           'ALLUSERS="1"',
           '/norestart',
           '/passive',
-          '/L*v "nu-install.log"'
+          '/log "nu-install.log"'
         ) -Wait -NoNewWindow -PassThru
 
         "C:\Program Files\nu\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
