@@ -16,9 +16,9 @@ phnt = "x.y.z"  # Replace x.y.z with the latest version
 ### Features
 | Feature | Description |
 | --- | --- |
-| _(default)_ | Uses pre-generated bindings for faster builds.                                                  |
+| _(default)_ | Uses **vendored** bindings for faster builds.                                                  |
 | [`regenerate`][github.com/src/build.rs] | Allows regeneration of bindings from [phnt (nightly)][github.com/phnt_nightly] source code.   |
-
+#### Supported Architectures
 The following architectures are fully supported using **vendored** bindings _(default_)
 | Architecture  |  Description         |
 |---------------|---------------------|
@@ -28,7 +28,7 @@ The following architectures are fully supported using **vendored** bindings _(de
 
 ### Crate Overview
 #### [`ffi`][docs.rs/ffi]
-Low-level bindings generated from the [phnt (nightly)][github.com/phnt_nightly] source using [bindgen][crates.io/bindgen]. These include:
+Low-level bindings generated from the [phnt (nightly)][github.com/phnt_nightly] source using [bindgen][crates.io/bindgen].
 - [Re-exports][docs.rs/ffi/reexports]
 - [Structs][docs.rs/ffi/structs]
 - [Enums][docs.rs/ffi/enums]
@@ -38,7 +38,7 @@ Low-level bindings generated from the [phnt (nightly)][github.com/phnt_nightly] 
 - [Unions][docs.rs/ffi/unions]
 
 #### [`ext`][docs.rs/ext]
-Extensions to the bindings with additional utilities:
+Extensions to the bindings with additional utilities
 - [Functions][docs.rs/ext/functions]
 - [Macros][docs.rs/ext/macros]
 
