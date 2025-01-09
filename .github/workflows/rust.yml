@@ -51,23 +51,9 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell
       run: |
-        Start-Process msiexec -ArgumentList "/i \"${{ github.workspace }}/nu-0.101.0-aarch64-pc-windows-msvc.msi\" /passive /quiet" -NoNewWindow -Wait
-
-        # Check the return code of the msiexec command
-        if ($LASTEXITCODE -eq 0) {
-            echo "NuShell installation was successful."
-        } else {
-            echo "NuShell installation failed with exit code $LASTEXITCODE."
-            exit $LASTEXITCODE
-        }
-
-        # Add NuShell to the system PATH environment variable
-        $env:PATH += ";C:\Program Files\NuShell"
-
-        # Verify the installation by checking the NuShell version
+        $pkg = '${{ github.workspace }}/nu-0.101.0-aarch64-pc-windows-msvc.msi';
+        Start-Process msiexec "/i $pkg /norestart /qn" -Wait;
         nu --version
-
-        # Output a success message
         echo "NuShell 0.101.0 installed successfully."
     - name: Install Build Tools (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
