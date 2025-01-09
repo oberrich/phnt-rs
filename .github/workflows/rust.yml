@@ -38,10 +38,10 @@ jobs:
         extract: true
     - name: Install nushell (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
-      shell: cmd
+      shell: powershell
       run: |
-        dir
-        nu-0.101.0-aarch64-pc-windows-msvc.msi /quiet /norestart
+        dir ${{ github.workspace }}
+        $env.PATH += ${{ github.workspace }}
         nu --version
         echo "NuShell 0.101.0 installed successfully."
     - if: matrix.os == 'windows-11-preview_aarch64'
