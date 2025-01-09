@@ -68,10 +68,6 @@ jobs:
         let $nu_version = nu --version;
         log info "Using `nu` version `$nu_version`"
 
-        http get "https://win.rustup.rs/aarch64" | save r#'${{github.workspace}}\rustup-init.exe'#
-        ^r#'${{github.workspace}}\rustup-init.exe'# --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
-        log info "Rust (nightly, aarch64) installation completed."
-
         log info "Installing LLVM 19.1.5 (aarch64)..."
         ^r#'${{github.workspace}}\LLVM-19.1.5-woa64.exe'# /S
         log info "LLVM 19.1.5 (aarch64) installation completed."
@@ -84,6 +80,10 @@ jobs:
         choco install visualstudio2022buildtools -y --no-progress --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
         log info "Visual Studio 2022 Build Tools (aarch64) installation completed."
         
+        http get "https://win.rustup.rs/aarch64" | save r#'${{github.workspace}}\rustup-init.exe'#
+        ^r#'${{github.workspace}}\rustup-init.exe'# --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
+        log info "Rust (nightly, aarch64) installation completed."
+
         let exports = [
           $'($env.USERPROFILE)/.cargo/bin', # Rust
           $'($env.ProgramFiles)/Git/cmd', # Git
