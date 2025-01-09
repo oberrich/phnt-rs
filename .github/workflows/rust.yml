@@ -45,9 +45,11 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell
       run: |
-        # Install Chocolatey Package Manager
+        # install chocolatey
         Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        # install nushell
         choco install nushell -y --no-progress
+        nushell --version
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
