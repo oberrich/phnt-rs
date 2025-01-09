@@ -57,7 +57,7 @@ jobs:
           '/qn',
           '/L*v', 'nu-install.log'
         ) -NoNewWindow -Wait
-
+        "C:\Program Files\nu\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         Write-Host "nu installation log:"
         Get-Content nu-install.log
 
