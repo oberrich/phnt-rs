@@ -5,7 +5,7 @@ license = "MIT"
 authors = ["oberrich <oberrich.llvm@proton.me>"]
 repository = "https://github.com/delulusoft/phnt-rs"
 homepage = "https://github.com/delulusoft/phnt-rs"
-edition = "2021"
+edition = "2024"
 build = "src/build.rs"
 description = "Rust bindings to the System Informer's (formerly known as Process Hacker) `phnt` native Windows headers"
 
@@ -36,4 +36,3 @@ features = ["Win32_System_Threading"]
 
 [dependencies]
 nt-string = "0.1.1"
-cty = "0.2.2"

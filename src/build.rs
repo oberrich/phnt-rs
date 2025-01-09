@@ -110,10 +110,15 @@ mod regen {
 
          let mut raw_lines = vec![
             format!("// Generated at {}", chrono::offset::Local::now()),
-            format!("#[cfg(not(target_arch = \"{}\"))]", std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()),
-            format!("compile_error!(\"These bindings can only be used on `{}` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.\");", std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()),
+            format!(
+               "#[cfg(not(target_arch = \"{}\"))]",
+               std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
+            ),
+            format!(
+               "compile_error!(\"These bindings can only be used on `{}` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.\");",
+               std::env::var("CARGO_CFG_TARGET_ARCH").unwrap()
+            ),
             "".into(),
-            "use cty;".into(),
          ];
          raw_lines.append(&mut self.raw_lines.clone());
          raw_lines.push(String::default());
@@ -148,7 +153,8 @@ mod regen {
             .blocklist_type(blocklist_regexpr.as_str())
             .type_alias("NTSTATUS")
             .opaque_type("std::.*")
-            .ctypes_prefix("cty")
+            .use_core()
+            .ctypes_prefix("::core::ffi")
             .parse_callbacks(Box::new(ProcessComments))
             .default_enum_style(bindgen::EnumVariation::Rust {
                non_exhaustive: true,
@@ -171,7 +177,6 @@ mod regen {
             .block_extern_crate(false)
             .fit_macro_constants(false)
             .layout_tests(false)
-            .use_core()
             .emit_builtins()
             .enable_function_attribute_detection()
             .generate()
