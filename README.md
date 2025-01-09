@@ -18,7 +18,7 @@ phnt = "x.y.z"  # Replace x.y.z with the latest version
 | --- | --- |
 | _(default)_ | Uses **vendored** bindings for faster builds.                                                  |
 | [`regenerate`][github.com/src/build.rs] | Allows regeneration of bindings from [phnt (nightly)][github.com/phnt_nightly] source code.   |
-#### Supported Architectures
+### Architectures
 The following architectures are fully supported using **vendored** _(default)_ bindings
 | Architecture  |  Description         |
 |---------------|---------------------|
