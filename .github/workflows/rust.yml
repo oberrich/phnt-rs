@@ -93,8 +93,9 @@ jobs:
         let $arch = '${{ matrix.target }}' | split row '-' | first
         let $arch = if $arch == 'i686' { 'x86' } else { $arch }
         echo $'ARCH=($arch)' | save $env.GITHUB_ENV --append
+        $env.ARCH = $arch
 
-        let output = glob target/i686-pc-windows-msvc/debug/build/**/${{ env.ARCH }}_bindgen.rs | first
+        let output = glob target/${{ matrix.target }}/release/build/**/${{ env.ARCH }}_bindgen.rs | first
         cp $output src/ffi/${{ env.ARCH }}_bindgen.rs
         echo $"Moved ($output) to src/ffi/${{ env.ARCH }}_bindgen.rs"
 
