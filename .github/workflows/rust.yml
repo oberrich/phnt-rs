@@ -21,7 +21,8 @@ jobs:
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: hustcer/setup-nu@main
+    - if: matrix.os != 'windows-11-preview_aarch64'
+      uses: hustcer/setup-nu@main
       with:
         version: '*'
     - if: matrix.os == 'windows-11-preview_aarch64'
@@ -86,8 +87,8 @@ jobs:
       
     - name: Run tests and generate bindings
       run: |
-        $env:PHNT_VERSION="PHNT_WIN11_24H2"
-        $env:PHNT_MODE="PHNT_MODE_USER"
+        $env:PHNT_VERSION = 'PHNT_WIN11_24H2'
+        $env:PHNT_MODE = 'PHNT_MODE_USER'
         cargo test --release -vv -F regenerate --target ${{ matrix.target }}
         
     - name: Extract architecture from target triple and move bindings
