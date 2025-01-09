@@ -50,7 +50,7 @@ jobs:
     - if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell
       run: |
-        msiexec /i "${{github.workspace}}\nu-0.101.0-aarch64-pc-windows-msvc.msi" /passive
+        $ msiexec /i "${{github.workspace}}\nu-0.101.0-aarch64-pc-windows-msvc.msi" /qn
 
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
