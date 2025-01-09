@@ -94,15 +94,20 @@ jobs:
       
     - name: Run tests and generate bindings
       run: |
-        $env.PHNT_VERSION = 'PHNT_WIN11_24H2'
-        $env.PHNT_MODE = 'PHNT_MODE_USER'
-        cargo test --release -vv -F regenerate --target ${{ matrix.target }}
+        with-env { PHNT_VERSION: 'PHNT_WIN11_24H2',
+                   PHNT_MODE: 'PHNT_MODE_USER' } {
+          cargo test --release -vv -F regenerate --target ${{ matrix.target }}
+        }
         
     - name: Extract architecture from target triple and move bindings
       run: |
-        let $arch = "${{ matrix.target }}" | split row '-' | first
-        let $arch = if $arch == 'i686' { 'x86' } else { $arch }
-        echo $"ARCH=($arch)" | append $env.GITHUB_ENV
+        def --env set_arch [] {
+          let $arch = "${{ matrix.target }}" | split row '-' | first
+          let $arch = if $arch == 'i686' { 'x86' } else { $arch }
+          $env.ARCH = $arch
+        }
+        
+        set_arch;
 
         let $output = glob target/${{ matrix.target }}/release/build/**/($arch)_bindgen.rs | first
         cp $output $"src/ffi/($arch)_bindgen.rs"
