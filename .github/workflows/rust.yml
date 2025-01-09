@@ -46,11 +46,10 @@ jobs:
       with:
         repository: 'nushell/nushell'
         tag: '0.101.0'
-        filename: 'nu-0.101.0-aarch64-pc-windows-msvc.msi'
+        filename: 'nu-0.101.0-${{ matrix.target }}.msi'
     - if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell
-      run: |
-        & msiexec /i "${{github.workspace}}\nu-0.101.0-aarch64-pc-windows-msvc.msi" /qn
+      run: '& "${{github.workspace}}\nu-0.101.0-${{ matrix.target }}.msi" /silentWithProgress'
 
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
