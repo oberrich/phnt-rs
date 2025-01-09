@@ -5,6 +5,9 @@ env:
   CARGO_TERM_COLOR: always
 jobs:
   bindgen:
+    defaults:
+      run:
+        shell: nu {0}
     strategy:
       matrix:
         os: [windows-11-preview_aarch64, windows-2025]
@@ -18,50 +21,52 @@ jobs:
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Download LLVM (aarch64)
-      if: matrix.os == 'windows-11-preview_aarch64'
-      uses: robinraju/release-downloader@v1
+    - uses: hustcer/setup-nu@main
       with:
-        repository: 'llvm/llvm-project'
-        tag: 'llvmorg-19.1.5'
-        fileName: 'LLVM-19.1.5-woa64.exe'
-        
-    - name: Install LLVM (aarch64)
-      if: matrix.os == 'windows-11-preview_aarch64'
-      run: |
-        Start-Process -FilePath "LLVM-19.1.5-woa64.exe" -ArgumentList '/S' -NoNewWindow -Wait
-        
-    - name: Install Build Tools (aarch64)
-      if: matrix.os == 'windows-11-preview_aarch64'
-      run: |
-        Set-ExecutionPolicy Bypass -Scope Process -Force
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-        iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1')) 
-        Add-Content -Path $env:GITHUB_PATH -Value "C:\ProgramData\chocolatey\bin" -Encoding utf8
-        choco install visualstudio2022buildtools -y --no-progress --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
-
-    - name: Install Nightly Rust (aarch64)
-      if: matrix.os == 'windows-11-preview_aarch64'
-      run: |
-        Add-Content -Path $env:GITHUB_PATH -Value "$env:USERPROFILE\.cargo\bin" -Encoding utf8
-        Invoke-WebRequest -Uri "https://win.rustup.rs/aarch64" -OutFile "$env:RUNNER_TEMP\rustup-init.exe"
-        & "$env:RUNNER_TEMP\rustup-init.exe" --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
-
-    - name: Download Git for Windows (aarch64)
-      if: matrix.os == 'windows-11-preview_aarch64'
+        version: '*'
+    - if: matrix.os == 'windows-11-preview_aarch64'
       uses: robinraju/release-downloader@v1
       with:
         repository: 'git-for-windows/git'
         tag: 'v2.48.0-rc1.windows.1'
         fileName: 'Git-2.48.0-rc1-arm64.exe'
-        
-    - name: Install Git for Windows (aarch64)
+    - if: matrix.os == 'windows-11-preview_aarch64'
+      uses: robinraju/release-downloader@v1
+      with:
+        repository: 'llvm/llvm-project'
+        tag: 'llvmorg-19.1.5'
+        fileName: 'LLVM-19.1.5-woa64.exe'
+    - name: Install Chocolatey
+      if: matrix.os == 'windows-11-preview_aarch64'
+      uses: crazy-max/ghaction-chocolatey@v3
+      with:
+        args: -h
+    - name: Install Build Tools (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
-        Start-Process -FilePath "Git-2.48.0-rc1-arm64.exe" -ArgumentList "/VERYSILENT" -NoNewWindow -Wait
-        Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\cmd" -Encoding utf8
-        Add-Content -Path $env:GITHUB_PATH -Value "C:\Program Files\Git\bin" -Encoding utf8
+        # Download Chocolatey installer via HTTP
+        # let choco_installer_url = "https://community.chocolatey.org/api/v2/package/chocolatey/"
+        # let choco_installer = "$env:RUNNER_TEMP\chocolatey.nupkg"
+        # http get $choco_installer_url | save $choco_installer
+
+        # Extract and install Chocolatey using Nushell's package management commands
+        # unzip $choco_installer -d "C:\ProgramData\chocolatey"
+        # set-env GITHUB_PATH = "$env:GITHUB_PATH;C:\ProgramData\chocolatey\bin"
+
+        # Use Chocolatey to install Visual Studio Build Tools
+        choco install visualstudio2022buildtools -y --no-progress --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
+        echo "Visual Studio 2022 Build Tools (aarch64) installation completed."
+        run "$env:RUNNER_TEMP/LLVM-19.1.5-woa64.exe" /S
+        echo "LLVM 19.1.5 (aarch64) installation completed."
+
+        run "$env:RUNNER_TEMP/Git-2.48.0-rc1-arm64.exe" /VERYSILENT
+        set-env GITHUB_PATH = "$env:GITHUB_PATH;C:\Program Files\Git\cmd;C:\Program Files\Git\bin"
+        echo "Git 2.48.0-rc1 (aarch64) installation completed."
         
+        http get "https://win.rustup.rs/aarch64" | save "$env:RUNNER_TEMP/rustup-init.exe"
+        run "$env:RUNNER_TEMP/rustup-init.exe" --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
+        echo "Rust (nightly, aarch64) installation completed."
+
     - name: Install Rust
       if: matrix.os != 'windows-11-preview_aarch64'
       uses: dtolnay/rust-toolchain@nightly
@@ -79,31 +84,22 @@ jobs:
         cargo test --release -vv -F regenerate --target ${{ matrix.target }}
         
     - name: Extract architecture from target triple and move bindings
-      shell: bash
       run: |
-        # Extract architecture (i686, x86_64 or aarch64) from target triple
-        ARCH=$(echo "${{ matrix.target }}" | cut -d'-' -f1)
-        echo "Extracted architecture: $ARCH"
+        let $arch = "${{ matrix.target }}" | split row '-' | first;
+        let $arch = if $arch == 'i686' { 'x86' } else { $arch };
+        $arch | save-env --name ARCH
+
+        let $output = ls target/${{ matrix.target }}/release/build
+          | where name ends-with "${{ env.ARCH }}_bindgen.rs"
+          | first?;
         
-        # Map i686 to x86
-        if [ "$ARCH" == "i686" ]; then
-          ARCH="x86"
-        fi
-        # Set the architecture as an environment variable
-        echo "ARCH=$ARCH" >> $GITHUB_ENV
-        
-        # Path to the generated binding
-        GENERATED_BINDING=$(find target/${{ matrix.target }}/release/build -type f -name "${ARCH}_bindgen.rs")
-        
-        if [ -z "$GENERATED_BINDING" ]; then
-          echo "Error: Generated binding file not found for $ARCH."
-          exit 1
-        fi
-        
-        # Move the generated file to the repository directory
-        cp "$GENERATED_BINDING" "src/ffi/${ARCH}_bindgen.rs"
-        echo "Moved $GENERATED_BINDING to src/ffi/${ARCH}_bindgen.rs"
-          
+        if $output { 
+          cp $output "src/ffi/${{ env.ARCH }}_bindgen.rs"
+          echo "Moved $($output) to src/ffi/${{ env.ARCH }}_bindgen.rs"
+        } else {
+          echo "Error: Generated binding file not found for ${{ env.ARCH }}." | error
+        }
+
     - name: Upload generated file as artifact
       uses: actions/upload-artifact@v4
       with:

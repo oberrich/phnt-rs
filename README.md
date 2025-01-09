@@ -23,7 +23,7 @@ The following architectures are fully supported using **vendored** _(default)_ b
 | Architecture  |  Description         |
 |---------------|---------------------|
 | `x86_64`    | Standard modern architecture for desktops and servers |
-| `x86` _(i386)_| Legacy 32-bit architecture  |
+| `x86` _(i686)_| Legacy 32-bit architecture  |
 | `aarch64` _(ARM64)_         | Modern 64-bit ARM architecture used in mobile and some desktops |
 
 ### Crate Overview
