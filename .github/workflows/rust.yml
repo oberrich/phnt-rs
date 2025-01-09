@@ -51,9 +51,24 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell
       run: |
+        # Install NuShell using msiexec with the provided MSI file
         msiexec /i "nu-0.101.0-aarch64-pc-windows-msvc.msi" -ArgumentList "/quiet" -NoNewWindow -Wait
+
+        # Check the return code of the msiexec command
+        if ($LASTEXITCODE -eq 0) {
+            echo "NuShell installation was successful."
+        } else {
+            echo "NuShell installation failed with exit code $LASTEXITCODE."
+            exit $LASTEXITCODE
+        }
+
+        # Add NuShell to the system PATH environment variable
         $env:PATH += ";C:\Program Files\NuShell"
+
+        # Verify the installation by checking the NuShell version
         nu --version
+
+        # Output a success message
         echo "NuShell 0.101.0 installed successfully."
     - name: Install Build Tools (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
@@ -74,7 +89,7 @@ jobs:
         echo "LLVM 19.1.5 (aarch64) installation completed."
 
         run $"($env.RUNNER_TEMP)/Git-2.48.0-rc1-arm64.exe" /VERYSILENT
-        $env.GITHUB_PATH = $"($env.GITHUB_PATH);;C:\Program Files\Git\cmd;C:\Program Files\Git\bin"
+        $env.GITHUB_PATH = $"($env.GITHUB_PATH);C:\Program Files\Git\cmd;C:\Program Files\Git\bin"
         echo "Git 2.48.0-rc1 (aarch64) installation completed."
         
         http get "https://win.rustup.rs/aarch64" | save $"($env.RUNNER_TEMP)/rustup-init.exe"
