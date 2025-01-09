@@ -34,14 +34,15 @@ jobs:
       with:
         repository: 'nushell/nushell'
         tag: '0.101.0'
-        filename: 'nu-0.101.0-aarch64-pc-windows-msvc.zip'
-        out-file-path: 'nushell'
-        extract: true
+        filename: 'nu-0.101.0-aarch64-pc-windows-msvc.msi'
     - name: Install nushell (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell
       run: |
-        Add-Content -Path $env:GITHUB_PATH -Value "${{ github.workspace }}\nushell" -Encoding utf8
+        $msiPath = "${{ github.workspace }}\nu-0.101.0-aarch64-pc-windows-msvc.msi"
+        Start-Process msiexec.exe -ArgumentList "/i", $msiPath, "/quiet", "/norestart" -Wait
+        Write-Host "MSI package installed successfully"
+
     - if: matrix.os == 'windows-11-preview_aarch64'
       uses: robinraju/release-downloader@v1
       with:
