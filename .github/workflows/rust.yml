@@ -79,11 +79,11 @@ jobs:
       uses: actions/checkout@v4
       
     - name: Run tests and generate bindings
+      env:
+        PHNT_VERSION: PHNT_WIN11_24H2
+        PHNT_MODE: PHNT_MODE_USER
       run: |
-        with-env { PHNT_VERSION: 'PHNT_WIN11_24H2',
-                   PHNT_MODE: 'PHNT_MODE_USER' } {
-          cargo test --release -vv -F regenerate --target ${{ matrix.target }}
-        }
+        cargo test --release -vv -F regenerate --target ${{ matrix.target }}
         
     - name: Extract architecture from target triple and move bindings
       run: |
