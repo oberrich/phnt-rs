@@ -57,7 +57,7 @@ jobs:
           ArgumentList = @(
               '/i "${{github.workspace}}\nu-0.101.0-${{ matrix.target }}.msi" ALLUSERS="1"'
               '/qn'
-              '/L*v 'nu-install.log''
+              '/L*v "nu-install.log"'
               )
               Wait = $true
               NoNewWindow = $true
