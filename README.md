@@ -1,11 +1,11 @@
-# [phnt][github.com]: Rust bindings to the [System Informer][github.com/sysinf]'s [phnt][github.com/sysinf/phnt]
+## [phnt][github.com]: Rust bindings to the [System Informer][github.com/sysinf]'s [phnt][github.com/sysinf/phnt]
 
 [![phnt GitHub Actions][github.com/ci/img]][github.com/ci]
 [![phnt on crates.io][crates.io/img]][crates.io]
 [![phnt on docs.rs][docs.rs/img]][docs.rs]
 
 This crate provides Rust bindings to the **[System Informer][github.com/sysinf]**'s (formerly **Process Hacker**) [native Windows headers][github.com/sysinf/phnt] (**phnt**). These headers provide type definitions, constants, macros, and function prototypes, including support for undocumented Windows functions and syscalls.
-## Getting Started
+### Getting Started
 Add **phnt** to your `Cargo.toml`
 
 ```toml
@@ -13,12 +13,12 @@ Add **phnt** to your `Cargo.toml`
 phnt = "x.y.z"  # Replace x.y.z with the latest version
 ```
 
-## Features
+### Features
 | Feature | Description |
 | --- | --- |
 | _(default)_ | Uses pre-generated bindings for faster builds.                                                  |
 | [`regenerate`][github.com/src/build.rs] | Allows regeneration of bindings from [phnt (nightly)][github.com/phnt_nightly] source code.   |
-## Supported Architectures
+
 The following architectures are fully supported using **vendored** bindings _(default_)
 | Architecture  |  Description         |
 |---------------|---------------------|
@@ -26,8 +26,8 @@ The following architectures are fully supported using **vendored** bindings _(de
 | `x86` _(i386)_| Legacy 32-bit architecture, also referred to as x86.  |
 | `aarch64` _(ARM64)_         | Modern 64-bit ARM architecture used in mobile and some desktops. |
 
-## Crate Overview
-### [`ffi`][docs.rs/ffi]
+### Crate Overview
+#### [`ffi`][docs.rs/ffi]
 Low-level bindings generated from the [phnt (nightly)][github.com/phnt_nightly] source using [bindgen][crates.io/bindgen]. These include:
 - [Re-exports][docs.rs/ffi/reexports]
 - [Structs][docs.rs/ffi/structs]
@@ -37,7 +37,7 @@ Low-level bindings generated from the [phnt (nightly)][github.com/phnt_nightly] 
 - [Type Aliases][docs.rs/ffi/type-aliases]
 - [Unions][docs.rs/ffi/unions]
 
-### [`ext`][docs.rs/ext]
+#### [`ext`][docs.rs/ext]
 Extensions to the bindings with additional utilities:
 - [Functions][docs.rs/ext/functions]
 - [Macros][docs.rs/ext/macros]
