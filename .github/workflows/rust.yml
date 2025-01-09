@@ -41,7 +41,8 @@ jobs:
       run: |
         $msiPath = "${{ github.workspace }}\nu-0.101.0-aarch64-pc-windows-msvc.msi"
         Start-Process msiexec.exe -ArgumentList "/i", $msiPath, "/quiet", "/norestart" -Wait
-        "C:\Program Files\nu\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append 
+        Get-ChildItem "C:\Program Files\nu"
+        "C:\Program Files\nu\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         Write-Host "MSI package installed successfully"
 
     - if: matrix.os == 'windows-11-preview_aarch64'
