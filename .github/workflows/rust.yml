@@ -34,11 +34,13 @@ jobs:
       with:
         repository: 'nushell/nushell'
         tag: '0.101.0'
-        filename: 'nu-0.101.0-aarch64-pc-windows-msvc.msi'
+        filename: 'nu-0.101.0-aarch64-pc-windows-msvc.zip'
+        extract: true
     - name: Install nushell (aarch64)
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: cmd
       run: |
+        dir
         nu-0.101.0-aarch64-pc-windows-msvc.msi /quiet /norestart
         nu --version
         echo "NuShell 0.101.0 installed successfully."
