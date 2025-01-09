@@ -87,13 +87,9 @@ jobs:
         
     - name: Extract architecture from target triple and move bindings
       run: |
-        def --env set_arch [] {
-          let $arch = '${{ matrix.target }}' | split row '-' | first
-          let $arch = if $arch == 'i686' { 'x86' } else { $arch }
-          $env.ARCH = $arch
-        }
-        
-        set_arch;
+        let $arch = '${{ matrix.target }}' | split row '-' | first
+        let $arch = if $arch == 'i686' { 'x86' } else { $arch }
+        let-env ARCH = $arch
 
         let $output = glob target/${{ matrix.target }}/release/build/**/($env.ARCH)_bindgen.rs | first
         cp $output $'src/ffi/($env.ARCH)_bindgen.rs'
