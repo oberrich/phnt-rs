@@ -51,7 +51,9 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
-        Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
+        Install-PackageProvider -Name NuGet -Force | Out-Null
+        Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery | Out-Null
+        Repair-WinGetPackageManager -IncludePrerelease
         winget install nushell
         "C:\Program Files\nu\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
  
