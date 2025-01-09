@@ -1,13 +1,13 @@
-// Generated at 2025-01-04 20:32:16.275615600 +00:00
+// Generated at 2025-01-09 04:11:52.001488300 +00:00
 #[cfg(not(target_arch = "aarch64"))]
 compile_error!("These bindings can only be used on `aarch64` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.");
 
 use cty;
-pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
-pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
-pub use windows_sys::Win32::Foundation::BOOL as BOOL;
-pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
 pub use windows_sys::Win32::Foundation::BOOLEAN as BOOLEAN;
+pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
+pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
+pub use windows_sys::Win32::Foundation::BOOL as BOOL;
+pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
 
 pub const PHNT_VERSION: u32 = self::PHNT_WIN11_24H2;
 pub const PHNT_MODE: u32 = self::PHNT_MODE_USER;
@@ -539,8 +539,6 @@ pub const SYMBOLIC_LINK_ALL_ACCESS: u32 = 983041;
 pub const SYMBOLIC_LINK_ALL_ACCESS_EX: u32 = 1048575;
 pub const DUPLICATE_SAME_ATTRIBUTES: u32 = 4;
 pub const OBJECT_BOUNDARY_DESCRIPTOR_VERSION: u32 = 1;
-pub const PROCESS_SET_PORT: u32 = 2048;
-pub const THREAD_ALERT: u32 = 4;
 pub const ACTIVATION_CONTEXT_DATA_FORMAT_WHISTLER: u32 = 1;
 pub const ACTIVATION_CONTEXT_FLAG_NO_INHERIT: u32 = 1;
 pub const ACTIVATION_CONTEXT_DATA_TOC_HEADER_DENSE: u32 = 1;
@@ -649,6 +647,8 @@ pub const TEB_ACTIVE_FRAME_CONTEXT_FLAG_EXTENDED: u32 = 1;
 pub const TEB_ACTIVE_FRAME_FLAG_EXTENDED: u32 = 1;
 pub const STATIC_UNICODE_BUFFER_LENGTH: u32 = 261;
 pub const WIN32_CLIENT_INFO_LENGTH: u32 = 62;
+pub const PROCESS_SET_PORT: u32 = 2048;
+pub const THREAD_ALERT: u32 = 4;
 pub const PROCESS_EXCEPTION_PORT_ALL_STATE_BITS: u32 = 3;
 pub const PROCESS_PRIORITY_CLASS_UNKNOWN: u32 = 0;
 pub const PROCESS_PRIORITY_CLASS_IDLE: u32 = 1;
@@ -11688,6 +11688,7 @@ pub type PCSHORT = *mut CSHORT;
 pub type PCLONG = *mut CLONG;
 pub type PCSZ = PCSTR;
 pub type PPVOID = *mut PVOID;
+pub type PCVOID = *const cty::c_void;
 pub type KIRQL = UCHAR;
 pub type PKIRQL = *mut UCHAR;
 pub type KPRIORITY = LONG;
@@ -14154,7 +14155,7 @@ impl Default for _LDR_SOFTWARE_ENCLAVE {
 }
 pub type LDR_SOFTWARE_ENCLAVE = _LDR_SOFTWARE_ENCLAVE;
 pub type PLDR_SOFTWARE_ENCLAVE = *mut _LDR_SOFTWARE_ENCLAVE;
-#[doc = "Thread Environment Block (TEB) structure.\nThis structure contains information about the currently executing thread."]
+#[doc = "Thread Environment Block (TEB) structure.\n> https://learn.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-teb"]
 pub type PTEB = *mut _TEB;
 pub type PCOUNTED_REASON_CONTEXT = *mut _COUNTED_REASON_CONTEXT;
 pub type PFILE_IO_COMPLETION_INFORMATION = *mut _FILE_IO_COMPLETION_INFORMATION;
@@ -14313,6 +14314,7 @@ pub enum _MUTANT_INFORMATION_CLASS {
    MutantOwnerInformation = 1,
 }
 pub use self::_MUTANT_INFORMATION_CLASS as MUTANT_INFORMATION_CLASS;
+#[doc = "The MUTANT_BASIC_INFORMATION structure contains basic information about a mutant object."]
 #[repr(C)]
 pub struct _MUTANT_BASIC_INFORMATION {
    pub CurrentCount: LONG,
@@ -14328,8 +14330,11 @@ impl Default for _MUTANT_BASIC_INFORMATION {
       }
    }
 }
+#[doc = "The MUTANT_BASIC_INFORMATION structure contains basic information about a mutant object."]
 pub type MUTANT_BASIC_INFORMATION = _MUTANT_BASIC_INFORMATION;
+#[doc = "The MUTANT_BASIC_INFORMATION structure contains basic information about a mutant object."]
 pub type PMUTANT_BASIC_INFORMATION = *mut _MUTANT_BASIC_INFORMATION;
+#[doc = "The MUTANT_OWNER_INFORMATION structure contains information about the owner of a mutant object."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _MUTANT_OWNER_INFORMATION {
@@ -14344,7 +14349,9 @@ impl Default for _MUTANT_OWNER_INFORMATION {
       }
    }
 }
+#[doc = "The MUTANT_OWNER_INFORMATION structure contains information about the owner of a mutant object."]
 pub type MUTANT_OWNER_INFORMATION = _MUTANT_OWNER_INFORMATION;
+#[doc = "The MUTANT_OWNER_INFORMATION structure contains information about the owner of a mutant object."]
 pub type PMUTANT_OWNER_INFORMATION = *mut _MUTANT_OWNER_INFORMATION;
 #[repr(i32)]
 #[non_exhaustive]
@@ -14353,13 +14360,16 @@ pub enum _SEMAPHORE_INFORMATION_CLASS {
    SemaphoreBasicInformation = 0,
 }
 pub use self::_SEMAPHORE_INFORMATION_CLASS as SEMAPHORE_INFORMATION_CLASS;
+#[doc = "The SEMAPHORE_BASIC_INFORMATION structure contains basic information about a semaphore object."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _SEMAPHORE_BASIC_INFORMATION {
    pub CurrentCount: LONG,
    pub MaximumCount: LONG,
 }
+#[doc = "The SEMAPHORE_BASIC_INFORMATION structure contains basic information about a semaphore object."]
 pub type SEMAPHORE_BASIC_INFORMATION = _SEMAPHORE_BASIC_INFORMATION;
+#[doc = "The SEMAPHORE_BASIC_INFORMATION structure contains basic information about a semaphore object."]
 pub type PSEMAPHORE_BASIC_INFORMATION = *mut _SEMAPHORE_BASIC_INFORMATION;
 #[repr(i32)]
 #[non_exhaustive]
@@ -32809,7 +32819,7 @@ pub enum _MEMORY_INFORMATION_CLASS {
    MaxMemoryInfoClass = 15,
 }
 pub use self::_MEMORY_INFORMATION_CLASS as MEMORY_INFORMATION_CLASS;
-#[doc = "The MEMORY_WORKING_SET_BLOCK structure contains working set information for a page.\nhttps://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block"]
+#[doc = "The MEMORY_WORKING_SET_BLOCK structure contains working set information for a page.\n[https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block](https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block)"]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _MEMORY_WORKING_SET_BLOCK {
@@ -33014,20 +33024,20 @@ impl _MEMORY_WORKING_SET_BLOCK {
       __bindgen_bitfield_unit
    }
 }
-#[doc = "The MEMORY_WORKING_SET_BLOCK structure contains working set information for a page.\nhttps://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block"]
+#[doc = "The MEMORY_WORKING_SET_BLOCK structure contains working set information for a page.\n[https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block](https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block)"]
 pub type MEMORY_WORKING_SET_BLOCK = _MEMORY_WORKING_SET_BLOCK;
-#[doc = "The MEMORY_WORKING_SET_BLOCK structure contains working set information for a page.\nhttps://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block"]
+#[doc = "The MEMORY_WORKING_SET_BLOCK structure contains working set information for a page.\n[https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block](https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_block)"]
 pub type PMEMORY_WORKING_SET_BLOCK = *mut _MEMORY_WORKING_SET_BLOCK;
-#[doc = "The MEMORY_WORKING_SET_INFORMATION structure contains working set information for a process.\nhttps://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information"]
+#[doc = "The MEMORY_WORKING_SET_INFORMATION structure contains working set information for a process.\n[https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information](https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information)"]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _MEMORY_WORKING_SET_INFORMATION {
    pub NumberOfEntries: ULONG_PTR,
    pub WorkingSetInfo: [MEMORY_WORKING_SET_BLOCK; 1usize],
 }
-#[doc = "The MEMORY_WORKING_SET_INFORMATION structure contains working set information for a process.\nhttps://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information"]
+#[doc = "The MEMORY_WORKING_SET_INFORMATION structure contains working set information for a process.\n[https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information](https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information)"]
 pub type MEMORY_WORKING_SET_INFORMATION = _MEMORY_WORKING_SET_INFORMATION;
-#[doc = "The MEMORY_WORKING_SET_INFORMATION structure contains working set information for a process.\nhttps://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information"]
+#[doc = "The MEMORY_WORKING_SET_INFORMATION structure contains working set information for a process.\n[https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information](https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_information)"]
 pub type PMEMORY_WORKING_SET_INFORMATION = *mut _MEMORY_WORKING_SET_INFORMATION;
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -33623,7 +33633,7 @@ pub enum _MEMORY_WORKING_SET_EX_LOCATION {
    MemoryLocationReserved = 3,
 }
 pub use self::_MEMORY_WORKING_SET_EX_LOCATION as MEMORY_WORKING_SET_EX_LOCATION;
-#[doc = "The MEMORY_WORKING_SET_EX_BLOCK structure contains extended working set information for a page.\nhttps://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block"]
+#[doc = "The MEMORY_WORKING_SET_EX_BLOCK structure contains extended working set information for a page.\n[https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block](https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block)"]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union _MEMORY_WORKING_SET_EX_BLOCK {
@@ -34635,11 +34645,11 @@ impl Default for _MEMORY_WORKING_SET_EX_BLOCK {
       }
    }
 }
-#[doc = "The MEMORY_WORKING_SET_EX_BLOCK structure contains extended working set information for a page.\nhttps://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block"]
+#[doc = "The MEMORY_WORKING_SET_EX_BLOCK structure contains extended working set information for a page.\n[https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block](https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block)"]
 pub type MEMORY_WORKING_SET_EX_BLOCK = _MEMORY_WORKING_SET_EX_BLOCK;
-#[doc = "The MEMORY_WORKING_SET_EX_BLOCK structure contains extended working set information for a page.\nhttps://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block"]
+#[doc = "The MEMORY_WORKING_SET_EX_BLOCK structure contains extended working set information for a page.\n[https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block](https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_block)"]
 pub type PMEMORY_WORKING_SET_EX_BLOCK = *mut _MEMORY_WORKING_SET_EX_BLOCK;
-#[doc = "The MEMORY_WORKING_SET_EX_INFORMATION structure contains extended working set information for a process.\nhttps://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information"]
+#[doc = "The MEMORY_WORKING_SET_EX_INFORMATION structure contains extended working set information for a process.\n[https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information](https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information)"]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _MEMORY_WORKING_SET_EX_INFORMATION {
@@ -34655,9 +34665,9 @@ impl Default for _MEMORY_WORKING_SET_EX_INFORMATION {
       }
    }
 }
-#[doc = "The MEMORY_WORKING_SET_EX_INFORMATION structure contains extended working set information for a process.\nhttps://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information"]
+#[doc = "The MEMORY_WORKING_SET_EX_INFORMATION structure contains extended working set information for a process.\n[https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information](https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information)"]
 pub type MEMORY_WORKING_SET_EX_INFORMATION = _MEMORY_WORKING_SET_EX_INFORMATION;
-#[doc = "The MEMORY_WORKING_SET_EX_INFORMATION structure contains extended working set information for a process.\nhttps://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information"]
+#[doc = "The MEMORY_WORKING_SET_EX_INFORMATION structure contains extended working set information for a process.\n[https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information](https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_working_set_ex_information)"]
 pub type PMEMORY_WORKING_SET_EX_INFORMATION = *mut _MEMORY_WORKING_SET_EX_INFORMATION;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -37596,63 +37606,6 @@ pub enum _SYMBOLIC_LINK_INFO_CLASS {
 }
 pub use self::_SYMBOLIC_LINK_INFO_CLASS as SYMBOLIC_LINK_INFO_CLASS;
 #[repr(C)]
-pub struct _PEB_LDR_DATA {
-   pub Length: ULONG,
-   pub Initialized: BOOLEAN,
-   pub SsHandle: HANDLE,
-   pub InLoadOrderModuleList: LIST_ENTRY,
-   pub InMemoryOrderModuleList: LIST_ENTRY,
-   pub InInitializationOrderModuleList: LIST_ENTRY,
-   pub EntryInProgress: PVOID,
-   pub ShutdownInProgress: BOOLEAN,
-   pub ShutdownThreadId: HANDLE,
-}
-impl Default for _PEB_LDR_DATA {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type PEB_LDR_DATA = _PEB_LDR_DATA;
-pub type PPEB_LDR_DATA = *mut _PEB_LDR_DATA;
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct _INITIAL_TEB {
-   pub OldInitialTeb: _INITIAL_TEB__bindgen_ty_1,
-   pub StackBase: PVOID,
-   pub StackLimit: PVOID,
-   pub StackAllocationBase: PVOID,
-}
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct _INITIAL_TEB__bindgen_ty_1 {
-   pub OldStackBase: PVOID,
-   pub OldStackLimit: PVOID,
-}
-impl Default for _INITIAL_TEB__bindgen_ty_1 {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-impl Default for _INITIAL_TEB {
-   fn default() -> Self {
-      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
-      unsafe {
-         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
-         s.assume_init()
-      }
-   }
-}
-pub type INITIAL_TEB = _INITIAL_TEB;
-pub type PINITIAL_TEB = *mut _INITIAL_TEB;
-#[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _ACTIVATION_CONTEXT_DATA {
    pub Magic: ULONG,
@@ -38198,6 +38151,8 @@ pub struct _LEAP_SECOND_DATA {
    _unused: [u8; 0],
 }
 pub type PLEAP_SECOND_DATA = *mut _LEAP_SECOND_DATA;
+pub type PEB_LDR_DATA = _PEB_LDR_DATA;
+pub type PPEB_LDR_DATA = *mut _PEB_LDR_DATA;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _API_SET_NAMESPACE {
@@ -38549,6 +38504,8 @@ pub type PWER_PEB_HEADER_BLOCK = *mut _WER_PEB_HEADER_BLOCK;
 pub type GDI_HANDLE_BUFFER = [ULONG; 60usize];
 pub type GDI_HANDLE_BUFFER32 = [ULONG; 34usize];
 pub type GDI_HANDLE_BUFFER64 = [ULONG; 60usize];
+pub type PPS_POST_PROCESS_INIT_ROUTINE = ::core::option::Option<unsafe extern "C" fn()>;
+#[doc = "Process Environment Block (PEB) structure.\n> https://learn.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-peb"]
 #[repr(C)]
 pub struct _PEB {
    pub InheritedAddressSpace: BOOLEAN,
@@ -38602,7 +38559,7 @@ pub struct _PEB {
    pub ImageSubsystemMinorVersion: ULONG,
    pub ActiveProcessAffinityMask: KAFFINITY,
    pub GdiHandleBuffer: GDI_HANDLE_BUFFER,
-   pub PostProcessInitRoutine: PVOID,
+   pub PostProcessInitRoutine: PPS_POST_PROCESS_INIT_ROUTINE,
    pub TlsExpansionBitmap: PRTL_BITMAP,
    pub TlsExpansionBitmapBits: [ULONG; 32usize],
    pub SessionId: ULONG,
@@ -39380,7 +39337,6 @@ impl Default for _PEB__bindgen_ty_3 {
 #[derive(Copy, Clone)]
 pub union _PEB__bindgen_ty_4 {
    pub pContextData: PVOID,
-   pub pUnused: PVOID,
    pub EcCodeBitMap: PVOID,
 }
 impl Default for _PEB__bindgen_ty_4 {
@@ -39688,8 +39644,11 @@ impl Default for _PEB {
       }
    }
 }
+#[doc = "Process Environment Block (PEB) structure.\n> https://learn.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-peb"]
 pub type PEB = _PEB;
+#[doc = "Process Environment Block (PEB) structure.\n> https://learn.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-peb"]
 pub type PPEB = *mut _PEB;
+#[doc = "The GDI_TEB_BATCH structure is used to store information about GDI batch operations."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _GDI_TEB_BATCH {
@@ -39706,8 +39665,11 @@ impl Default for _GDI_TEB_BATCH {
       }
    }
 }
+#[doc = "The GDI_TEB_BATCH structure is used to store information about GDI batch operations."]
 pub type GDI_TEB_BATCH = _GDI_TEB_BATCH;
+#[doc = "The GDI_TEB_BATCH structure is used to store information about GDI batch operations."]
 pub type PGDI_TEB_BATCH = *mut _GDI_TEB_BATCH;
+#[doc = "The TEB_ACTIVE_FRAME_CONTEXT structure is used to store information about an active frame context."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _TEB_ACTIVE_FRAME_CONTEXT {
@@ -39723,8 +39685,11 @@ impl Default for _TEB_ACTIVE_FRAME_CONTEXT {
       }
    }
 }
+#[doc = "The TEB_ACTIVE_FRAME_CONTEXT structure is used to store information about an active frame context."]
 pub type TEB_ACTIVE_FRAME_CONTEXT = _TEB_ACTIVE_FRAME_CONTEXT;
+#[doc = "The TEB_ACTIVE_FRAME_CONTEXT structure is used to store information about an active frame context."]
 pub type PTEB_ACTIVE_FRAME_CONTEXT = *mut _TEB_ACTIVE_FRAME_CONTEXT;
+#[doc = "The TEB_ACTIVE_FRAME_CONTEXT_EX structure extends TEB_ACTIVE_FRAME_CONTEXT with additional information."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _TEB_ACTIVE_FRAME_CONTEXT_EX {
@@ -39740,8 +39705,11 @@ impl Default for _TEB_ACTIVE_FRAME_CONTEXT_EX {
       }
    }
 }
+#[doc = "The TEB_ACTIVE_FRAME_CONTEXT_EX structure extends TEB_ACTIVE_FRAME_CONTEXT with additional information."]
 pub type TEB_ACTIVE_FRAME_CONTEXT_EX = _TEB_ACTIVE_FRAME_CONTEXT_EX;
+#[doc = "The TEB_ACTIVE_FRAME_CONTEXT_EX structure extends TEB_ACTIVE_FRAME_CONTEXT with additional information."]
 pub type PTEB_ACTIVE_FRAME_CONTEXT_EX = *mut _TEB_ACTIVE_FRAME_CONTEXT_EX;
+#[doc = "The TEB_ACTIVE_FRAME structure is used to store information about an active frame."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _TEB_ACTIVE_FRAME {
@@ -39758,8 +39726,11 @@ impl Default for _TEB_ACTIVE_FRAME {
       }
    }
 }
+#[doc = "The TEB_ACTIVE_FRAME structure is used to store information about an active frame."]
 pub type TEB_ACTIVE_FRAME = _TEB_ACTIVE_FRAME;
+#[doc = "The TEB_ACTIVE_FRAME structure is used to store information about an active frame."]
 pub type PTEB_ACTIVE_FRAME = *mut _TEB_ACTIVE_FRAME;
+#[doc = "The TEB_ACTIVE_FRAME_EX structure extends TEB_ACTIVE_FRAME with additional information."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _TEB_ACTIVE_FRAME_EX {
@@ -39775,9 +39746,11 @@ impl Default for _TEB_ACTIVE_FRAME_EX {
       }
    }
 }
+#[doc = "The TEB_ACTIVE_FRAME_EX structure extends TEB_ACTIVE_FRAME with additional information."]
 pub type TEB_ACTIVE_FRAME_EX = _TEB_ACTIVE_FRAME_EX;
+#[doc = "The TEB_ACTIVE_FRAME_EX structure extends TEB_ACTIVE_FRAME with additional information."]
 pub type PTEB_ACTIVE_FRAME_EX = *mut _TEB_ACTIVE_FRAME_EX;
-#[doc = "Thread Environment Block (TEB) structure.\nThis structure contains information about the currently executing thread."]
+#[doc = "Thread Environment Block (TEB) structure.\n> https://learn.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-teb"]
 #[repr(C)]
 pub struct _TEB {
    pub NtTib: NT_TIB,
@@ -39843,7 +39816,7 @@ pub struct _TEB {
    pub SubProcessTag: PVOID,
    pub PerflibData: PVOID,
    pub EtwTraceData: PVOID,
-   pub WinSockData: PVOID,
+   pub WinSockData: HANDLE,
    pub GdiBatchCount: ULONG,
    pub __bindgen_anon_1: _TEB__bindgen_ty_1,
    pub GuaranteedStackBytes: ULONG,
@@ -40618,8 +40591,63 @@ impl Default for _TEB {
       }
    }
 }
-#[doc = "Thread Environment Block (TEB) structure.\nThis structure contains information about the currently executing thread."]
+#[doc = "Thread Environment Block (TEB) structure.\n> https://learn.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-teb"]
 pub type TEB = _TEB;
+#[repr(C)]
+pub struct _PEB_LDR_DATA {
+   pub Length: ULONG,
+   pub Initialized: BOOLEAN,
+   pub SsHandle: HANDLE,
+   pub InLoadOrderModuleList: LIST_ENTRY,
+   pub InMemoryOrderModuleList: LIST_ENTRY,
+   pub InInitializationOrderModuleList: LIST_ENTRY,
+   pub EntryInProgress: PVOID,
+   pub ShutdownInProgress: BOOLEAN,
+   pub ShutdownThreadId: HANDLE,
+}
+impl Default for _PEB_LDR_DATA {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _INITIAL_TEB {
+   pub OldInitialTeb: _INITIAL_TEB__bindgen_ty_1,
+   pub StackBase: PVOID,
+   pub StackLimit: PVOID,
+   pub StackAllocationBase: PVOID,
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _INITIAL_TEB__bindgen_ty_1 {
+   pub OldStackBase: PVOID,
+   pub OldStackLimit: PVOID,
+}
+impl Default for _INITIAL_TEB__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for _INITIAL_TEB {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+pub type INITIAL_TEB = _INITIAL_TEB;
+pub type PINITIAL_TEB = *mut _INITIAL_TEB;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -40817,6 +40845,7 @@ pub struct _PAGE_PRIORITY_INFORMATION {
 }
 pub type PAGE_PRIORITY_INFORMATION = _PAGE_PRIORITY_INFORMATION;
 pub type PPAGE_PRIORITY_INFORMATION = *mut _PAGE_PRIORITY_INFORMATION;
+#[doc = "The PROCESS_BASIC_INFORMATION structure contains basic information about a process.\n> https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess#process_basic_information"]
 #[repr(C)]
 pub struct _PROCESS_BASIC_INFORMATION {
    pub ExitStatus: NTSTATUS,
@@ -40835,8 +40864,11 @@ impl Default for _PROCESS_BASIC_INFORMATION {
       }
    }
 }
+#[doc = "The PROCESS_BASIC_INFORMATION structure contains basic information about a process.\n> https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess#process_basic_information"]
 pub type PROCESS_BASIC_INFORMATION = _PROCESS_BASIC_INFORMATION;
+#[doc = "The PROCESS_BASIC_INFORMATION structure contains basic information about a process.\n> https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess#process_basic_information"]
 pub type PPROCESS_BASIC_INFORMATION = *mut _PROCESS_BASIC_INFORMATION;
+#[doc = "The PROCESS_EXTENDED_BASIC_INFORMATION structure contains extended basic information about a process."]
 #[repr(C)]
 pub struct _PROCESS_EXTENDED_BASIC_INFORMATION {
    pub Size: SIZE_T,
@@ -41332,8 +41364,11 @@ impl Default for _PROCESS_EXTENDED_BASIC_INFORMATION {
       }
    }
 }
+#[doc = "The PROCESS_EXTENDED_BASIC_INFORMATION structure contains extended basic information about a process."]
 pub type PROCESS_EXTENDED_BASIC_INFORMATION = _PROCESS_EXTENDED_BASIC_INFORMATION;
+#[doc = "The PROCESS_EXTENDED_BASIC_INFORMATION structure contains extended basic information about a process."]
 pub type PPROCESS_EXTENDED_BASIC_INFORMATION = *mut _PROCESS_EXTENDED_BASIC_INFORMATION;
+#[doc = "The VM_COUNTERS structure contains various memory usage statistics for a process.\n> https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters"]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _VM_COUNTERS {
@@ -41349,8 +41384,11 @@ pub struct _VM_COUNTERS {
    pub PagefileUsage: SIZE_T,
    pub PeakPagefileUsage: SIZE_T,
 }
+#[doc = "The VM_COUNTERS structure contains various memory usage statistics for a process.\n> https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters"]
 pub type VM_COUNTERS = _VM_COUNTERS;
+#[doc = "The VM_COUNTERS structure contains various memory usage statistics for a process.\n> https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters"]
 pub type PVM_COUNTERS = *mut _VM_COUNTERS;
+#[doc = "The VM_COUNTERS_EX structure extends VM_COUNTERS to include private memory usage.\n> https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters_ex2"]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _VM_COUNTERS_EX {
@@ -41367,17 +41405,63 @@ pub struct _VM_COUNTERS_EX {
    pub PeakPagefileUsage: SIZE_T,
    pub PrivateUsage: SIZE_T,
 }
+#[doc = "The VM_COUNTERS_EX structure extends VM_COUNTERS to include private memory usage.\n> https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters_ex2"]
 pub type VM_COUNTERS_EX = _VM_COUNTERS_EX;
+#[doc = "The VM_COUNTERS_EX structure extends VM_COUNTERS to include private memory usage.\n> https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters_ex2"]
 pub type PVM_COUNTERS_EX = *mut _VM_COUNTERS_EX;
+#[doc = "The VM_COUNTERS_EX2 structure extends VM_COUNTERS_EX to include private working set size and shared commit usage.\n> https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters_ex2"]
 #[repr(C)]
-#[derive(Debug, Default, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct _VM_COUNTERS_EX2 {
-   pub CountersEx: VM_COUNTERS_EX,
+   pub __bindgen_anon_1: _VM_COUNTERS_EX2__bindgen_ty_1,
    pub PrivateWorkingSetSize: SIZE_T,
    pub SharedCommitUsage: SIZE_T,
 }
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union _VM_COUNTERS_EX2__bindgen_ty_1 {
+   pub CountersEx: VM_COUNTERS_EX,
+   pub __bindgen_anon_1: _VM_COUNTERS_EX2__bindgen_ty_1__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Debug, Default, Copy, Clone)]
+pub struct _VM_COUNTERS_EX2__bindgen_ty_1__bindgen_ty_1 {
+   pub PeakVirtualSize: SIZE_T,
+   pub VirtualSize: SIZE_T,
+   pub PageFaultCount: ULONG,
+   pub PeakWorkingSetSize: SIZE_T,
+   pub WorkingSetSize: SIZE_T,
+   pub QuotaPeakPagedPoolUsage: SIZE_T,
+   pub QuotaPagedPoolUsage: SIZE_T,
+   pub QuotaPeakNonPagedPoolUsage: SIZE_T,
+   pub QuotaNonPagedPoolUsage: SIZE_T,
+   pub PagefileUsage: SIZE_T,
+   pub PeakPagefileUsage: SIZE_T,
+   pub PrivateUsage: SIZE_T,
+}
+impl Default for _VM_COUNTERS_EX2__bindgen_ty_1 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+impl Default for _VM_COUNTERS_EX2 {
+   fn default() -> Self {
+      let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+      unsafe {
+         ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+         s.assume_init()
+      }
+   }
+}
+#[doc = "The VM_COUNTERS_EX2 structure extends VM_COUNTERS_EX to include private working set size and shared commit usage.\n> https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters_ex2"]
 pub type VM_COUNTERS_EX2 = _VM_COUNTERS_EX2;
+#[doc = "The VM_COUNTERS_EX2 structure extends VM_COUNTERS_EX to include private working set size and shared commit usage.\n> https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters_ex2"]
 pub type PVM_COUNTERS_EX2 = *mut _VM_COUNTERS_EX2;
+#[doc = "The KERNEL_USER_TIMES structure contains timing information for a process or thread.\n> https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getthreadtimes"]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _KERNEL_USER_TIMES {
@@ -41395,8 +41479,11 @@ impl Default for _KERNEL_USER_TIMES {
       }
    }
 }
+#[doc = "The KERNEL_USER_TIMES structure contains timing information for a process or thread.\n> https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getthreadtimes"]
 pub type KERNEL_USER_TIMES = _KERNEL_USER_TIMES;
+#[doc = "The KERNEL_USER_TIMES structure contains timing information for a process or thread.\n> https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getthreadtimes"]
 pub type PKERNEL_USER_TIMES = *mut _KERNEL_USER_TIMES;
+#[doc = "The POOLED_USAGE_AND_LIMITS structure contains information about the usage and limits of paged and non-paged pool memory."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _POOLED_USAGE_AND_LIMITS {
@@ -41410,8 +41497,11 @@ pub struct _POOLED_USAGE_AND_LIMITS {
    pub PagefileUsage: SIZE_T,
    pub PagefileLimit: SIZE_T,
 }
+#[doc = "The POOLED_USAGE_AND_LIMITS structure contains information about the usage and limits of paged and non-paged pool memory."]
 pub type POOLED_USAGE_AND_LIMITS = _POOLED_USAGE_AND_LIMITS;
+#[doc = "The POOLED_USAGE_AND_LIMITS structure contains information about the usage and limits of paged and non-paged pool memory."]
 pub type PPOOLED_USAGE_AND_LIMITS = *mut _POOLED_USAGE_AND_LIMITS;
+#[doc = "The PROCESS_EXCEPTION_PORT structure is used to manage exception ports for a process."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _PROCESS_EXCEPTION_PORT {
@@ -41427,8 +41517,11 @@ impl Default for _PROCESS_EXCEPTION_PORT {
       }
    }
 }
+#[doc = "The PROCESS_EXCEPTION_PORT structure is used to manage exception ports for a process."]
 pub type PROCESS_EXCEPTION_PORT = _PROCESS_EXCEPTION_PORT;
+#[doc = "The PROCESS_EXCEPTION_PORT structure is used to manage exception ports for a process."]
 pub type PPROCESS_EXCEPTION_PORT = *mut _PROCESS_EXCEPTION_PORT;
+#[doc = "The PROCESS_ACCESS_TOKEN structure is used to manage the security context of a process or thread.\nA process's access token can only be changed if the process has no threads or a single thread that has not yet begun execution."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _PROCESS_ACCESS_TOKEN {
@@ -41444,8 +41537,11 @@ impl Default for _PROCESS_ACCESS_TOKEN {
       }
    }
 }
+#[doc = "The PROCESS_ACCESS_TOKEN structure is used to manage the security context of a process or thread.\nA process's access token can only be changed if the process has no threads or a single thread that has not yet begun execution."]
 pub type PROCESS_ACCESS_TOKEN = _PROCESS_ACCESS_TOKEN;
+#[doc = "The PROCESS_ACCESS_TOKEN structure is used to manage the security context of a process or thread.\nA process's access token can only be changed if the process has no threads or a single thread that has not yet begun execution."]
 pub type PPROCESS_ACCESS_TOKEN = *mut _PROCESS_ACCESS_TOKEN;
+#[doc = "The PROCESS_LDT_INFORMATION structure is used to manage Local Descriptor Table (LDT) entries for a process."]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _PROCESS_LDT_INFORMATION {
@@ -41462,15 +41558,21 @@ impl Default for _PROCESS_LDT_INFORMATION {
       }
    }
 }
+#[doc = "The PROCESS_LDT_INFORMATION structure is used to manage Local Descriptor Table (LDT) entries for a process."]
 pub type PROCESS_LDT_INFORMATION = _PROCESS_LDT_INFORMATION;
+#[doc = "The PROCESS_LDT_INFORMATION structure is used to manage Local Descriptor Table (LDT) entries for a process."]
 pub type PPROCESS_LDT_INFORMATION = *mut _PROCESS_LDT_INFORMATION;
+#[doc = "The PROCESS_LDT_SIZE structure is used to specify the size of the Local Descriptor Table (LDT) for a process."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _PROCESS_LDT_SIZE {
    pub Length: ULONG,
 }
+#[doc = "The PROCESS_LDT_SIZE structure is used to specify the size of the Local Descriptor Table (LDT) for a process."]
 pub type PROCESS_LDT_SIZE = _PROCESS_LDT_SIZE;
+#[doc = "The PROCESS_LDT_SIZE structure is used to specify the size of the Local Descriptor Table (LDT) for a process."]
 pub type PPROCESS_LDT_SIZE = *mut _PROCESS_LDT_SIZE;
+#[doc = "The PROCESS_WS_WATCH_INFORMATION structure is used to store information about working set watch events for a process.\n> https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_ws_watch_information"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _PROCESS_WS_WATCH_INFORMATION {
@@ -41486,13 +41588,16 @@ impl Default for _PROCESS_WS_WATCH_INFORMATION {
       }
    }
 }
+#[doc = "The PROCESS_WS_WATCH_INFORMATION structure is used to store information about working set watch events for a process.\n> https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_ws_watch_information"]
 pub type PROCESS_WS_WATCH_INFORMATION = _PROCESS_WS_WATCH_INFORMATION;
+#[doc = "The PROCESS_WS_WATCH_INFORMATION structure is used to store information about working set watch events for a process.\n> https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_ws_watch_information"]
 pub type PPROCESS_WS_WATCH_INFORMATION = *mut _PROCESS_WS_WATCH_INFORMATION;
+#[doc = "The PROCESS_WS_WATCH_INFORMATION_EX structure contains extended information about a page added to a process working set.\n> https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_ws_watch_information_ex"]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _PROCESS_WS_WATCH_INFORMATION_EX {
    pub __bindgen_anon_1: _PROCESS_WS_WATCH_INFORMATION_EX__bindgen_ty_1,
-   pub FaultingThreadId: ULONG_PTR,
+   pub FaultingThreadId: HANDLE,
    pub Flags: ULONG_PTR,
 }
 #[repr(C)]
@@ -41534,8 +41639,11 @@ impl Default for _PROCESS_WS_WATCH_INFORMATION_EX {
       }
    }
 }
+#[doc = "The PROCESS_WS_WATCH_INFORMATION_EX structure contains extended information about a page added to a process working set.\n> https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_ws_watch_information_ex"]
 pub type PROCESS_WS_WATCH_INFORMATION_EX = _PROCESS_WS_WATCH_INFORMATION_EX;
+#[doc = "The PROCESS_WS_WATCH_INFORMATION_EX structure contains extended information about a page added to a process working set.\n> https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-psapi_ws_watch_information_ex"]
 pub type PPROCESS_WS_WATCH_INFORMATION_EX = *mut _PROCESS_WS_WATCH_INFORMATION_EX;
+#[doc = "The PROCESS_PRIORITY_CLASS structure is used to manage the priority class of a process."]
 #[repr(C)]
 pub struct _PROCESS_PRIORITY_CLASS {
    pub Foreground: BOOLEAN,
@@ -41550,8 +41658,11 @@ impl Default for _PROCESS_PRIORITY_CLASS {
       }
    }
 }
+#[doc = "The PROCESS_PRIORITY_CLASS structure is used to manage the priority class of a process."]
 pub type PROCESS_PRIORITY_CLASS = _PROCESS_PRIORITY_CLASS;
+#[doc = "The PROCESS_PRIORITY_CLASS structure is used to manage the priority class of a process."]
 pub type PPROCESS_PRIORITY_CLASS = *mut _PROCESS_PRIORITY_CLASS;
+#[doc = "The PROCESS_PRIORITY_CLASS_EX structure extends PROCESS_PRIORITY_CLASS to include validity flags."]
 #[repr(C)]
 pub struct _PROCESS_PRIORITY_CLASS_EX {
    pub __bindgen_anon_1: _PROCESS_PRIORITY_CLASS_EX__bindgen_ty_1,
@@ -41674,7 +41785,9 @@ impl Default for _PROCESS_PRIORITY_CLASS_EX {
       }
    }
 }
+#[doc = "The PROCESS_PRIORITY_CLASS_EX structure extends PROCESS_PRIORITY_CLASS to include validity flags."]
 pub type PROCESS_PRIORITY_CLASS_EX = _PROCESS_PRIORITY_CLASS_EX;
+#[doc = "The PROCESS_PRIORITY_CLASS_EX structure extends PROCESS_PRIORITY_CLASS to include validity flags."]
 pub type PPROCESS_PRIORITY_CLASS_EX = *mut _PROCESS_PRIORITY_CLASS_EX;
 #[doc = "The PROCESS_FOREGROUND_BACKGROUND structure is used to manage the the priority class of a process, specifically whether it runs in the foreground or background."]
 #[repr(C)]
@@ -41813,20 +41926,26 @@ pub struct _PROCESS_SESSION_INFORMATION {
 pub type PROCESS_SESSION_INFORMATION = _PROCESS_SESSION_INFORMATION;
 #[doc = "The PROCESS_SESSION_INFORMATION structure is used to store information about the session ID of a process."]
 pub type PPROCESS_SESSION_INFORMATION = *mut _PROCESS_SESSION_INFORMATION;
+#[doc = "The PROCESS_HANDLE_TRACING_ENABLE structure is used to enable handle tracing for a process."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _PROCESS_HANDLE_TRACING_ENABLE {
    pub Flags: ULONG,
 }
+#[doc = "The PROCESS_HANDLE_TRACING_ENABLE structure is used to enable handle tracing for a process."]
 pub type PROCESS_HANDLE_TRACING_ENABLE = _PROCESS_HANDLE_TRACING_ENABLE;
+#[doc = "The PROCESS_HANDLE_TRACING_ENABLE structure is used to enable handle tracing for a process."]
 pub type PPROCESS_HANDLE_TRACING_ENABLE = *mut _PROCESS_HANDLE_TRACING_ENABLE;
+#[doc = "The PROCESS_HANDLE_TRACING_ENABLE_EX structure extends PROCESS_HANDLE_TRACING_ENABLE to include the total number of slots."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _PROCESS_HANDLE_TRACING_ENABLE_EX {
    pub Flags: ULONG,
    pub TotalSlots: ULONG,
 }
+#[doc = "The PROCESS_HANDLE_TRACING_ENABLE_EX structure extends PROCESS_HANDLE_TRACING_ENABLE to include the total number of slots."]
 pub type PROCESS_HANDLE_TRACING_ENABLE_EX = _PROCESS_HANDLE_TRACING_ENABLE_EX;
+#[doc = "The PROCESS_HANDLE_TRACING_ENABLE_EX structure extends PROCESS_HANDLE_TRACING_ENABLE to include the total number of slots."]
 pub type PPROCESS_HANDLE_TRACING_ENABLE_EX = *mut _PROCESS_HANDLE_TRACING_ENABLE_EX;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -41865,6 +41984,7 @@ impl Default for _PROCESS_HANDLE_TRACING_QUERY {
 }
 pub type PROCESS_HANDLE_TRACING_QUERY = _PROCESS_HANDLE_TRACING_QUERY;
 pub type PPROCESS_HANDLE_TRACING_QUERY = *mut _PROCESS_HANDLE_TRACING_QUERY;
+#[doc = "The THREAD_TLS_INFORMATION structure contains information about the Thread Local Storage (TLS) data for a thread."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _THREAD_TLS_INFORMATION {
@@ -41882,18 +42002,24 @@ impl Default for _THREAD_TLS_INFORMATION {
       }
    }
 }
+#[doc = "The THREAD_TLS_INFORMATION structure contains information about the Thread Local Storage (TLS) data for a thread."]
 pub type THREAD_TLS_INFORMATION = _THREAD_TLS_INFORMATION;
+#[doc = "The THREAD_TLS_INFORMATION structure contains information about the Thread Local Storage (TLS) data for a thread."]
 pub type PTHREAD_TLS_INFORMATION = *mut _THREAD_TLS_INFORMATION;
 #[repr(i32)]
 #[non_exhaustive]
+#[doc = "The PROCESS_TLS_INFORMATION_TYPE enumeration defines the types of TLS operations that can be performed on a process."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _PROCESS_TLS_INFORMATION_TYPE {
    ProcessTlsReplaceIndex = 0,
    ProcessTlsReplaceVector = 1,
    MaxProcessTlsOperation = 2,
 }
+#[doc = "The PROCESS_TLS_INFORMATION_TYPE enumeration defines the types of TLS operations that can be performed on a process."]
 pub use self::_PROCESS_TLS_INFORMATION_TYPE as PROCESS_TLS_INFORMATION_TYPE;
+#[doc = "The PROCESS_TLS_INFORMATION_TYPE enumeration defines the types of TLS operations that can be performed on a process."]
 pub type PPROCESS_TLS_INFORMATION_TYPE = *mut _PROCESS_TLS_INFORMATION_TYPE;
+#[doc = "The PROCESS_TLS_INFORMATION structure contains information about the TLS operations for a process."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _PROCESS_TLS_INFORMATION {
@@ -41913,8 +42039,11 @@ impl Default for _PROCESS_TLS_INFORMATION {
       }
    }
 }
+#[doc = "The PROCESS_TLS_INFORMATION structure contains information about the TLS operations for a process."]
 pub type PROCESS_TLS_INFORMATION = _PROCESS_TLS_INFORMATION;
+#[doc = "The PROCESS_TLS_INFORMATION structure contains information about the TLS operations for a process."]
 pub type PPROCESS_TLS_INFORMATION = *mut _PROCESS_TLS_INFORMATION;
+#[doc = "The PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION structure contains information about the instrumentation callback for a process."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION {
@@ -41931,10 +42060,13 @@ impl Default for _PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION {
       }
    }
 }
+#[doc = "The PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION structure contains information about the instrumentation callback for a process."]
 pub type PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION =
    _PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION;
+#[doc = "The PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION structure contains information about the instrumentation callback for a process."]
 pub type PPROCESS_INSTRUMENTATION_CALLBACK_INFORMATION =
    *mut _PROCESS_INSTRUMENTATION_CALLBACK_INFORMATION;
+#[doc = "The PROCESS_STACK_ALLOCATION_INFORMATION structure contains information about the stack allocation for a process."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _PROCESS_STACK_ALLOCATION_INFORMATION {
@@ -41951,8 +42083,11 @@ impl Default for _PROCESS_STACK_ALLOCATION_INFORMATION {
       }
    }
 }
+#[doc = "The PROCESS_STACK_ALLOCATION_INFORMATION structure contains information about the stack allocation for a process."]
 pub type PROCESS_STACK_ALLOCATION_INFORMATION = _PROCESS_STACK_ALLOCATION_INFORMATION;
+#[doc = "The PROCESS_STACK_ALLOCATION_INFORMATION structure contains information about the stack allocation for a process."]
 pub type PPROCESS_STACK_ALLOCATION_INFORMATION = *mut _PROCESS_STACK_ALLOCATION_INFORMATION;
+#[doc = "The PROCESS_STACK_ALLOCATION_INFORMATION_EX structure extends PROCESS_STACK_ALLOCATION_INFORMATION to include additional fields."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _PROCESS_STACK_ALLOCATION_INFORMATION_EX {
@@ -41971,8 +42106,11 @@ impl Default for _PROCESS_STACK_ALLOCATION_INFORMATION_EX {
       }
    }
 }
+#[doc = "The PROCESS_STACK_ALLOCATION_INFORMATION_EX structure extends PROCESS_STACK_ALLOCATION_INFORMATION to include additional fields."]
 pub type PROCESS_STACK_ALLOCATION_INFORMATION_EX = _PROCESS_STACK_ALLOCATION_INFORMATION_EX;
+#[doc = "The PROCESS_STACK_ALLOCATION_INFORMATION_EX structure extends PROCESS_STACK_ALLOCATION_INFORMATION to include additional fields."]
 pub type PPROCESS_STACK_ALLOCATION_INFORMATION_EX = *mut _PROCESS_STACK_ALLOCATION_INFORMATION_EX;
+#[doc = "The PROCESS_AFFINITY_UPDATE_MODE union is used to specify the affinity update mode for a process."]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union _PROCESS_AFFINITY_UPDATE_MODE {
@@ -42116,8 +42254,11 @@ impl Default for _PROCESS_AFFINITY_UPDATE_MODE {
       }
    }
 }
+#[doc = "The PROCESS_AFFINITY_UPDATE_MODE union is used to specify the affinity update mode for a process."]
 pub type PROCESS_AFFINITY_UPDATE_MODE = _PROCESS_AFFINITY_UPDATE_MODE;
+#[doc = "The PROCESS_AFFINITY_UPDATE_MODE union is used to specify the affinity update mode for a process."]
 pub type PPROCESS_AFFINITY_UPDATE_MODE = *mut _PROCESS_AFFINITY_UPDATE_MODE;
+#[doc = "The PROCESS_MEMORY_ALLOCATION_MODE union is used to specify the memory allocation mode for a process."]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union _PROCESS_MEMORY_ALLOCATION_MODE {
@@ -42220,24 +42361,33 @@ impl Default for _PROCESS_MEMORY_ALLOCATION_MODE {
       }
    }
 }
+#[doc = "The PROCESS_MEMORY_ALLOCATION_MODE union is used to specify the memory allocation mode for a process."]
 pub type PROCESS_MEMORY_ALLOCATION_MODE = _PROCESS_MEMORY_ALLOCATION_MODE;
+#[doc = "The PROCESS_MEMORY_ALLOCATION_MODE union is used to specify the memory allocation mode for a process."]
 pub type PPROCESS_MEMORY_ALLOCATION_MODE = *mut _PROCESS_MEMORY_ALLOCATION_MODE;
+#[doc = "The PROCESS_HANDLE_INFORMATION structure contains information about the handles of a process."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _PROCESS_HANDLE_INFORMATION {
    pub HandleCount: ULONG,
    pub HandleCountHighWatermark: ULONG,
 }
+#[doc = "The PROCESS_HANDLE_INFORMATION structure contains information about the handles of a process."]
 pub type PROCESS_HANDLE_INFORMATION = _PROCESS_HANDLE_INFORMATION;
+#[doc = "The PROCESS_HANDLE_INFORMATION structure contains information about the handles of a process."]
 pub type PPROCESS_HANDLE_INFORMATION = *mut _PROCESS_HANDLE_INFORMATION;
+#[doc = "The PROCESS_CYCLE_TIME_INFORMATION structure contains information about the cycle time of a process."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _PROCESS_CYCLE_TIME_INFORMATION {
    pub AccumulatedCycles: ULONGLONG,
    pub CurrentCycleCount: ULONGLONG,
 }
+#[doc = "The PROCESS_CYCLE_TIME_INFORMATION structure contains information about the cycle time of a process."]
 pub type PROCESS_CYCLE_TIME_INFORMATION = _PROCESS_CYCLE_TIME_INFORMATION;
+#[doc = "The PROCESS_CYCLE_TIME_INFORMATION structure contains information about the cycle time of a process."]
 pub type PPROCESS_CYCLE_TIME_INFORMATION = *mut _PROCESS_CYCLE_TIME_INFORMATION;
+#[doc = "The PROCESS_WINDOW_INFORMATION structure contains information about the windows of a process."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _PROCESS_WINDOW_INFORMATION {
@@ -42245,8 +42395,11 @@ pub struct _PROCESS_WINDOW_INFORMATION {
    pub WindowTitleLength: USHORT,
    pub WindowTitle: [WCHAR; 1usize],
 }
+#[doc = "The PROCESS_WINDOW_INFORMATION structure contains information about the windows of a process."]
 pub type PROCESS_WINDOW_INFORMATION = _PROCESS_WINDOW_INFORMATION;
+#[doc = "The PROCESS_WINDOW_INFORMATION structure contains information about the windows of a process."]
 pub type PPROCESS_WINDOW_INFORMATION = *mut _PROCESS_WINDOW_INFORMATION;
+#[doc = "The PROCESS_HANDLE_TABLE_ENTRY_INFO structure contains information about a handle table entry of a process."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _PROCESS_HANDLE_TABLE_ENTRY_INFO {
@@ -42267,12 +42420,15 @@ impl Default for _PROCESS_HANDLE_TABLE_ENTRY_INFO {
       }
    }
 }
+#[doc = "The PROCESS_HANDLE_TABLE_ENTRY_INFO structure contains information about a handle table entry of a process."]
 pub type PROCESS_HANDLE_TABLE_ENTRY_INFO = _PROCESS_HANDLE_TABLE_ENTRY_INFO;
+#[doc = "The PROCESS_HANDLE_TABLE_ENTRY_INFO structure contains information about a handle table entry of a process."]
 pub type PPROCESS_HANDLE_TABLE_ENTRY_INFO = *mut _PROCESS_HANDLE_TABLE_ENTRY_INFO;
+#[doc = "The PROCESS_HANDLE_SNAPSHOT_INFORMATION structure contains information about the handle snapshot of a process."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _PROCESS_HANDLE_SNAPSHOT_INFORMATION {
-   pub NumberOfHandles: SIZE_T,
+   pub NumberOfHandles: ULONG_PTR,
    pub Reserved: ULONG_PTR,
    pub Handles: [PROCESS_HANDLE_TABLE_ENTRY_INFO; 1usize],
 }
@@ -42285,7 +42441,9 @@ impl Default for _PROCESS_HANDLE_SNAPSHOT_INFORMATION {
       }
    }
 }
+#[doc = "The PROCESS_HANDLE_SNAPSHOT_INFORMATION structure contains information about the handle snapshot of a process."]
 pub type PROCESS_HANDLE_SNAPSHOT_INFORMATION = _PROCESS_HANDLE_SNAPSHOT_INFORMATION;
+#[doc = "The PROCESS_HANDLE_SNAPSHOT_INFORMATION structure contains information about the handle snapshot of a process."]
 pub type PPROCESS_HANDLE_SNAPSHOT_INFORMATION = *mut _PROCESS_HANDLE_SNAPSHOT_INFORMATION;
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -42501,13 +42659,16 @@ pub type PROCESS_REVOKE_FILE_HANDLES_INFORMATION = _PROCESS_REVOKE_FILE_HANDLES_
 pub type PPROCESS_REVOKE_FILE_HANDLES_INFORMATION = *mut _PROCESS_REVOKE_FILE_HANDLES_INFORMATION;
 #[repr(i32)]
 #[non_exhaustive]
+#[doc = "The PROCESS_WORKING_SET_OPERATION enumeration defines the operation to perform on a process's working set."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _PROCESS_WORKING_SET_OPERATION {
    ProcessWorkingSetSwap = 0,
    ProcessWorkingSetEmpty = 1,
    ProcessWorkingSetOperationMax = 2,
 }
+#[doc = "The PROCESS_WORKING_SET_OPERATION enumeration defines the operation to perform on a process's working set."]
 pub use self::_PROCESS_WORKING_SET_OPERATION as PROCESS_WORKING_SET_OPERATION;
+#[doc = "The PROCESS_WORKING_SET_CONTROL structure is used to control the working set of a process."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _PROCESS_WORKING_SET_CONTROL {
@@ -42524,10 +42685,13 @@ impl Default for _PROCESS_WORKING_SET_CONTROL {
       }
    }
 }
+#[doc = "The PROCESS_WORKING_SET_CONTROL structure is used to control the working set of a process."]
 pub type PROCESS_WORKING_SET_CONTROL = _PROCESS_WORKING_SET_CONTROL;
+#[doc = "The PROCESS_WORKING_SET_CONTROL structure is used to control the working set of a process."]
 pub type PPROCESS_WORKING_SET_CONTROL = *mut _PROCESS_WORKING_SET_CONTROL;
 #[repr(i32)]
 #[non_exhaustive]
+#[doc = "The PS_PROTECTED_TYPE enumeration defines the types of protection that can be applied to a process."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _PS_PROTECTED_TYPE {
    PsProtectedTypeNone = 0,
@@ -42535,9 +42699,11 @@ pub enum _PS_PROTECTED_TYPE {
    PsProtectedTypeProtected = 2,
    PsProtectedTypeMax = 3,
 }
+#[doc = "The PS_PROTECTED_TYPE enumeration defines the types of protection that can be applied to a process."]
 pub use self::_PS_PROTECTED_TYPE as PS_PROTECTED_TYPE;
 #[repr(i32)]
 #[non_exhaustive]
+#[doc = "The PS_PROTECTED_SIGNER enumeration defines the types of signers that can be associated with a protected process."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum _PS_PROTECTED_SIGNER {
    PsProtectedSignerNone = 0,
@@ -42551,7 +42717,9 @@ pub enum _PS_PROTECTED_SIGNER {
    PsProtectedSignerApp = 8,
    PsProtectedSignerMax = 9,
 }
+#[doc = "The PS_PROTECTED_SIGNER enumeration defines the types of signers that can be associated with a protected process."]
 pub use self::_PS_PROTECTED_SIGNER as PS_PROTECTED_SIGNER;
+#[doc = "The PS_PROTECTION structure is used to define the protection level of a process."]
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct _PS_PROTECTION {
@@ -42709,16 +42877,22 @@ impl Default for _PS_PROTECTION {
       }
    }
 }
+#[doc = "The PS_PROTECTION structure is used to define the protection level of a process."]
 pub type PS_PROTECTION = _PS_PROTECTION;
+#[doc = "The PS_PROTECTION structure is used to define the protection level of a process."]
 pub type PPS_PROTECTION = *mut _PS_PROTECTION;
+#[doc = "The PROCESS_FAULT_INFORMATION structure contains information about process faults."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _PROCESS_FAULT_INFORMATION {
    pub FaultFlags: ULONG,
    pub AdditionalInfo: ULONG,
 }
+#[doc = "The PROCESS_FAULT_INFORMATION structure contains information about process faults."]
 pub type PROCESS_FAULT_INFORMATION = _PROCESS_FAULT_INFORMATION;
+#[doc = "The PROCESS_FAULT_INFORMATION structure contains information about process faults."]
 pub type PPROCESS_FAULT_INFORMATION = *mut _PROCESS_FAULT_INFORMATION;
+#[doc = "The PROCESS_TELEMETRY_ID_INFORMATION structure contains telemetry information about a process."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _PROCESS_TELEMETRY_ID_INFORMATION {
@@ -42740,8 +42914,11 @@ pub struct _PROCESS_TELEMETRY_ID_INFORMATION {
    pub RelativeAppNameOffset: ULONG,
    pub CommandLineOffset: ULONG,
 }
+#[doc = "The PROCESS_TELEMETRY_ID_INFORMATION structure contains telemetry information about a process."]
 pub type PROCESS_TELEMETRY_ID_INFORMATION = _PROCESS_TELEMETRY_ID_INFORMATION;
+#[doc = "The PROCESS_TELEMETRY_ID_INFORMATION structure contains telemetry information about a process."]
 pub type PPROCESS_TELEMETRY_ID_INFORMATION = *mut _PROCESS_TELEMETRY_ID_INFORMATION;
+#[doc = "The PROCESS_COMMIT_RELEASE_INFORMATION structure contains information about the commit and release of memory for a process."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _PROCESS_COMMIT_RELEASE_INFORMATION {
@@ -42919,8 +43096,11 @@ impl _PROCESS_COMMIT_RELEASE_INFORMATION__bindgen_ty_1 {
       __bindgen_bitfield_unit
    }
 }
+#[doc = "The PROCESS_COMMIT_RELEASE_INFORMATION structure contains information about the commit and release of memory for a process."]
 pub type PROCESS_COMMIT_RELEASE_INFORMATION = _PROCESS_COMMIT_RELEASE_INFORMATION;
+#[doc = "The PROCESS_COMMIT_RELEASE_INFORMATION structure contains information about the commit and release of memory for a process."]
 pub type PPROCESS_COMMIT_RELEASE_INFORMATION = *mut _PROCESS_COMMIT_RELEASE_INFORMATION;
+#[doc = "The PROCESS_JOB_MEMORY_INFO structure contains Represents app memory usage at a single point in time.\n> https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-app_memory_information"]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _PROCESS_JOB_MEMORY_INFO {
@@ -42930,8 +43110,11 @@ pub struct _PROCESS_JOB_MEMORY_INFO {
    pub PrivateCommitLimit: ULONGLONG,
    pub TotalCommitLimit: ULONGLONG,
 }
+#[doc = "The PROCESS_JOB_MEMORY_INFO structure contains Represents app memory usage at a single point in time.\n> https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-app_memory_information"]
 pub type PROCESS_JOB_MEMORY_INFO = _PROCESS_JOB_MEMORY_INFO;
+#[doc = "The PROCESS_JOB_MEMORY_INFO structure contains Represents app memory usage at a single point in time.\n> https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-app_memory_information"]
 pub type PPROCESS_JOB_MEMORY_INFO = *mut _PROCESS_JOB_MEMORY_INFO;
+#[doc = "The PROCESS_CHILD_PROCESS_INFORMATION structure contains information about child process policies."]
 #[repr(C)]
 pub struct _PROCESS_CHILD_PROCESS_INFORMATION {
    pub ProhibitChildProcesses: BOOLEAN,
@@ -42947,8 +43130,11 @@ impl Default for _PROCESS_CHILD_PROCESS_INFORMATION {
       }
    }
 }
+#[doc = "The PROCESS_CHILD_PROCESS_INFORMATION structure contains information about child process policies."]
 pub type PROCESS_CHILD_PROCESS_INFORMATION = _PROCESS_CHILD_PROCESS_INFORMATION;
+#[doc = "The PROCESS_CHILD_PROCESS_INFORMATION structure contains information about child process policies."]
 pub type PPROCESS_CHILD_PROCESS_INFORMATION = *mut _PROCESS_CHILD_PROCESS_INFORMATION;
+#[doc = "The POWER_THROTTLING_PROCESS_STATE structure is used to manage the power throttling state of a process."]
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
 pub struct _POWER_THROTTLING_PROCESS_STATE {
@@ -42956,7 +43142,9 @@ pub struct _POWER_THROTTLING_PROCESS_STATE {
    pub ControlMask: ULONG,
    pub StateMask: ULONG,
 }
+#[doc = "The POWER_THROTTLING_PROCESS_STATE structure is used to manage the power throttling state of a process."]
 pub type POWER_THROTTLING_PROCESS_STATE = _POWER_THROTTLING_PROCESS_STATE;
+#[doc = "The POWER_THROTTLING_PROCESS_STATE structure is used to manage the power throttling state of a process."]
 pub type PPOWER_THROTTLING_PROCESS_STATE = *mut _POWER_THROTTLING_PROCESS_STATE;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone)]
@@ -44219,7 +44407,7 @@ impl Default for _THREAD_TEB_INFORMATION {
 }
 pub type THREAD_TEB_INFORMATION = _THREAD_TEB_INFORMATION;
 pub type PTHREAD_TEB_INFORMATION = *mut _THREAD_TEB_INFORMATION;
-#[doc = "The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data"]
+#[doc = "The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data)"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _COUNTER_READING {
@@ -44237,9 +44425,9 @@ impl Default for _COUNTER_READING {
       }
    }
 }
-#[doc = "The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data"]
+#[doc = "The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data)"]
 pub type COUNTER_READING = _COUNTER_READING;
-#[doc = "The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data"]
+#[doc = "The COUNTER_READING structure is used to store individual counter data from a hardware counter.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data](https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-hardware_counter_data)"]
 pub type PCOUNTER_READING = *mut _COUNTER_READING;
 #[doc = "The THREAD_PERFORMANCE_DATA structure aggregates various performance metrics for a thread.\n> https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-performance_data"]
 #[repr(C)]
@@ -44269,7 +44457,7 @@ impl Default for _THREAD_PERFORMANCE_DATA {
 pub type THREAD_PERFORMANCE_DATA = _THREAD_PERFORMANCE_DATA;
 #[doc = "The THREAD_PERFORMANCE_DATA structure aggregates various performance metrics for a thread.\n> https://learn.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-performance_data"]
 pub type PTHREAD_PERFORMANCE_DATA = *mut _THREAD_PERFORMANCE_DATA;
-#[doc = "The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata"]
+#[doc = "The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata)"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct _THREAD_PROFILING_INFORMATION {
@@ -44287,9 +44475,9 @@ impl Default for _THREAD_PROFILING_INFORMATION {
       }
    }
 }
-#[doc = "The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata"]
+#[doc = "The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata)"]
 pub type THREAD_PROFILING_INFORMATION = _THREAD_PROFILING_INFORMATION;
-#[doc = "The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata"]
+#[doc = "The THREAD_PROFILING_INFORMATION structure contains profiling information and references to performance data.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-readthreadprofilingdata)"]
 pub type PTHREAD_PROFILING_INFORMATION = *mut _THREAD_PROFILING_INFORMATION;
 #[repr(C)]
 #[repr(align(16))]
@@ -75399,7 +75587,7 @@ unsafe extern "C" {
       Flags: ULONG,
       GetFileSizeFromLoadAsDataTable: BOOLEAN,
    );
-   #[doc = "The NtDelayExecution routine suspends the current thread until the specified condition is met.\n# Arguments\n\n* `Alertable` - The function returns when either the time-out period has elapsed or when the APC function is called.\n* `DelayInterval` - The time interval for which execution is to be suspended, in milliseconds.\n- A value of zero causes the thread to relinquish the remainder of its time slice to any other thread that is ready to run.\n- If there are no other threads ready to run, the function returns immediately, and the thread continues execution.\n- A value of INFINITE indicates that the suspension should not time out.\n# Returns\n\nNTSTATUS Successful or errant status. The return value is STATUS_USER_APC when Alertable is TRUE, and the function returned due to one or more I/O completion callback functions.\n> Note that a ready thread is not guaranteed to run immediately. Consequently, the thread will not run until some arbitrary time after the sleep interval elapses,\nbased upon the system \"tick\" frequency and the load factor from other processes.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleepex"]
+   #[doc = "The NtDelayExecution routine suspends the current thread until the specified condition is met.\n# Arguments\n\n* `Alertable` - The function returns when either the time-out period has elapsed or when the APC function is called.\n* `DelayInterval` - The time interval for which execution is to be suspended, in milliseconds.\n- A value of zero causes the thread to relinquish the remainder of its time slice to any other thread that is ready to run.\n- If there are no other threads ready to run, the function returns immediately, and the thread continues execution.\n- A value of INFINITE indicates that the suspension should not time out.\n# Returns\n\nNTSTATUS Successful or errant status. The return value is STATUS_USER_APC when Alertable is TRUE, and the function returned due to one or more I/O completion callback functions.\n> Note that a ready thread is not guaranteed to run immediately. Consequently, the thread will not run until some arbitrary time after the sleep interval elapses,\nbased upon the system \"tick\" frequency and the load factor from other processes.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleepex](https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleepex)"]
    pub fn NtDelayExecution(Alertable: BOOLEAN, DelayInterval: PLARGE_INTEGER) -> NTSTATUS;
    #[doc = "Retrieves the value of the specified firmware environment variable.\nThe user account that the app is running under must have the SE_SYSTEM_ENVIRONMENT_NAME privilege.\n# Arguments\n\n* `VariableName` - The name of the firmware environment variable. The pointer must not be NULL.\n* `VariableValue` - A pointer to a buffer that receives the value of the specified firmware environment variable.\n* `ValueLength` - The size of the `VariableValue` buffer, in bytes.\n* `ReturnLength` - If the function succeeds, the return length is the number of bytes stored in the `VariableValue` buffer.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQuerySystemEnvironmentValue(
@@ -75434,26 +75622,42 @@ unsafe extern "C" {
       Buffer: PVOID,
       BufferLength: PULONG,
    ) -> NTSTATUS;
+   #[doc = "The NtAddBootEntry routine adds a new boot entry to the system boot configuration.\n# Arguments\n\n* `BootEntry` - A pointer to a BOOT_ENTRY structure that specifies the boot entry to be added.\n* `Id` - A pointer to a variable that receives the identifier of the new boot entry.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtAddBootEntry(BootEntry: PBOOT_ENTRY, Id: PULONG) -> NTSTATUS;
+   #[doc = "The NtDeleteBootEntry routine deletes an existing boot entry from the system boot configuration.\n# Arguments\n\n* `Id` - The identifier of the boot entry to be deleted.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtDeleteBootEntry(Id: ULONG) -> NTSTATUS;
+   #[doc = "The NtModifyBootEntry routine modifies an existing boot entry in the system boot configuration.\n# Arguments\n\n* `BootEntry` - A pointer to a BOOT_ENTRY structure that specifies the new boot entry information.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtModifyBootEntry(BootEntry: PBOOT_ENTRY) -> NTSTATUS;
+   #[doc = "The NtEnumerateBootEntries routine retrieves information about all boot entries in the system boot configuration.\n# Arguments\n\n* `Buffer` - A pointer to a buffer that receives the boot entries information.\n* `BufferLength` - A pointer to a variable that specifies the size of the buffer. On return, it contains the size of the data returned.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtEnumerateBootEntries(Buffer: PVOID, BufferLength: PULONG) -> NTSTATUS;
+   #[doc = "The NtQueryBootEntryOrder routine retrieves the current boot entry order.\n# Arguments\n\n* `Ids` - A pointer to a buffer that receives the identifiers of the boot entries in the current boot order.\n* `Count` - A pointer to a variable that specifies the number of entries in the buffer. On return, it contains the number of entries returned.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQueryBootEntryOrder(Ids: PULONG, Count: PULONG) -> NTSTATUS;
+   #[doc = "The NtSetBootEntryOrder routine sets the boot entry order.\n# Arguments\n\n* `Ids` - A pointer to a buffer that specifies the identifiers of the boot entries in the desired boot order.\n* `Count` - The number of entries in the buffer.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetBootEntryOrder(Ids: PULONG, Count: ULONG) -> NTSTATUS;
+   #[doc = "The NtQueryBootOptions routine retrieves the current boot options.\n# Arguments\n\n* `BootOptions` - A pointer to a buffer that receives the boot options.\n* `BootOptionsLength` - A pointer to a variable that specifies the size of the buffer. On return, it contains the size of the data returned.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQueryBootOptions(BootOptions: PBOOT_OPTIONS, BootOptionsLength: PULONG) -> NTSTATUS;
+   #[doc = "The NtSetBootOptions routine sets the boot options.\n# Arguments\n\n* `BootOptions` - A pointer to a BOOT_OPTIONS structure that specifies the new boot options.\n* `FieldsToChange` - A bitmask that specifies which fields in the BOOT_OPTIONS structure are to be changed.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetBootOptions(BootOptions: PBOOT_OPTIONS, FieldsToChange: ULONG) -> NTSTATUS;
+   #[doc = "The NtTranslateFilePath routine translates a file path from one format to another.\n# Arguments\n\n* `InputFilePath` - A pointer to a FILE_PATH structure that specifies the input file path.\n* `OutputType` - The type of the output file path.\n* `OutputFilePath` - A pointer to a buffer that receives the translated file path.\n* `OutputFilePathLength` - A pointer to a variable that specifies the size of the buffer. On return, it contains the size of the data returned.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtTranslateFilePath(
       InputFilePath: PFILE_PATH,
       OutputType: ULONG,
       OutputFilePath: PFILE_PATH,
       OutputFilePathLength: PULONG,
    ) -> NTSTATUS;
+   #[doc = "The NtAddDriverEntry routine adds a new driver entry to the system boot configuration.\n# Arguments\n\n* `DriverEntry` - A pointer to an EFI_DRIVER_ENTRY structure that specifies the driver entry to be added.\n* `Id` - A pointer to a variable that receives the identifier of the new driver entry.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtAddDriverEntry(DriverEntry: PEFI_DRIVER_ENTRY, Id: PULONG) -> NTSTATUS;
+   #[doc = "The NtDeleteDriverEntry routine deletes an existing driver entry from the system boot configuration.\n# Arguments\n\n* `Id` - The identifier of the driver entry to be deleted.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtDeleteDriverEntry(Id: ULONG) -> NTSTATUS;
+   #[doc = "The NtModifyDriverEntry routine modifies an existing driver entry in the system boot configuration.\n# Arguments\n\n* `DriverEntry` - A pointer to an EFI_DRIVER_ENTRY structure that specifies the new driver entry information.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtModifyDriverEntry(DriverEntry: PEFI_DRIVER_ENTRY) -> NTSTATUS;
+   #[doc = "The NtEnumerateDriverEntries routine retrieves information about all driver entries in the system boot configuration.\n# Arguments\n\n* `Buffer` - A pointer to a buffer that receives the driver entries information.\n* `BufferLength` - A pointer to a variable that specifies the size of the buffer. On return, it contains the size of the data returned.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtEnumerateDriverEntries(Buffer: PVOID, BufferLength: PULONG) -> NTSTATUS;
+   #[doc = "The NtQueryDriverEntryOrder routine retrieves the current driver entry order.\n# Arguments\n\n* `Ids` - A pointer to a buffer that receives the identifiers of the driver entries in the current driver order.\n* `Count` - A pointer to a variable that specifies the number of entries in the buffer. On return, it contains the number of entries returned.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQueryDriverEntryOrder(Ids: PULONG, Count: PULONG) -> NTSTATUS;
+   #[doc = "The NtSetDriverEntryOrder routine sets the driver entry order.\n# Arguments\n\n* `Ids` - A pointer to a buffer that specifies the identifiers of the driver entries in the desired driver order.\n* `Count` - The number of entries in the buffer.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetDriverEntryOrder(Ids: PULONG, Count: ULONG) -> NTSTATUS;
+   #[doc = "The NtFilterBootOption routine filters boot options based on the specified operation, object type, and element type.\n# Arguments\n\n* `FilterOperation` - The operation to be performed on the boot option. This can be one of the values from the FILTER_BOOT_OPTION_OPERATION enumeration.\n* `ObjectType` - The type of the object to be filtered.\n* `ElementType` - The type of the element within the object to be filtered.\n* `Data` - A pointer to a buffer that contains the data to be used in the filter operation. This parameter is optional and can be NULL.\n* `DataSize` - The size, in bytes, of the data buffer pointed to by the Data parameter.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtFilterBootOption(
       FilterOperation: FILTER_BOOT_OPTION_OPERATION,
       ObjectType: ULONG,
@@ -75461,7 +75665,7 @@ unsafe extern "C" {
       Data: PVOID,
       DataSize: ULONG,
    ) -> NTSTATUS;
-   #[doc = "The NtCreateEvent routine creates an event object, sets the initial state of the event to the specified value,\nand opens a handle to the object with the specified desired access.\n# Arguments\n\n* `EventHandle` - A pointer to a variable that receives the event object handle.\n* `DesiredAccess` - The access mask that specifies the requested access to the event object.\n* `ObjectAttributes` - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n* `EventType` - The type of the event, which can be SynchronizationEvent or a NotificationEvent.\n* `InitialState` - The initial state of the event object.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-zwcreateevent"]
+   #[doc = "The NtCreateEvent routine creates an event object, sets the initial state of the event to the specified value,\nand opens a handle to the object with the specified desired access.\n# Arguments\n\n* `EventHandle` - A pointer to a variable that receives the event object handle.\n* `DesiredAccess` - The access mask that specifies the requested access to the event object.\n* `ObjectAttributes` - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n* `EventType` - The type of the event, which can be SynchronizationEvent or a NotificationEvent.\n* `InitialState` - The initial state of the event object.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-zwcreateevent](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-zwcreateevent)"]
    pub fn NtCreateEvent(
       EventHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -75483,9 +75687,9 @@ unsafe extern "C" {
    pub fn NtSetEventBoostPriority(EventHandle: HANDLE) -> NTSTATUS;
    #[doc = "The NtClearEvent routine sets an event object to the not-signaled state.\n# Arguments\n\n* `EventHandle` - A handle to the event object.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtClearEvent(EventHandle: HANDLE) -> NTSTATUS;
-   #[doc = "The NtResetEvent routine sets an event object to the not-signaled state and optionally returns the previous state.\n# Arguments\n\n* `EventHandle` - A handle to the event object.\n* `PreviousState` - A pointer to a variable that receives the previous state of the event object.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent"]
+   #[doc = "The NtResetEvent routine sets an event object to the not-signaled state and optionally returns the previous state.\n# Arguments\n\n* `EventHandle` - A handle to the event object.\n* `PreviousState` - A pointer to a variable that receives the previous state of the event object.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent](https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-resetevent)"]
    pub fn NtResetEvent(EventHandle: HANDLE, PreviousState: PLONG) -> NTSTATUS;
-   #[doc = "The NtPulseEvent routine sets an event object to the signaled state and then resets it to the not-signaled state after releasing the appropriate number of waiting threads.\n# Arguments\n\n* `EventHandle` - A handle to the event object.\n* `PreviousState` - A pointer to a variable that receives the previous state of the event object.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-pulseevent"]
+   #[doc = "The NtPulseEvent routine sets an event object to the signaled state and then resets it to the not-signaled state after releasing the appropriate number of waiting threads.\n# Arguments\n\n* `EventHandle` - A handle to the event object.\n* `PreviousState` - A pointer to a variable that receives the previous state of the event object.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-pulseevent](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-pulseevent)"]
    pub fn NtPulseEvent(EventHandle: HANDLE, PreviousState: PLONG) -> NTSTATUS;
    #[doc = "The NtQueryEvent routine retrieves information about an event object.\n# Arguments\n\n* `EventHandle` - A handle to the event object.\n* `EventInformationClass` - The type of information to be retrieved.\n* `EventInformation` - A pointer to a buffer that receives the requested information.\n* `EventInformationLength` - The size of the buffer pointed to by EventInformation.\n* `ReturnLength` - A pointer to a variable that receives the size of the data returned in the buffer.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQueryEvent(
@@ -75495,34 +75699,46 @@ unsafe extern "C" {
       EventInformationLength: ULONG,
       ReturnLength: PULONG,
    ) -> NTSTATUS;
+   #[doc = "The NtCreateEventPair routine creates an event pair object and opens a handle to the object with the specified desired access.\n# Arguments\n\n* `EventPairHandle` - A pointer to a variable that receives the event pair object handle.\n* `DesiredAccess` - The access mask that specifies the requested access to the event pair object.\n* `ObjectAttributes` - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtCreateEventPair(
       EventPairHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
+   #[doc = "The NtOpenEventPair routine opens a handle to an existing event pair object.\n# Arguments\n\n* `EventPairHandle` - A pointer to a variable that receives the event pair object handle.\n* `DesiredAccess` - The access mask that specifies the requested access to the event pair object.\n* `ObjectAttributes` - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtOpenEventPair(
       EventPairHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
+   #[doc = "The NtSetLowEventPair routine sets the low event in an event pair to the signaled state.\n# Arguments\n\n* `EventPairHandle` - A handle to the event pair object.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetLowEventPair(EventPairHandle: HANDLE) -> NTSTATUS;
+   #[doc = "The NtSetHighEventPair routine sets the high event in an event pair to the signaled state.\n# Arguments\n\n* `EventPairHandle` - A handle to the event pair object.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetHighEventPair(EventPairHandle: HANDLE) -> NTSTATUS;
+   #[doc = "The NtWaitLowEventPair routine waits for the low event in an event pair to be set to the signaled state.\n# Arguments\n\n* `EventPairHandle` - A handle to the event pair object.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtWaitLowEventPair(EventPairHandle: HANDLE) -> NTSTATUS;
+   #[doc = "The NtWaitHighEventPair routine waits for the high event in an event pair to be set to the signaled state.\n# Arguments\n\n* `EventPairHandle` - A handle to the event pair object.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtWaitHighEventPair(EventPairHandle: HANDLE) -> NTSTATUS;
+   #[doc = "The NtSetLowWaitHighEventPair routine sets the low event in an event pair to the signaled state and waits for the high event to be set to the signaled state.\n# Arguments\n\n* `EventPairHandle` - A handle to the event pair object.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetLowWaitHighEventPair(EventPairHandle: HANDLE) -> NTSTATUS;
+   #[doc = "The NtSetHighWaitLowEventPair routine sets the high event in an event pair to the signaled state and waits for the low event to be set to the signaled state.\n# Arguments\n\n* `EventPairHandle` - A handle to the event pair object.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtSetHighWaitLowEventPair(EventPairHandle: HANDLE) -> NTSTATUS;
+   #[doc = "The NtCreateMutant routine creates a mutant object, sets the initial state of the mutant to the specified value,\nand opens a handle to the object with the specified desired access.\n# Arguments\n\n* `MutantHandle` - A pointer to a variable that receives the mutant object handle.\n* `DesiredAccess` - The access mask that specifies the requested access to the mutant object.\n* `ObjectAttributes` - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n* `InitialOwner` - If TRUE, the calling thread is the initial owner of the mutant object.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtCreateMutant(
       MutantHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: PCOBJECT_ATTRIBUTES,
       InitialOwner: BOOLEAN,
    ) -> NTSTATUS;
+   #[doc = "The NtOpenMutant routine opens a handle to an existing mutant object.\n# Arguments\n\n* `MutantHandle` - A pointer to a variable that receives the mutant object handle.\n* `DesiredAccess` - The access mask that specifies the requested access to the mutant object.\n* `ObjectAttributes` - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtOpenMutant(
       MutantHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
+   #[doc = "The NtReleaseMutant routine releases ownership of a mutant object.\n# Arguments\n\n* `MutantHandle` - A handle to the mutant object.\n* `PreviousCount` - A pointer to a variable that receives the previous count of the mutant object.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtReleaseMutant(MutantHandle: HANDLE, PreviousCount: PLONG) -> NTSTATUS;
+   #[doc = "The NtQueryMutant routine retrieves information about a mutant object.\n# Arguments\n\n* `MutantHandle` - A handle to the mutant object.\n* `MutantInformationClass` - The type of information to be retrieved.\n* `MutantInformation` - A pointer to a buffer that receives the requested information.\n* `MutantInformationLength` - The size of the buffer pointed to by MutantInformation.\n* `ReturnLength` - A pointer to a variable that receives the size of the data returned in the buffer.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQueryMutant(
       MutantHandle: HANDLE,
       MutantInformationClass: MUTANT_INFORMATION_CLASS,
@@ -75530,6 +75746,7 @@ unsafe extern "C" {
       MutantInformationLength: ULONG,
       ReturnLength: PULONG,
    ) -> NTSTATUS;
+   #[doc = "The NtCreateSemaphore routine creates a semaphore object, sets the initial count of the semaphore to the specified value,\nand opens a handle to the object with the specified desired access.\n# Arguments\n\n* `SemaphoreHandle` - A pointer to a variable that receives the semaphore object handle.\n* `DesiredAccess` - The access mask that specifies the requested access to the semaphore object.\n* `ObjectAttributes` - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n* `InitialCount` - The initial count of the semaphore object.\n* `MaximumCount` - The maximum count of the semaphore object.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtCreateSemaphore(
       SemaphoreHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -75537,16 +75754,19 @@ unsafe extern "C" {
       InitialCount: LONG,
       MaximumCount: LONG,
    ) -> NTSTATUS;
+   #[doc = "The NtOpenSemaphore routine opens a handle to an existing semaphore object.\n# Arguments\n\n* `SemaphoreHandle` - A pointer to a variable that receives the semaphore object handle.\n* `DesiredAccess` - The access mask that specifies the requested access to the semaphore object.\n* `ObjectAttributes` - A pointer to an OBJECT_ATTRIBUTES structure that specifies the object attributes.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtOpenSemaphore(
       SemaphoreHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: PCOBJECT_ATTRIBUTES,
    ) -> NTSTATUS;
+   #[doc = "The NtReleaseSemaphore routine increases the count of the specified semaphore object by a specified amount.\n# Arguments\n\n* `SemaphoreHandle` - A handle to the semaphore object.\n* `ReleaseCount` - The amount by which the semaphore object's count is to be increased.\n* `PreviousCount` - A pointer to a variable that receives the previous count of the semaphore object.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtReleaseSemaphore(
       SemaphoreHandle: HANDLE,
       ReleaseCount: LONG,
       PreviousCount: PLONG,
    ) -> NTSTATUS;
+   #[doc = "The NtQuerySemaphore routine retrieves information about a semaphore object.\n# Arguments\n\n* `SemaphoreHandle` - A handle to the semaphore object.\n* `SemaphoreInformationClass` - The type of information to be retrieved.\n* `SemaphoreInformation` - A pointer to a buffer that receives the requested information.\n* `SemaphoreInformationLength` - The size of the buffer pointed to by SemaphoreInformation.\n* `ReturnLength` - A pointer to a variable that receives the size of the data returned in the buffer.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQuerySemaphore(
       SemaphoreHandle: HANDLE,
       SemaphoreInformationClass: SEMAPHORE_INFORMATION_CLASS,
@@ -75751,9 +75971,9 @@ unsafe extern "C" {
       PacketsReturned: PULONG,
       DeferredWork: PWORKER_FACTORY_DEFERRED_WORK,
    ) -> NTSTATUS;
-   #[doc = "The NtQuerySystemTime routine obtains the current system time.\n# Arguments\n\n* `SystemTime` - A pointer to a LARGE_INTEGER structure that receives the system time. This is a 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 (UTC).\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntquerysystemtime"]
+   #[doc = "The NtQuerySystemTime routine obtains the current system time.\n# Arguments\n\n* `SystemTime` - A pointer to a LARGE_INTEGER structure that receives the system time. This is a 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 (UTC).\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntquerysystemtime](https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntquerysystemtime)"]
    pub fn NtQuerySystemTime(SystemTime: PLARGE_INTEGER) -> NTSTATUS;
-   #[doc = "The NtSetSystemTime routine sets the current system time and date. The system time is expressed in Coordinated Universal Time (UTC).\n# Arguments\n\n* `SystemTime` - A pointer to a LARGE_INTEGER structure that that contains the new system date and time.\n* `PreviousTime` - A pointer to a LARGE_INTEGER structure that that contains the previous system time.\n# Returns\n\nNTSTATUS Successful or errant status.\n> The calling process must have the SE_SYSTEMTIME_NAME privilege.\n# See also\n\n> https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-setsystemtime"]
+   #[doc = "The NtSetSystemTime routine sets the current system time and date. The system time is expressed in Coordinated Universal Time (UTC).\n# Arguments\n\n* `SystemTime` - A pointer to a LARGE_INTEGER structure that that contains the new system date and time.\n* `PreviousTime` - A pointer to a LARGE_INTEGER structure that that contains the previous system time.\n# Returns\n\nNTSTATUS Successful or errant status.\n> The calling process must have the SE_SYSTEMTIME_NAME privilege.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-setsystemtime](https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-setsystemtime)"]
    pub fn NtSetSystemTime(SystemTime: PLARGE_INTEGER, PreviousTime: PLARGE_INTEGER) -> NTSTATUS;
    #[doc = "The NtQueryTimerResolution routine retrieves the range and current value of the system interrupt timer.\n# Arguments\n\n* `MaximumTime` - The maximum timer resolution, in 100-nanosecond units.\n* `MinimumTime` - The minimum timer resolution, in 100-nanosecond units.\n* `CurrentTime` - The current timer resolution, in 100-nanosecond units.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtQueryTimerResolution(
@@ -76530,7 +76750,14 @@ unsafe extern "C" {
       ProcessInformationLength: ULONG,
       ReturnLength: PULONG,
    ) -> NTSTATUS;
-   #[doc = "Retrieves a handle to the next process in the system.\n# Arguments\n\n* `ProcessHandle` - An optional handle to a process. If this parameter is NULL, the function retrieves the first process in the system.\n* `DesiredAccess` - The access rights desired for the new process handle.\n* `HandleAttributes` - The attributes for the new process handle.\n* `Flags` - Flags that modify the behavior of the function. This can be a combination of the following flags:\n- PROCESS_GET_NEXT_FLAGS_PREVIOUS_PROCESS (0x00000001): Retrieve the previous process in the system.\n* `NewProcessHandle` - A pointer to a variable that receives the handle to the next process.\n# Returns\n\nNTSTATUS Successful or errant status."]
+   #[doc = "Sets information for the specified process.\n# Arguments\n\n* `ProcessHandle` - A handle to the process.\n* `ProcessInformationClass` - The type of process information to be set.\n* `ProcessInformation` - A pointer to a buffer that contains the process information.\n* `ProcessInformationLength` - The size of the buffer pointed to by the ProcessInformation parameter.\n# Returns\n\nNTSTATUS Successful or errant status."]
+   pub fn NtSetInformationProcess(
+      ProcessHandle: HANDLE,
+      ProcessInformationClass: PROCESSINFOCLASS,
+      ProcessInformation: PVOID,
+      ProcessInformationLength: ULONG,
+   ) -> NTSTATUS;
+   #[doc = "Retrieves a handle to the next process in the system.\n# Arguments\n\n* `ProcessHandle` - An optional handle to a process. If this parameter is NULL, the function retrieves the first process in the system.\n* `DesiredAccess` - The access rights desired for the new process handle.\n* `HandleAttributes` - The attributes for the new process handle.\n* `Flags` - Flags that modify the behavior of the function. This can be a combination of the following flags:\n- [`PROCESS_GET_NEXT_FLAGS_PREVIOUS_PROCESS`] (0x00000001): Retrieve the previous process in the system.\n* `NewProcessHandle` - A pointer to a variable that receives the handle to the next process.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtGetNextProcess(
       ProcessHandle: HANDLE,
       DesiredAccess: ACCESS_MASK,
@@ -76538,7 +76765,7 @@ unsafe extern "C" {
       Flags: ULONG,
       NewProcessHandle: PHANDLE,
    ) -> NTSTATUS;
-   #[doc = "Retrieves a handle to the next thread in the system.\n# Arguments\n\n* `ProcessHandle` - A handle to the process for enumerateration of threads.\n* `ThreadHandle` - An optional handle to a thread. If this parameter is NULL, the function retrieves the first thread in the process.\n* `DesiredAccess` - The access rights desired for the new process handle.\n* `HandleAttributes` - The attributes for the new process handle.\n* `Flags` - Flags that modify the behavior of the function. This can be a combination of the following flags:\n- THREAD_GET_NEXT_FLAGS_PREVIOUS_THREAD (0x00000001): Retrieve the previous thread in the process.\n* `NewProcessHandle` - A pointer to a variable that receives the handle to the next process.\n# Returns\n\nNTSTATUS Successful or errant status."]
+   #[doc = "Retrieves a handle to the next thread in the system.\n# Arguments\n\n* `ProcessHandle` - A handle to the process for enumerateration of threads.\n* `ThreadHandle` - An optional handle to a thread. If this parameter is NULL, the function retrieves the first thread in the process.\n* `DesiredAccess` - The access rights desired for the new thread handle.\n* `HandleAttributes` - The attributes for the new thread handle.\n* `Flags` - Flags that modify the behavior of the function. This can be a combination of the following flags:\n- [`THREAD_GET_NEXT_FLAGS_PREVIOUS_THREAD`] (0x00000001): Retrieve the previous thread in the process.\n* `NewThreadHandle` - A pointer to a variable that receives the handle to the next thread.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtGetNextThread(
       ProcessHandle: HANDLE,
       ThreadHandle: HANDLE,
@@ -76546,13 +76773,6 @@ unsafe extern "C" {
       HandleAttributes: ULONG,
       Flags: ULONG,
       NewThreadHandle: PHANDLE,
-   ) -> NTSTATUS;
-   #[doc = "Sets information for the specified process.\n# Arguments\n\n* `ProcessHandle` - A handle to the process.\n* `ProcessInformationClass` - The type of process information to be set.\n* `ProcessInformation` - A pointer to a buffer that contains the process information.\n* `ProcessInformationLength` - The size of the buffer pointed to by the ProcessInformation parameter.\n# Returns\n\nNTSTATUS Successful or errant status."]
-   pub fn NtSetInformationProcess(
-      ProcessHandle: HANDLE,
-      ProcessInformationClass: PROCESSINFOCLASS,
-      ProcessInformation: PVOID,
-      ProcessInformationLength: ULONG,
    ) -> NTSTATUS;
    #[doc = "Creates a state change handle for changing the suspension state of a process.\n# Arguments\n\n* `ProcessStateChangeHandle` - A pointer to a variable that receives the handle.\n* `DesiredAccess` - The access rights desired for the handle.\n* `ObjectAttributes` - Optional attributes for the handle.\n* `ProcessHandle` - A handle to the process.\n* `Reserved` - Reserved for future use.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtCreateProcessStateChange(
@@ -76643,7 +76863,9 @@ unsafe extern "C" {
    pub fn NtTestAlert() -> NTSTATUS;
    #[doc = "Sends an alert to the specified thread.\n# Arguments\n\n* `ThreadId` - The thread ID of the thread to be alerted.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtAlertThreadByThreadId(ThreadId: HANDLE) -> NTSTATUS;
+   #[doc = "Sends an alert to the specified thread by its thread ID, with an optional lock.\n# Arguments\n\n* `ThreadId` - The thread ID of the thread to be alerted.\n* `Lock` - An optional pointer to an SRW lock to be used during the alert.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtAlertThreadByThreadIdEx(ThreadId: HANDLE, Lock: PRTL_SRWLOCK) -> NTSTATUS;
+   #[doc = "Sends an alert to multiple threads by their thread IDs.\n# Arguments\n\n* `MultipleThreadId` - A pointer to an array of thread IDs to be alerted.\n* `Count` - The number of thread IDs in the array.\n* `Boost` - A pointer to a boost value to be applied to the threads.\n* `BoostCount` - The number of boost values in the array.\n# Returns\n\nNTSTATUS Successful or errant status."]
    pub fn NtAlertMultipleThreadByThreadId(
       MultipleThreadId: PHANDLE,
       Count: ULONG,
@@ -77158,7 +77380,7 @@ unsafe extern "C" {
       IoCompletionHandle: PHANDLE,
       DesiredAccess: ACCESS_MASK,
       ObjectAttributes: POBJECT_ATTRIBUTES,
-      Count: ULONG,
+      NumberOfConcurrentThreads: ULONG,
    ) -> NTSTATUS;
    pub fn NtOpenIoCompletion(
       IoCompletionHandle: PHANDLE,
@@ -78793,19 +79015,19 @@ unsafe extern "C" {
       PassContext: BOOLEAN,
       AlreadySuspended: BOOLEAN,
    ) -> NTSTATUS;
-   #[doc = "Registers a vectored exception handler.\n# Arguments\n\n* `First` - If this parameter is TRUE, the handler is the first handler in the list.\n* `Handler` - A pointer to the vectored exception handler to be called.\n# Returns\n\nA handle to the vectored exception handler.\n# See also\n\n> https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredexceptionhandler"]
+   #[doc = "Registers a vectored exception handler.\n# Arguments\n\n* `First` - If this parameter is TRUE, the handler is the first handler in the list.\n* `Handler` - A pointer to the vectored exception handler to be called.\n# Returns\n\nA handle to the vectored exception handler.\n# See also\n\n> [https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredexceptionhandler](https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredexceptionhandler)"]
    pub fn RtlAddVectoredExceptionHandler(
       First: ULONG,
       Handler: PVECTORED_EXCEPTION_HANDLER,
    ) -> PVOID;
-   #[doc = "Removes a vectored exception handler.\n# Arguments\n\n* `Handle` - A handle to the vectored exception handler to remove.\n# Returns\n\nThe function returns 0 if the handler is removed, or -1 if the handler is not found.\n# See also\n\n> https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredexceptionhandler"]
+   #[doc = "Removes a vectored exception handler.\n# Arguments\n\n* `Handle` - A handle to the vectored exception handler to remove.\n# Returns\n\nThe function returns 0 if the handler is removed, or -1 if the handler is not found.\n# See also\n\n> [https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredexceptionhandler](https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredexceptionhandler)"]
    pub fn RtlRemoveVectoredExceptionHandler(Handle: PVOID) -> ULONG;
-   #[doc = "Registers a vectored continue handler.\n# Arguments\n\n* `First` - If this parameter is TRUE, the handler is the first handler in the list.\n* `Handler` - A pointer to the vectored exception handler to be called.\n# Returns\n\nA handle to the vectored continue handler.\n# See also\n\n> https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredcontinuehandler"]
+   #[doc = "Registers a vectored continue handler.\n# Arguments\n\n* `First` - If this parameter is TRUE, the handler is the first handler in the list.\n* `Handler` - A pointer to the vectored exception handler to be called.\n# Returns\n\nA handle to the vectored continue handler.\n# See also\n\n> [https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredcontinuehandler](https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-addvectoredcontinuehandler)"]
    pub fn RtlAddVectoredContinueHandler(
       First: ULONG,
       Handler: PVECTORED_EXCEPTION_HANDLER,
    ) -> PVOID;
-   #[doc = "Removes a vectored continue handler.\n# Arguments\n\n* `Handle` - A handle to the vectored continue handler to remove.\n# Returns\n\nThe function returns 0 if the handler is removed, or -1 if the handler is not found.\n# See also\n\n> https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredcontinuehandler"]
+   #[doc = "Removes a vectored continue handler.\n# Arguments\n\n* `Handle` - A handle to the vectored continue handler to remove.\n# Returns\n\nThe function returns 0 if the handler is removed, or -1 if the handler is not found.\n# See also\n\n> [https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredcontinuehandler](https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-removevectoredcontinuehandler)"]
    pub fn RtlRemoveVectoredContinueHandler(Handle: PVOID) -> ULONG;
    pub fn RtlSetUnhandledExceptionFilter(
       UnhandledExceptionFilter: PRTLP_UNHANDLED_EXCEPTION_FILTER,
@@ -79735,16 +79957,16 @@ unsafe extern "C" {
       CapabilityGroupSid: PSID,
       CapabilitySid: PSID,
    ) -> NTSTATUS;
-   #[doc = "The RtlCreateSecurityDescriptor routine initializes a new absolute-format security descriptor.\nOn return, the security descriptor is initialized with no system ACL, no discretionary ACL, no owner, no primary group, and all control flags set to zero.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the buffer for the [`SECURITY_DESCRIPTOR`] to be initialized.\n* `Revision` - Specifies the revision level to assign to the security descriptor. Set this parameter to SECURITY_DESCRIPTOR_REVISION.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlcreatesecuritydescriptor"]
+   #[doc = "The RtlCreateSecurityDescriptor routine initializes a new absolute-format security descriptor.\nOn return, the security descriptor is initialized with no system ACL, no discretionary ACL, no owner, no primary group, and all control flags set to zero.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the buffer for the [`SECURITY_DESCRIPTOR`] to be initialized.\n* `Revision` - Specifies the revision level to assign to the security descriptor. Set this parameter to SECURITY_DESCRIPTOR_REVISION.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlcreatesecuritydescriptor](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlcreatesecuritydescriptor)"]
    pub fn RtlCreateSecurityDescriptor(
       SecurityDescriptor: PSECURITY_DESCRIPTOR,
       Revision: ULONG,
    ) -> NTSTATUS;
-   #[doc = "The RtlValidSecurityDescriptor routine checks a given security descriptor's validity.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the [`SECURITY_DESCRIPTOR`] to be checked.\n# Returns\n\nReturns TRUE if the security descriptor is valid, or FALSE otherwise.\n> The routine checks the validity of an absolute-format security descriptor. To check the validity of a self-relative security descriptor, use the [`RtlValidRelativeSecurityDescriptor`] routine instead.\n# See also\n\n> https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidsecuritydescriptor"]
+   #[doc = "The RtlValidSecurityDescriptor routine checks a given security descriptor's validity.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the [`SECURITY_DESCRIPTOR`] to be checked.\n# Returns\n\nReturns TRUE if the security descriptor is valid, or FALSE otherwise.\n> The routine checks the validity of an absolute-format security descriptor. To check the validity of a self-relative security descriptor, use the [`RtlValidRelativeSecurityDescriptor`] routine instead.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidsecuritydescriptor](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidsecuritydescriptor)"]
    pub fn RtlValidSecurityDescriptor(SecurityDescriptor: PSECURITY_DESCRIPTOR) -> BOOLEAN;
-   #[doc = "The RtlLengthSecurityDescriptor routine returns the size of a given security descriptor.\n# Arguments\n\n* `SecurityDescriptor` - A pointer to a [`SECURITY_DESCRIPTOR`] structure whose length the function retrieves.\n# Returns\n\nReturns the length, in bytes, of the SECURITY_DESCRIPTOR structure.\n# See also\n\n> https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtllengthsecuritydescriptor"]
+   #[doc = "The RtlLengthSecurityDescriptor routine returns the size of a given security descriptor.\n# Arguments\n\n* `SecurityDescriptor` - A pointer to a [`SECURITY_DESCRIPTOR`] structure whose length the function retrieves.\n# Returns\n\nReturns the length, in bytes, of the SECURITY_DESCRIPTOR structure.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtllengthsecuritydescriptor](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtllengthsecuritydescriptor)"]
    pub fn RtlLengthSecurityDescriptor(SecurityDescriptor: PSECURITY_DESCRIPTOR) -> ULONG;
-   #[doc = "The RtlValidRelativeSecurityDescriptor routine checks the validity of a self-relative security descriptor.\n# Arguments\n\n* `SecurityDescriptorInput` - A pointer to the buffer that contains the security descriptor in self-relative format.\nThe buffer must begin with a SECURITY_DESCRIPTOR structure, which is followed by the rest of the security descriptor data.\n* `SecurityDescriptorLength` - The size of the SecurityDescriptorInput structure.\n* `RequiredInformation` - A SECURITY_INFORMATION value that specifies the information that is required to be contained in the security descriptor.\n# Returns\n\nRtlValidRelativeSecurityDescriptor returns TRUE if the security descriptor is valid and includes the information that the RequiredInformation parameter specifies. Otherwise, this routine returns FALSE.\n# See also\n\n> https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidrelativesecuritydescriptor"]
+   #[doc = "The RtlValidRelativeSecurityDescriptor routine checks the validity of a self-relative security descriptor.\n# Arguments\n\n* `SecurityDescriptorInput` - A pointer to the buffer that contains the security descriptor in self-relative format.\nThe buffer must begin with a SECURITY_DESCRIPTOR structure, which is followed by the rest of the security descriptor data.\n* `SecurityDescriptorLength` - The size of the SecurityDescriptorInput structure.\n* `RequiredInformation` - A SECURITY_INFORMATION value that specifies the information that is required to be contained in the security descriptor.\n# Returns\n\nRtlValidRelativeSecurityDescriptor returns TRUE if the security descriptor is valid and includes the information that the RequiredInformation parameter specifies. Otherwise, this routine returns FALSE.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidrelativesecuritydescriptor](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-rtlvalidrelativesecuritydescriptor)"]
    pub fn RtlValidRelativeSecurityDescriptor(
       SecurityDescriptorInput: PSECURITY_DESCRIPTOR,
       SecurityDescriptorLength: ULONG,
@@ -79797,19 +80019,19 @@ unsafe extern "C" {
       Sacl: *mut PACL,
       SaclDefaulted: PBOOLEAN,
    ) -> NTSTATUS;
-   #[doc = "The RtlSetOwnerSecurityDescriptor routine sets the owner information of an absolute-format security descriptor. It replaces any owner information that is already present in the security descriptor.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the SECURITY_DESCRIPTOR structure whose owner is to be set. RtlSetOwnerSecurityDescriptor replaces any existing owner with the new owner.\n* `Owner` - Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.\n- `This` pointer, not the SID structure itself, is copied into the security descriptor.\n- `If` this parameter is NULL, RtlSetOwnerSecurityDescriptor clears the security descriptor's owner information. This marks the security descriptor as having no owner.\n* `OwnerDefaulted` - Set to TRUE if the owner information is derived from a default mechanism.\n- `If` this value is TRUE, it is default information. RtlSetOwnerSecurityDescriptor sets the SE_OWNER_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.\n- `If` this parameter is FALSE, the SE_OWNER_DEFAULTED flag is cleared.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetownersecuritydescriptor"]
+   #[doc = "The RtlSetOwnerSecurityDescriptor routine sets the owner information of an absolute-format security descriptor. It replaces any owner information that is already present in the security descriptor.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the SECURITY_DESCRIPTOR structure whose owner is to be set. RtlSetOwnerSecurityDescriptor replaces any existing owner with the new owner.\n* `Owner` - Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.\n- `This` pointer, not the SID structure itself, is copied into the security descriptor.\n- `If` this parameter is NULL, RtlSetOwnerSecurityDescriptor clears the security descriptor's owner information. This marks the security descriptor as having no owner.\n* `OwnerDefaulted` - Set to TRUE if the owner information is derived from a default mechanism.\n- `If` this value is TRUE, it is default information. RtlSetOwnerSecurityDescriptor sets the SE_OWNER_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.\n- `If` this parameter is FALSE, the SE_OWNER_DEFAULTED flag is cleared.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetownersecuritydescriptor](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetownersecuritydescriptor)"]
    pub fn RtlSetOwnerSecurityDescriptor(
       SecurityDescriptor: PSECURITY_DESCRIPTOR,
       Owner: PSID,
       OwnerDefaulted: BOOLEAN,
    ) -> NTSTATUS;
-   #[doc = "The RtlGetOwnerSecurityDescriptor routine returns the owner information for a given security descriptor.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the SECURITY_DESCRIPTOR structure.\n* `Owner` - Pointer to an address to receive a pointer to the owner security identifier (SID). If the security descriptor does not currently contain an owner SID, Owner receives NULL.\n* `OwnerDefaulted` - Pointer to a Boolean variable that receives TRUE if the owner information is derived from a default mechanism, FALSE otherwise. Valid only if Owner receives a non-NULL value.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlgetownersecuritydescriptor"]
+   #[doc = "The RtlGetOwnerSecurityDescriptor routine returns the owner information for a given security descriptor.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the SECURITY_DESCRIPTOR structure.\n* `Owner` - Pointer to an address to receive a pointer to the owner security identifier (SID). If the security descriptor does not currently contain an owner SID, Owner receives NULL.\n* `OwnerDefaulted` - Pointer to a Boolean variable that receives TRUE if the owner information is derived from a default mechanism, FALSE otherwise. Valid only if Owner receives a non-NULL value.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlgetownersecuritydescriptor](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlgetownersecuritydescriptor)"]
    pub fn RtlGetOwnerSecurityDescriptor(
       SecurityDescriptor: PSECURITY_DESCRIPTOR,
       Owner: *mut PSID,
       OwnerDefaulted: PBOOLEAN,
    ) -> NTSTATUS;
-   #[doc = "The RtlSetGroupSecurityDescriptor routine sets the primary group information of an absolute-format security descriptor. It replaces any primary group information that is already present in the security descriptor.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the SECURITY_DESCRIPTOR structure whose primary group is to be set. RtlSetGroupSecurityDescriptor replaces any existing primary group with the new primary group.\n* `Group` - Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.\n- `This` pointer, not the SID structure itself, is copied into the security descriptor.\n- `If` Group is NULL, RtlSetGroupSecurityDescriptor clears the security descriptor's primary group information. This marks the security descriptor as having no primary group.\n* `GroupDefaulted` - Set this Boolean variable to TRUE if the primary group information is derived from a default mechanism.\n- `If` this parameter is TRUE, RtlSetGroupSecurityDescriptor sets the SE_GROUP_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.\n- `If` this parameter is FALSE, RtlSetGroupSecurityDescriptor clears the SE_GROUP_DEFAULTED flag.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetgroupsecuritydescriptor"]
+   #[doc = "The RtlSetGroupSecurityDescriptor routine sets the primary group information of an absolute-format security descriptor. It replaces any primary group information that is already present in the security descriptor.\n# Arguments\n\n* `SecurityDescriptor` - Pointer to the SECURITY_DESCRIPTOR structure whose primary group is to be set. RtlSetGroupSecurityDescriptor replaces any existing primary group with the new primary group.\n* `Group` - Pointer to a security identifier (SID) structure for the security descriptor's new primary owner.\n- `This` pointer, not the SID structure itself, is copied into the security descriptor.\n- `If` Group is NULL, RtlSetGroupSecurityDescriptor clears the security descriptor's primary group information. This marks the security descriptor as having no primary group.\n* `GroupDefaulted` - Set this Boolean variable to TRUE if the primary group information is derived from a default mechanism.\n- `If` this parameter is TRUE, RtlSetGroupSecurityDescriptor sets the SE_GROUP_DEFAULTED flag in the security descriptor's SECURITY_DESCRIPTOR_CONTROL field.\n- `If` this parameter is FALSE, RtlSetGroupSecurityDescriptor clears the SE_GROUP_DEFAULTED flag.\n# Returns\n\nNTSTATUS Successful or errant status.\n# See also\n\n> [https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetgroupsecuritydescriptor](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlsetgroupsecuritydescriptor)"]
    pub fn RtlSetGroupSecurityDescriptor(
       SecurityDescriptor: PSECURITY_DESCRIPTOR,
       Group: PSID,
@@ -84714,6 +84936,10 @@ unsafe extern "C" {
       ReturnLength: PULONG,
    ) -> NTSTATUS;
    pub fn NtUserGetProcessWindowStation() -> HWND;
+   pub fn NtUserGhostWindowFromHungWindow(WindowHandle: HWND) -> HWND;
+   pub fn NtUserHungWindowFromGhostWindow(WindowHandle: HWND) -> HWND;
+   pub fn GhostWindowFromHungWindow(WindowHandle: HWND) -> HWND;
+   pub fn HungWindowFromGhostWindow(WindowHandle: HWND) -> HWND;
    pub fn NtUserCloseWindowStation(WindowStationHandle: HWINSTA) -> LOGICAL;
    pub fn NtUserSetProcessWindowStation(WindowStationHandle: HWINSTA) -> LOGICAL;
    pub fn SetWindowStationUser(
@@ -84722,6 +84948,8 @@ unsafe extern "C" {
       UserSid: PSID,
       UserSidLength: ULONG,
    ) -> LOGICAL;
+   pub fn NtUserSetChildWindowNoActivate(WindowHandle: HWND) -> LOGICAL;
+   pub fn SetChildWindowNoActivate(WindowHandle: HWND) -> LOGICAL;
    pub fn NtUserSetWindowStationUser(
       WindowStationHandle: HWINSTA,
       UserLogonId: PLUID,
