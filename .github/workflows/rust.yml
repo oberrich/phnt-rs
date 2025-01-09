@@ -46,13 +46,11 @@ jobs:
       with:
         repository: 'nushell/nushell'
         tag: '0.101.0'
-        filename: 'nu-0.101.0-aarch64-pc-windows-msvc.zip'
-        extract: true
-        out-file-path: 'nu-0.101.0-aarch64-pc-windows-msvc'
+        filename: 'nu-0.101.0-aarch64-pc-windows-msvc.exe'
     - if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell
       run: |
-        Add-Content -Path $env:GITHUB_PATH -Value "${{github.workspace}}\nu-0.101.0-aarch64-pc-windows-msvc" -Encoding utf8
+        & "${{github.workspace}}\nu-0.101.0-aarch64-pc-windows-msvc.exe"
 
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
