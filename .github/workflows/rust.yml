@@ -43,6 +43,7 @@ jobs:
         tag: '0.101.0'
         filename: 'nu-0.101.0-aarch64-pc-windows-msvc.msi'
     - name: Install nushell (aarch64)
+      if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell
       run: |
         Start-Process "nu-0.101.0-aarch64-pc-windows-msvc.msi" -ArgumentList "/quiet" -NoNewWindow -Wait
