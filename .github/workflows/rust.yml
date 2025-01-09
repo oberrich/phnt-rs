@@ -51,15 +51,8 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
-        Start-Process -FilePath msiexec.exe -ArgumentList @(
-          '/i', '${{github.workspace}}\nu-0.101.0-${{ matrix.target }}.msi',
-          'ALLUSERS=1',
-          '/qn',
-          '/L*v', 'nu-install.log'
-        ) -NoNewWindow -Wait
-        "C:\Program Files\nu\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        Write-Host "nu installation log:"
-        Get-Content nu-install.log
+        Get-AppxPackage -AllUsers Microsoft.DesktopAppInstaller | Foreach {Add-AppxPackage -Path $_.InstallLocation + '\AppXManifest.xml'}
+        winget install nushell
 
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
