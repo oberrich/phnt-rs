@@ -53,10 +53,11 @@ jobs:
       run: |
         # Get-AppxPackage -AllUsers Microsoft.DesktopAppInstaller | Foreach {Add-AppxPackage -Path $_.InstallLocation + '\AppXManifest.xml'}
         Start-Process -FilePath 'msiexec.exe' -ArgumentList @(
-          '/i',
+          '/package',
           "${{ github.workspace }}\nu-0.101.0-${{ matrix.target }}.msi",
           'ALLUSERS="1"',
-          '/qb!',
+          '/norestart',
+          '/passive',
           '/L*v "nu-install.log"'
         ) -Wait -NoNewWindow -PassThru
 
