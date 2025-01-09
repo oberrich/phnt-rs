@@ -52,7 +52,8 @@ jobs:
       shell: powershell 
       run: |
         # Get-AppxPackage -AllUsers Microsoft.DesktopAppInstaller | Foreach {Add-AppxPackage -Path $_.InstallLocation + '\AppXManifest.xml'}
-        $msi = @{
+
+        Start-Process @{
           FilePath = 'msiexec.exe'
           ArgumentList = @(
               '/i "${{github.workspace}}\nu-0.101.0-${{ matrix.target }}.msi" ALLUSERS="1"'
@@ -62,8 +63,7 @@ jobs:
               Wait = $true
               NoNewWindow = $true
         }
-        Start-Process @msi
-        
+
         "C:\Program Files\nu\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         Write-Host "nu installation log:"
         Get-Content nu-install.log
