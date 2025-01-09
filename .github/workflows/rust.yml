@@ -56,9 +56,10 @@ jobs:
         Get-Content "${{ github.workspace }}\\nu.log"
         "C:\Program Files\nu\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         Write-Host "MSI package installed successfully"
-
-        "C:\Program Files\nu\bin\nu.exe"
-
+    - name: Use nushell
+      if: matrix.os == 'windows-11-preview_aarch64'
+      shell: powershell
+      run: |
         # Download Chocolatey installer via HTTP
         let choco_installer_url = "https://community.chocolatey.org/api/v2/package/chocolatey/chocolatey.2.4.1.nupkg"
         let choco_installer = $"($env.RUNNER_TEMP)\chocolatey.nupkg"
@@ -102,16 +103,16 @@ jobs:
     - name: Extract architecture from target triple and move bindings
       run: |
         def --env set_arch [] {
-          let $arch = "${{ matrix.target }}" | split row '-' | first
+          let $arch = '${{ matrix.target }}' | split row '-' | first
           let $arch = if $arch == 'i686' { 'x86' } else { $arch }
           $env.ARCH = $arch
         }
         
         set_arch;
 
-        let $output = glob target/${{ matrix.target }}/release/build/**/($arch)_bindgen.rs | first
-        cp $output $"src/ffi/($arch)_bindgen.rs"
-        echo $"Moved ($output) to src/ffi/($arch)_bindgen.rs"
+        let $output = glob target/${{ matrix.target }}/release/build/**/($env.ARCH)_bindgen.rs | first
+        cp $output 'src/ffi/${{ env.ARCH }}_bindgen.rs'
+        echo $"Moved ($output) to src/ffi/${{ env.ARCH }}_bindgen.rs"
 
     - name: Upload generated file as artifact
       uses: actions/upload-artifact@v4
