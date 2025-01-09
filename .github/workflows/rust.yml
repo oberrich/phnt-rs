@@ -32,12 +32,6 @@ jobs:
     - if: matrix.os == 'windows-11-preview_aarch64'
       uses: robinraju/release-downloader@v1
       with:
-        repository: 'nushell/nushell'
-        tag: '0.101.0'
-        filename: 'nu-0.101.0-aarch64-pc-windows-msvc.msi'
-    - if: matrix.os == 'windows-11-preview_aarch64'
-      uses: robinraju/release-downloader@v1
-      with:
         repository: 'git-for-windows/git'
         tag: 'v2.48.0-rc1.windows.1'
         filename: 'Git-2.48.0-rc1-arm64.exe'
@@ -47,8 +41,14 @@ jobs:
         repository: 'llvm/llvm-project'
         tag: 'llvmorg-19.1.5'
         filename: 'LLVM-19.1.5-woa64.exe'
-    - name: Use nushell
+    - name: Install nushell
       if: matrix.os == 'windows-11-preview_aarch64'
+      shell: powershell
+      run: |
+        # Install Chocolatey Package Manager
+        Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        choco intall nushell -y --no-progress
+    - name: Use nushell
       run: |
         # Download Chocolatey installer via HTTP
         let choco_installer_url = "https://community.chocolatey.org/api/v2/package/chocolatey/chocolatey.2.4.1.nupkg"
