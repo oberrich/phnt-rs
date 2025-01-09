@@ -58,7 +58,7 @@ jobs:
         Write-Host "MSI package installed successfully"
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
-      shell: powershell
+      shell: nu {0}
       run: |
         # Download Chocolatey installer via HTTP
         let choco_installer_url = "https://community.chocolatey.org/api/v2/package/chocolatey/chocolatey.2.4.1.nupkg"
