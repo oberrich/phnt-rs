@@ -11,7 +11,7 @@ jobs:
   bindgen:
     defaults:
       run:
-        shell: C:\Program Files\nu\bin\nu.exe {0}
+        shell: 'C:\Program Files\nu\bin\nu.exe {0}'
     strategy:
       matrix:
         os: [windows-11-preview_aarch64, windows-2025]
