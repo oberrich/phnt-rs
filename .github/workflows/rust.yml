@@ -54,10 +54,6 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell
       run: |
-        # install chocolatey
-        Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-        # install nushell
-        choco install nushell -y --no-progress
         Add-Content -Path $env:GITHUB_PATH -Value "${{github.workspace}}}\nu-0.101.0-aarch64-pc-windows-msvc\bin" -Encoding utf8
         Add-Content -Path $env:GITHUB_PATH -Value "$env:USERPROFILE\.cargo\bin" -Encoding utf8
     - name: Use nushell
