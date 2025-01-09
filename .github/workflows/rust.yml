@@ -41,7 +41,7 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell
       run: |
-        Add-Content $env:GITHUB_PATH "${{ github.workspace }}/nushell"
+        Add-Content -Path $env:GITHUB_PATH -Value "${{ github.workspace }}\nushell"
         ${{ github.workspace }}/nushell/nu --version
     - if: matrix.os == 'windows-11-preview_aarch64'
       uses: robinraju/release-downloader@v1
