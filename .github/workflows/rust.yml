@@ -58,17 +58,17 @@ jobs:
       run: |
         choco install visualstudio2022buildtools -y --no-progress --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
         echo "Visual Studio 2022 Build Tools (aarch64) installation completed."
-        ^"${{github.workspace}}/LLVM-19.1.5-woa64.exe" "/S" e>| split chars
+        ^"${{github.workspace}}\LLVM-19.1.5-woa64.exe" "/S" e>| split chars
         echo "LLVM 19.1.5 (aarch64) installation completed."
 
-        ^"${{github.workspace}}/Git-2.48.0-rc1-arm64.exe" "/VERYSILENT" e>| split chars
+        ^"${{github.workspace}}\Git-2.48.0-rc1-arm64.exe" "/VERYSILENT" e>| split chars
         for path in ['C:/Program Files/Git/cmd', 'C:/Program Files/Git/bin'] {
           $"{$path}" | save $env.GITHUB_PATH --append
         }
         echo "Git 2.48.0-rc1 (aarch64) installation completed."
         
-        http get "https://win.rustup.rs/aarch64" | save "${{github.workspace}}/rustup-init.exe"
-        ^"${{github.workspace}}/rustup-init.exe" "--default-host" "aarch64-pc-windows-msvc" "--default-toolchain" "nightly" "-y"  e>| split chars
+        http get "https://win.rustup.rs/aarch64" | save "${{github.workspace}}\rustup-init.exe"
+        ^"${{github.workspace}}\rustup-init.exe" "--default-host" "aarch64-pc-windows-msvc" "--default-toolchain" "nightly" "-y"  e>| split chars
         echo "Rust (nightly, aarch64) installation completed."
 
     - name: Install Rust
