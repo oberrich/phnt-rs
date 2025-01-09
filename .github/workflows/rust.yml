@@ -42,6 +42,7 @@ jobs:
       shell: powershell
       run: |
         Add-Content -Path $env:GITHUB_PATH -Value "${{ github.workspace }}/nushell" -Encoding utf8
+        nu --version
     - if: matrix.os == 'windows-11-preview_aarch64'
       uses: robinraju/release-downloader@v1
       with:
