@@ -57,22 +57,24 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
         use std log
+
+        http get "https://win.rustup.rs/aarch64" | save r#'${{github.workspace}}\rustup-init.exe'#
+        do -c { ^r#'${{github.workspace}}\rustup-init.exe'# --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y }
+        log info "Rust (nightly, aarch64) installation completed."
+
         choco install visualstudio2022buildtools -y --no-progress --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621"
         log info "Visual Studio 2022 Build Tools (aarch64) installation completed."
 
-        do -i { ^r#'${{github.workspace}}\LLVM-19.1.5-woa64.exe'# "/S" } | complete
+        log info "Installing LLVM 19.1.5 (aarch64)..."
+        do -c { ^r#'${{github.workspace}}\LLVM-19.1.5-woa64.exe'# "/S" }
         log info "LLVM 19.1.5 (aarch64) installation completed."
 
-        do -i { ^r#'${{github.workspace}}\Git-2.48.0-rc1-arm64.exe'# "/VERYSILENT" } | complete
+        do -c { ^r#'${{github.workspace}}\Git-2.48.0-rc1-arm64.exe'# "/VERYSILENT" }
         for path in ['C:/Program Files/Git/cmd', 'C:/Program Files/Git/bin'] {
           $"{$path}" | save $env.GITHUB_PATH --append
         }
         log info "Git 2.48.0-rc1 (aarch64) installation completed."
         
-        http get "https://win.rustup.rs/aarch64" | save r#'${{github.workspace}}\rustup-init.exe'#
-        do -i { ^r#'${{github.workspace}}\rustup-init.exe'# --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y } | complete
-        log info "Rust (nightly, aarch64) installation completed."
-
     - name: Install Rust
       if: matrix.os != 'windows-11-preview_aarch64'
       uses: dtolnay/rust-toolchain@nightly
