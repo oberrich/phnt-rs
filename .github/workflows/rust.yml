@@ -72,7 +72,7 @@ jobs:
         Add-AppxPackage deps/ARM64/Microsoft.VCLibs.140.00_14.0.33519.0_arm64__8wekyb3d8bbwe.Appx
         Add-AppxPackage deps/Microsoft.UI.Xaml.2.8.arm64.appx
         Add-AppxPackage deps/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
-
+        Repair-WinGetPackageManager -IncludePrerelease
         winget install nushell --accept-package-agreements --accept-source-agreements
 
     - name: Use nushell
