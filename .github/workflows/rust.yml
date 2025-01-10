@@ -68,17 +68,28 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
-        $env:ARCH = '${{matrix.target}}' `
+        $ARCH = '${{matrix.target}}' `
           -replace 'x86_64', 'x64' `
           -replace 'aarch64', 'arm64' `
           -replace 'i686', 'x86' `
           -split '-' | Select-Object -First 1
-        Write-Host $env:ARCH
-        Add-AppxPackage "deps/$($env:ARCH)/Microsoft.VCLibs.140.00.UWPDesktop_14.0.33728.0_$($env:ARCH)__8wekyb3d8bbwe.Appx"
-        Add-AppxPackage "deps/$($env:ARCH)/Microsoft.UI.Xaml.2.8_8.2310.30001.0_$($env:ARCH)__8wekyb3d8bbwe.Appx"
-        Add-AppxPackage deps/Microsoft.UI.Xaml.2.8.arm64.appx
-        Add-AppxPackage deps/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
+          
+        Write-Host "Host architecture: $ARCH"
+        $packages = @(
+          "deps\$ARCH\Microsoft.VCLibs.140.00.UWPDesktop_14.0.33728.0_$ARCH__8wekyb3d8bbwe.Appx",
+          "deps\$ARCH\Microsoft.UI.Xaml.2.8_8.2310.30001.0_$ARCH__8wekyb3d8bbwe.Appx",
+          "deps\Microsoft.UI.Xaml.2.8.$ARCH.appx",
+          "deps\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
+        )
+        
+        Write-Host "Installing dependencies..."
+        $packages | ForEach-Object {
+          Add-AppxPackage $_
+        }
+
+        Write-Host "Upgrading dependencies..."
         winget upgrade --all --accept-source-agreements --accept-package-agreements
+        Write-Host "Installing nushell..."
         winget install -e --id Nushell.Nushell -v 0.94.0 --accept-package-agreements --accept-source-agreements --silent
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
