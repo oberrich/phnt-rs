@@ -68,9 +68,10 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
-        $env:ARCH = ($_ -replace "aarch64", "arm64" -replace "i686", "x86" -split '-' | Select-Object -First 1)
+        $env:ARCH = (${{matrix.os}} -replace "aarch64", "arm64" -replace "i686", "x86" -split '-' | Select-Object -First 1)
         Write-Host $env:ARCH
         Add-AppxPackage "deps/$env:ARCH/Microsoft.VCLibs.140.00.UWPDesktop_14.0.33728.0_$env:ARCH__8wekyb3d8bbwe.Appx"
+        Add-AppxPackage "deps/$env:ARCH/Microsoft.UI.Xaml.2.8_8.2310.30001.0_$env:ARCH__8wekyb3d8bbwe.Appx"
         Add-AppxPackage deps/Microsoft.UI.Xaml.2.8.arm64.appx
         Add-AppxPackage deps/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
         winget upgrade --all --accept-source-agreements --accept-package-agreements
