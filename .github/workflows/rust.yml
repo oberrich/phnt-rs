@@ -86,6 +86,7 @@ jobs:
             $install_file = $dep.Url
           }
           
+          Log "Installing $($dep.Name)..."
           if ($dep.Hash -ne $null) {
             $expected_hash = if ($dep.Hash -like "*.sha256") {
               $hash_file = Join-Path '${{ github.workspace }}' (Split-Path $dep.Hash -Leaf)
@@ -105,7 +106,6 @@ jobs:
               Log "No hash specified, skipping verification."
           }
 
-          Log "Starting installation of $($dep.Name)..."
           try {
             & $dep.Action 2>&1 | Out-Null
             Log "$($dep.Name) installation completed."
