@@ -53,45 +53,50 @@ jobs:
       run: |
         function Install-Package {
           param (
-            [string]$packageUrl,   # URL to download the package from
-            [string]$packageName   # Name of the package (for path management)
+              [string]$packageUrl = $null,   # Optional URL to download the package from
+              [string]$packageName          # Name of the package (for path management)
           )
-          $msixBundlePath = "${{github.workspace}}\$packageName.msixbundle"
-          $archivePath = "$env:RUNNER_TEMP\$packageName.zip"
-          $extractPath = "$env:RUNNER_TEMP\$packageName"
-          $msixPath = "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller.msixbundle"
       
-          Write-Host "Starting package installation for $packageName from $packageUrl"
+          # Use GitHub workspace for temporary paths
+          $msixBundlePath = "$env:GITHUB_WORKSPACE\$packageName.msixbundle"
+          $archivePath = "$env:GITHUB_WORKSPACE\$packageName.zip"
+          $extractPath = "$env:GITHUB_WORKSPACE\$packageName"
+      
+          Write-Host "Starting package installation for $packageName"
       
           if ($packageUrl -like "*nuget*") {
-            Write-Host "Downloading NuGet package"
-            Invoke-WebRequest -Uri $packageUrl -OutFile $archivePath -TimeoutSec 300
-            New-Item -ItemType Directory -Force -Path $extractPath
-            Expand-Archive -Path $archivePath -DestinationPath $extractPath
-            $appxFile = Get-ChildItem -Path "$extractPath\tools\AppX\x64\Release" -Filter "*.appx" | Select-Object -First 1
-            if ($appxFile) {
-              Write-Host "Installing AppX package"
-              Add-AppxPackage -Path $appxFile.FullName
-            } else {
-              Write-Error "No .appx file found"
-            }
-            Remove-Item -Path $archivePath, $extractPath -Recurse
+              Write-Host "Downloading NuGet package from $packageUrl"
+              Invoke-WebRequest -Uri $packageUrl -OutFile $archivePath -TimeoutSec 300
+              New-Item -ItemType Directory -Force -Path $extractPath
+              Expand-Archive -Path $archivePath -DestinationPath $extractPath
+              $appxFile = Get-ChildItem -Path "$extractPath\tools\AppX\x64\Release" -Filter "*.appx" | Select-Object -First 1
+              if ($appxFile) {
+                  Write-Host "Installing AppX package"
+                  Add-AppxPackage -Path $appxFile.FullName
+              } else {
+                  Write-Error "No .appx file found"
+              }
+              Remove-Item -Path $archivePath, $extractPath -Recurse -Force
           }
-          elseif ($packageUrl -like "*msixbundle*") {
-            Write-Host "Installing MSIX bundle"
-            Add-AppxPackage -Path $msixBundlePath
-            Remove-Item -Path "$msixBundlePath" -Force
+          elseif (!$packageUrl) {
+              Write-Host "No package URL provided. Installing MSIX bundle directly from $msixBundlePath."
+              if (Test-Path $msixBundlePath) {
+                  Write-Host "Installing MSIX bundle from local path"
+                  Add-AppxPackage -Path $msixBundlePath
+                  Remove-Item -Path $msixBundlePath -Force
+              } else {
+                  Write-Error "Local MSIX bundle not found at $msixBundlePath"
+              }
           }
           else {
-            Write-Error "Unsupported file type"
+              Write-Error "Unsupported file type or invalid URL: $packageUrl"
           }
         }
 
         $nugetUrl = "https://www.nuget.org/api/v2/package/Microsoft.UI.Xaml/"
-        $msixUrl = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
         
         Install-Package -packageUrl $nugetUrl -packageName "Microsoft.UI.Xaml"
-        Install-Package -packageUrl $msixUrl -packageName "Microsoft.DesktopAppInstaller"
+        Install-Package -packageName "DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
         
         Repair-WinGetPackageManager -IncludePrerelease
         winget install nushell --accept-package-agreements --accept-source-agreements
