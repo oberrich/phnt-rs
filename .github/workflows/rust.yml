@@ -73,12 +73,12 @@ jobs:
           #     Invoke-WebRequest -Uri 'https://win.rustup.rs/aarch64' -OutFile '${{github.workspace}}\rustup-init.exe';
           #     & '${{github.workspace}}\rustup-init.exe' --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
           # }},
-          @{ Name = 'Git 2.48.0-rc1'; Action = {
-            & '${{github.workspace}}\Git-2.48.0-rc1-arm64.exe' /VERYSILENT
-          }},
           # @{ Name = 'LLVM 19.1.5'; Action = {
           #   & '${{github.workspace}}\LLVM-19.1.5-woa64.exe' /S
-          # }}
+          # }},
+          @{ Name = 'Git 2.48.0-rc1'; Action = {
+            & '${{github.workspace}}\Git-2.48.0-rc1-arm64.exe' /VERYSILENT
+          }}
         )
         
         $installs | ForEach-Object {
@@ -109,6 +109,9 @@ jobs:
       with:
         targets: ${{ matrix.target }}
         components: rustfmt
+    
+    - name: Checkout repository
+      uses: actions/checkout@v3
       
     - name: Run tests and generate bindings
       env:
