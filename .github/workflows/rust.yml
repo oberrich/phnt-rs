@@ -65,7 +65,7 @@ jobs:
         $installs | ForEach-Object {
           Log "Downloading $($_.Name) from $($_.Url)..."
           $install_file = Join-Path ${{github.workspace}} (Split-Path $_.Url -Leaf)
-          Invoke-WebRequest -Uri $_.Url -OutFile 
+          Invoke-WebRequest -Uri $_.Url -OutFile $install_file
 
           if ($_.Hash -ne $null) {
               $expected_hash = if ($_.Hash -like "*.sha256") {
@@ -81,6 +81,7 @@ jobs:
                 Log "$($_.Name) hash verified successfully."
               } else {
                 Log "Hash mismatch for $($_.Name). Expected: $expected_hash, Got: $downloaded_hash" -Level "ERROR"
+                exit 1
               }
           } else {
               Log "No hash specified for $($_.Name). Skipping hash verification."
