@@ -55,16 +55,14 @@ jobs:
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
 
         $installs = @(
-          @{ Name = 'Chocolatey'; Url = 'https://chocolatey.org/install.ps1'; Hash = $null; Action = { & "${{github.workspace}}\install.ps1" }},
-          @{ Name = 'Visual Studio 2022 Build Tools (aarch64)';
-             Hash = $null; Url = $null;
-             Action = { choco install visualstudio2022buildtools -y --no-progress --silent --package-parameters '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621' }
-          },
+          @{ Name = 'Chocolatey'; Url = 'https://chocolatey.org/install.ps1'; Hash = $null;
+             Action = { & "${{github.workspace}}\install.ps1" }},
+          @{ Name = 'Visual Studio 2022 Build Tools (aarch64)'; Hash = $null; Url = $null;
+             Action = { choco install visualstudio2022buildtools -y --no-progress --silent --package-parameters '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621' }},
           @{ Name = 'Rust (nightly, aarch64)';
              Url = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe';
              Hash = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe.sha256';
-             Action = { & '${{github.workspace}}\rustup-init.exe' --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y }
-          },
+             Action = { & '${{github.workspace}}\rustup-init.exe' --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y }},
           @{ Name = 'LLVM 19.1.5';
              Url = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.5/LLVM-19.1.5-woa64.exe';
              Hash = '63D479C19C3908F8C973331EDC9B576485EAB6AB0809F58C79DF5D209FDD8F96';
@@ -72,8 +70,7 @@ jobs:
           @{ Name = 'Git 2.48.0-rc1';
              Url = 'https://github.com/git-for-windows/git/releases/download/v2.48.0-rc2.windows.1/Git-2.48.0-rc2-arm64.exe';
              Hash = '712739bb49832d571732e3e74b111d7cb4a63cd622ef3e87d01efe35046d9a4f';
-             Action = { & '${{github.workspace}}\Git-2.48.0-rc2-arm64.exe' /VERYSILENT
-           }}
+             Action = { & '${{github.workspace}}\Git-2.48.0-rc2-arm64.exe' /VERYSILENT }}
         )
 
         $installs | ForEach-Object {
@@ -82,8 +79,7 @@ jobs:
             $install_file = Join-Path ${{github.workspace}} (Split-Path $_.Url -Leaf)
             Invoke-WebRequest -Uri $_.Url -OutFile $install_file
           }
-      
-          # Handle hash verification if provided
+          
           if ($_.Hash -ne $null) {
             $expected_hash = if ($_.Hash -like "*.sha256") {
               $hash_file = Join-Path ${{github.workspace}} (Split-Path $_.Hash -Leaf)
@@ -95,13 +91,13 @@ jobs:
 
             $downloaded_hash = (Get-FileHash -Path $install_file -Algorithm SHA256).Hash
             if ($downloaded_hash -eq $expected_hash) {
-                Log "$($_.Name) hash verified successfully."
+                Log "Hash verified successfully."
             } else {
                 Log "Hash mismatch for $($_.Name). Expected: $expected_hash, Got: $downloaded_hash" -Level "ERROR"
                 exit 1
             }
           } else {
-              Log "No hash specified for $($_.Name). Skipping hash verification."
+              Log "No hash specified, skipping verification."
           }
 
           Log "Starting installation of $($_.Name)..."
@@ -109,10 +105,10 @@ jobs:
               & $_.Action > $null 2>&1
               Log "$($_.Name) installation completed."
           } catch {
-              Log "Failed to install $($_.Name)." -Level "ERROR"
+              Log "Failed to install $($_.Name)." "ERROR"
           }
         }
-      
+        
         $exports = @(
           "$env:ProgramFiles\Git\cmd",       # Git
           "$env:ProgramFiles\Git\bin",       # Bash
@@ -134,6 +130,8 @@ jobs:
     
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
 
     - name: Run tests and generate bindings
       env:
