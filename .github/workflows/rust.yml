@@ -59,7 +59,7 @@ jobs:
              Url = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe';
              Hash = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe.sha256';
              Action = { & './rustup-init.exe' --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y }},
-          @{ Name = 'LLVM 19.1.5'; Url = $null;
+          @{ Name = 'LLVM 19.1.5'; Url = 'LLVM-19.1.5-woa64.exe';
              Hash = '63D479C19C3908F8C973331EDC9B576485EAB6AB0809F58C79DF5D209FDD8F96';
              Action = { & './LLVM-19.1.5-woa64.exe' /S }},
           @{ Name = 'Git 2.48.0-rc1';
@@ -70,10 +70,13 @@ jobs:
 
         $deps | ForEach-Object {
           $dep = $_
-          if ($dep.Url -ne $null) {
+          if ($dep.Url -match "^https?://") {
+            # URL is an HTTPS URL, handle it by downloading
             Log "Downloading $($dep.Name) from $($dep.Url)..."
-            $install_file = Join-Path '${{ github.workspace }}' (Split-Path $dep.Url -Leaf)
+            $install_file = Join-Path "${{ github.workspace }}" (Split-Path $dep.Url -Leaf)
             Invoke-WebRequest -Uri $dep.Url -OutFile $install_file
+          } else {
+            $install_file = Join-Path "${{ github.workspace }}" $dep.Url
           }
           
           if ($dep.Hash -ne $null) {
