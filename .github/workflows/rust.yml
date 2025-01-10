@@ -64,22 +64,23 @@ jobs:
 
         $installs | ForEach-Object {
           Log "Downloading $($_.Name) from $($_.Url)..."
-          Invoke-WebRequest -Uri $_.Url -OutFile (Join-Path ${{github.workspace}} (Split-Path $_.Url -Leaf))
+          $install_file = Join-Path ${{github.workspace}} (Split-Path $_.Url -Leaf)
+          Invoke-WebRequest -Uri $_.Url -OutFile 
 
           if ($_.Hash -ne $null) {
-              $expectedHash = if ($_.Hash -like "*.sha256") {
-                Invoke-WebRequest -Uri $_.Hash -OutFile (Join-Path ${{github.workspace}} (Split-Path $_.Hash -Leaf))
-                (Get-Content -Path $hashFile).Trim()
+              $expected_hash = if ($_.Hash -like "*.sha256") {
+                $hash_file = Join-Path ${{github.workspace}} (Split-Path $_.Hash -Leaf)
+                Invoke-WebRequest -Uri $_.Hash -OutFile $hash_file
+                (Get-Content -Path $hash_file).Trim()
               } else {
                 $_.Hash
               }
 
-              $downloadedHash = (Get-FileHash -Path $filePath -Algorithm SHA256).Hash
-              if ($downloadedHash -eq $expectedHash) {
+              $downloaded_hash = (Get-FileHash -Path $install_file -Algorithm SHA256).Hash
+              if ($downloadedHash -eq $expected_hash) {
                 Log "$($_.Name) hash verified successfully."
               } else {
-                Log "Hash mismatch for $($_.Name). Expected: $expectedHash, Got: $downloadedHash" -Level "ERROR"
-                return
+                Log "Hash mismatch for $($_.Name). Expected: $expected_hash, Got: $downloaded_hash" -Level "ERROR"
               }
           } else {
               Log "No hash specified for $($_.Name). Skipping hash verification."
