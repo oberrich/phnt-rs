@@ -32,22 +32,9 @@ jobs:
     - if: matrix.os == 'windows-11-preview_aarch64'
       uses: robinraju/release-downloader@v1
       with:
-        repository: 'git-for-windows/git'
-        tag: 'v2.48.0-rc1.windows.1'
-        filename: 'Git-2.48.0-rc1-arm64.exe'
-    - if: matrix.os == 'windows-11-preview_aarch64'
-      uses: robinraju/release-downloader@v1
-      with:
         repository: 'llvm/llvm-project'
         tag: 'llvmorg-19.1.5'
         filename: 'LLVM-19.1.5-woa64.exe'
-    - if: matrix.os == 'windows-11-preview_aarch64'
-      uses: robinraju/release-downloader@v1
-      with:
-        repository: 'microsoft/winget-cli'
-        latest: true
-        filename: 'Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle'
-        out-file-path: 'deps'
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
@@ -66,8 +53,8 @@ jobs:
           @{ Name = 'Chocolatey'; Url = 'https://chocolatey.org/install.ps1'; Action = { & "${{github.workspace}}\install.ps1" }},
           @{ Name = 'Visual Studio 2022 Build Tools (aarch64)'; Url = $null; Action = { choco install visualstudio2022buildtools -y --no-progress --silent --package-parameters '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621' }},
           @{ Name = 'Rust (nightly, aarch64)'; Url = 'https://win.rustup.rs/aarch64'; Action = { & '${{github.workspace}}\rustup-init.exe' --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y }},
-          @{ Name = 'LLVM 19.1.5'; Url = $null; Action = { & '${{github.workspace}}\LLVM-19.1.5-woa64.exe' /S }},
-          @{ Name = 'Git 2.48.0-rc1'; Url = $null; Action = { & '${{github.workspace}}\Git-2.48.0-rc1-arm64.exe' /VERYSILENT }}
+          @{ Name = 'LLVM 19.1.5'; Url = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.5/LLVM-19.1.5-woa64.exe'; Action = { & '${{github.workspace}}\LLVM-19.1.5-woa64.exe' /S }},
+          @{ Name = 'Git 2.48.0-rc1'; Url = 'https://github.com/git-for-windows/git/releases/download/v2.48.0-rc2.windows.1/Git-2.48.0-rc2-arm64.exe'; Action = { & '${{github.workspace}}\Git-2.48.0-rc2-arm64.exe' /VERYSILENT }}
         )
         
         $installs | ForEach-Object {
