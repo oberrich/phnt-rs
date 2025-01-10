@@ -66,10 +66,10 @@ jobs:
         ) | ForEach-Object {
             $dep = $_
             if ($dep.Url -ne $null) {
-                Write-Host "Installing package from URL `$($dep.Url)`..."
+                Write-Host "Installing package from URL `$dep.Url`..."
                 Add-AppxPackage -Path $dep.Url
             } else {
-                Write-Host "Installing package from `$($dep.Out)`..."
+                Write-Host "Installing package from `$dep.Out`..."
                 Add-AppxPackage -Path $dep.Out
             }
         }
