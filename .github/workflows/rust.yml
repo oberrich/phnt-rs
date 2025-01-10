@@ -92,7 +92,7 @@ jobs:
 
           Log "Starting installation of $($dep.Name)..."
           try {
-            & $dep.Action
+            & $dep.Action | Out-Null
             Log "$($dep.Name) installation completed."
           } catch {
             Log "An error occurred while installing $($dep.Name): $_" "ERROR"
