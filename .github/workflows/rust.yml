@@ -65,11 +65,8 @@ jobs:
             '${{github.workspace}}/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle'
         )
 
-        $packages | ForEach-Object {
-            $url = $_;
-            Write-Host "Installing package from $url..."
-            Add-AppxPackage -Path $url
-        }
+        Write-Host "Installing Microsoft.DesktopAppInstaller from $($packages[2])..."
+        Add-AppxPackage -Path $packages[2] -DependencyPath $packages[0],$packages[1]
 
         Repair-WinGetPackageManager -IncludePrerelease
         winget install nushell --accept-package-agreements --accept-source-agreements
