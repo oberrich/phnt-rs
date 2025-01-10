@@ -47,60 +47,35 @@ jobs:
         repository: 'microsoft/winget-cli'
         latest: true
         filename: 'Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle'
+
+    - if: matrix.os == 'windows-11-preview_aarch64'
+      uses: robinraju/release-downloader@v1
+      with:
+        repository: 'microsoft/microsoft-ui-xaml'
+        tag: 'v2.8.6'
+        filename: 'Microsoft.UI.Xaml.2.8.ARM64.appx'
     - name: "Install nushell"
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
-        function Install-Package {
-          param (
-              [string]$packageUrl = $null,   # Optional URL to download the package from
-              [string]$packageName          # Name of the package (for path management)
-          )
-      
-          # Use GitHub workspace for temporary paths
-          $msixBundlePath = "${{github.workspace}}\$packageName.msixbundle"
-          $archivePath = "$env:RUNNER_TEMP\$packageName.zip"
-          $extractPath = "$env:RUNNER_TEMP\$packageName"
-      
-          Write-Host "Starting package installation for $packageName"
-      
-          if ($packageUrl -like "*nuget*") {
-              Write-Host "Downloading NuGet package from $packageUrl"
-              Invoke-WebRequest -Uri $packageUrl -OutFile $archivePath -TimeoutSec 300
-              New-Item -ItemType Directory -Force -Path $extractPath
-              Expand-Archive -Path $archivePath -DestinationPath $extractPath
-              $appxFile = Get-ChildItem -Path "$extractPath\tools\AppX\x64\Release" -Filter "*.appx" | Select-Object -First 1
-              if ($appxFile) {
-                  Write-Host "Installing AppX package"
-                  Add-AppxPackage -Path $appxFile.FullName
-                  Get-AppPackageLog -ActivityID 5e05761a-1229-0000-e8b1-6b3afa62db01
-              } else {
-                  Write-Error "No .appx file found"
-              }
-              Remove-Item -Path $archivePath, $extractPath -Recurse -Force
-          }
-          elseif (!$packageUrl) {
-              Write-Host "No package URL provided. Installing MSIX bundle directly from $msixBundlePath."
-              if (Test-Path $msixBundlePath) {
-                  Write-Host "Installing MSIX bundle from local path"
-                  Add-AppxPackage -Path $msixBundlePath
-                  Remove-Item -Path $msixBundlePath -Force
-              } else {
-                  Write-Error "Local MSIX bundle not found at $msixBundlePath"
-              }
-          }
-          else {
-              Write-Error "Unsupported file type or invalid URL: $packageUrl"
-          }
-        }
-
-        $nugetUrl = "https://www.nuget.org/api/v2/package/Microsoft.UI.Xaml/2.8.0/"
+        $msixBundlePath = "${{github.workspace}}\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
+        $archivePath = "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.zip"
+        $extractPath = "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe"
         
-        Install-Package -packageUrl $nugetUrl -packageName "microsoft.ui.xaml.2.8.0"
-        Install-Package -packageName "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe"
+        Write-Host "Starting package installation for Microsoft.DesktopAppInstaller_8wekyb3d8bbwe"
+        
+        # Installing MSIX bundle directly from the provided path
+        if (Test-Path $msixBundlePath) {
+            Write-Host "Installing MSIX bundle from local path"
+            Add-AppxPackage -Path $msixBundlePath
+            Remove-Item -Path $msixBundlePath -Force
+        } else {
+            Write-Error "Local MSIX bundle not found at $msixBundlePath"
+        }
+        
+        Add-AppxPackage ${{github.workspace}}\Microsoft.UI.Xaml.2.8.ARM64.appx
         Repair-WinGetPackageManager -IncludePrerelease
         winget install nushell --accept-package-agreements --accept-source-agreements
-
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
