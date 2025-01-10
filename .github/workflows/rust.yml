@@ -51,9 +51,6 @@ jobs:
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
-        Set-ExecutionPolicy Bypass -Scope Process -Force
-        
-
         function Log {
           param(
             [Parameter(Mandatory=$true)] [string]$Message,
@@ -61,6 +58,8 @@ jobs:
           )
           Write-Host "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [$Level] - $Message"
         }
+        
+        Set-ExecutionPolicy Bypass -Scope Process -Force
 
         $installs = @(
           # @{ Name = 'Chocolatey'; Action = {
@@ -97,7 +96,7 @@ jobs:
         )
 
         $exports | ForEach-Object  {
-          $_ | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Add-Content -Path $env:GITHUB_PATH -Value $_ -Encoding utf8
           Log -Message "Added $_ to GITHUB_PATH"
         }
 
