@@ -63,7 +63,7 @@ jobs:
             @{ Url = 'https://aka.ms/Microsoft.VCLibs.arm64.14.00.Desktop.appx';
                Out = 'Microsoft.VCLibs.arm64.14.00.Desktop.appx' },
             @{ Url = 'https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.arm64.appx';
-               Out = 'Microsoft.UI.Xaml.2.8.x64.appx' },
+               Out = 'Microsoft.UI.Xaml.2.8.arm64.appx' },
             @{ Url = $null;
                Out = '${{github.workspace}}/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' }
         )
