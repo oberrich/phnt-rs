@@ -53,10 +53,10 @@ jobs:
         }
 
         $deps = @(
-          # @{ Name = 'Chocolatey'; Url = 'https://chocolatey.org/install.ps1'; Hash = $null;
-          #   Action = { & .\install.ps1 }},
+          @{ Name = 'Chocolatey'; Url = 'https://chocolatey.org/install.ps1'; Hash = $null;
+            Action = { & .\install.ps1 }},
           # @{ Name = 'Visual Studio 2022 Build Tools (aarch64)'; Hash = $null; Url = $null;
-          #   Action = { & choco install visualstudio2022buildtools -y --no-progress --silent --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621" }},
+          #  Action = { & choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621" -y --no-progress --silent }},
           # @{ Name = 'LLVM 19.1.5';
           #   Url = '${{ github.workspace }}/LLVM-19.1.5-woa64.exe';
           #   Hash = '63D479C19C3908F8C973331EDC9B576485EAB6AB0809F58C79DF5D209FDD8F96';
@@ -68,7 +68,7 @@ jobs:
           @{ Name = 'Git 2.48.0-rc1';
             Url = '${{ github.workspace }}/Git-2.48.0-rc2-arm64.exe';
             Hash = '712739bb49832d571732e3e74b111d7cb4a63cd622ef3e87d01efe35046d9a4f';
-            Action = { & .\Git-2.48.0-rc2-arm64.exe /GitAndUnixToolsOnPath /VERYSILENT }}
+            Action = { choco install git -y --params="'/GitAndUnixToolsOnPath /NoAutoCrlf'" -y --no-progress --silent }}
         )
 
         $deps | ForEach-Object {
