@@ -58,7 +58,6 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
-        $progressPreference = 'silentlyContinue'
         Invoke-WebRequest -Uri 'https://aka.ms/vs/16/release/vc_redist.arm64.exe' -OutFile "${{github.workspace}}/vc_redist.arm64.exe" -UseBasicParsing
         Start-Process -FilePath "${{github.workspace}}/vc_redist.arm64.exe" -ArgumentList "/install", "/quiet", "/norestart" -Wait
         Invoke-WebRequest -Uri 'https://archive.org/download/vclibs-appxs/Microsoft.VCLibs.APPXs.zip/Microsoft.VCLibs.140.00.UWPDesktop_14.0.30704.0_arm64__8wekyb3d8bbwe.Appx' -OutFile "${{github.workspace}}/Microsoft.VCLibs.140.00.UWPDesktop_14.0.30704.0_arm64__8wekyb3d8bbwe.Appx" -UseBasicParsing
