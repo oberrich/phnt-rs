@@ -96,7 +96,7 @@ jobs:
         $nugetUrl = "https://www.nuget.org/api/v2/package/Microsoft.UI.Xaml/"
         
         Install-Package -packageUrl $nugetUrl -packageName "Microsoft.UI.Xaml"
-        Install-Package -packageName "DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
+        Install-Package -packageName "DesktopAppInstaller_8wekyb3d8bbwe"
         
         Repair-WinGetPackageManager -IncludePrerelease
         winget install nushell --accept-package-agreements --accept-source-agreements
