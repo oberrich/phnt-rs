@@ -84,7 +84,8 @@ jobs:
         
         Write-Host "Installing dependencies..."
         $packages | ForEach-Object {
-          Add-AppxPackage $_
+          Write-Host "Installing dependencies..."
+          Add-AppxPackage $_ -Verbose
         }
 
         Write-Host "Upgrading dependencies..."
