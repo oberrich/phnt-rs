@@ -59,13 +59,16 @@ jobs:
       shell: powershell 
       run: |
         $progressPreference = 'silentlyContinue'
-        @(
-            @{ Url = 'https://aka.ms/Microsoft.VCLibs.arm64.14.00.Desktop.appx' },
-            @{ Url = '${{github.workspace}}/Microsoft.UI.Xaml.2.8.arm64.appx' },
-            @{ Url = '${{github.workspace}}/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' }
-        ) | ForEach-Object {
-            Write-Host "Installing package from `$_.Url`..."
-            Add-AppxPackage -Path $_.Url
+        $packages = @(
+            'https://aka.ms/Microsoft.VCLibs.arm64.14.00.Desktop.appx',
+            '${{github.workspace}}/Microsoft.UI.Xaml.2.8.arm64.appx',
+            '${{github.workspace}}/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle'
+        )
+
+        $packages | ForEach-Object {
+            $url = $_;
+            Write-Host "Installing package from $url..."
+            Add-AppxPackage -Path $url
         }
 
         Repair-WinGetPackageManager -IncludePrerelease
