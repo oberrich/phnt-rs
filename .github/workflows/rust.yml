@@ -90,7 +90,7 @@ jobs:
         Write-Host "Upgrading dependencies..."
         winget upgrade --all --accept-source-agreements --accept-package-agreements
         Write-Host "Installing nushell..."
-        winget install -e --id Nushell.Nushell -v 0.94.0 --accept-package-agreements --accept-source-agreements --silent
+        winget install -e --id Nushell.Nushell -v 0.101.0 --accept-package-agreements --accept-source-agreements --silent
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
