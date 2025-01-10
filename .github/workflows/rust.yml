@@ -103,7 +103,7 @@ jobs:
           }
 
           Log "Installing $($dep.Name)..."
-          Start-Process -FilePath $install_file -ArgumentList $dep.ArgumentList -NoNewWindow -Wait
+          Start-Process -FilePath $install_file -ArgumentList $dep.Args -NoNewWindow -Wait
           Log "$($dep.Name) installation completed."
         }
         
