@@ -60,7 +60,7 @@ jobs:
           @{ Name = 'LLVM 19.1.5';
             Url = '${{ github.workspace }}/LLVM-19.1.5-woa64.exe';
             Hash = '63D479C19C3908F8C973331EDC9B576485EAB6AB0809F58C79DF5D209FDD8F96';
-            Action = { & .\LLVM-19.1.5-woa64.exe /GitAndUnixToolsOnPath /S }},
+            Action = { & .\LLVM-19.1.5-woa64.exe /S }},
           @{ Name = 'Rust (nightly, aarch64)';
             Url = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe';
             Hash = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe.sha256';
@@ -68,7 +68,7 @@ jobs:
           @{ Name = 'Git 2.48.0-rc1';
             Url = '${{ github.workspace }}/Git-2.48.0-rc2-arm64.exe';
             Hash = '712739bb49832d571732e3e74b111d7cb4a63cd622ef3e87d01efe35046d9a4f';
-            Action = { & .\Git-2.48.0-rc2-arm64.exe /VERYSILENT }}
+            Action = { & .\Git-2.48.0-rc2-arm64.exe /GitAndUnixToolsOnPath /VERYSILENT }}
         )
 
         $deps | ForEach-Object {
