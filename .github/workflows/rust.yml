@@ -77,7 +77,7 @@ jobs:
         )
 
         $installs | ForEach-Object {
-          if ($_.Url) {
+          if ($_.Url -ne $null) {
             Log "Downloading $($_.Name) from $($_.Url)..."
             $install_file = Join-Path ${{github.workspace}} (Split-Path $_.Url -Leaf)
             Invoke-WebRequest -Uri $_.Url -OutFile $install_file
@@ -102,7 +102,7 @@ jobs:
                 Log "No hash specified for $($_.Name). Skipping hash verification."
             }
           }
-          
+
           Log "Starting installation of $($_.Name)..."
           try {
               & $_.Action > $null 2>&1
