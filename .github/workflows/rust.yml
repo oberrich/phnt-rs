@@ -63,7 +63,7 @@ jobs:
         repository: 'microsoft/microsoft-ui-xaml'
         tag: 'v2.8.6'
         filename: 'Microsoft.UI.Xaml.2.8.arm64.appx'
-        out-file-path: 'deps/Microsoft.UI.Xaml.2.8.arm64.appx'
+        out-file-path: 'deps'
     - name: "Install nushell"
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
