@@ -91,7 +91,7 @@ jobs:
 
           Log "Starting installation of $($_.Name)..."
           try {
-            & $_.Action > $null 2>&1
+            & $_.Action | Out-Null
             Log "$($_.Name) installation completed."
           } catch {
             Log "Failed to install $($_.Name)" -Level "ERROR"
