@@ -60,18 +60,12 @@ jobs:
       run: |
         $progressPreference = 'silentlyContinue'
         @(
-            @{ Url = 'https://aka.ms/Microsoft.VCLibs.arm64.14.00.Desktop.appx'; Out = 'Microsoft.VCLibs.arm64.14.00.Desktop.appx' },
-            @{ Url = 'https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.arm64.appx'; Out = 'Microsoft.UI.Xaml.2.8.arm64.appx' },
-            @{ Url = $null; Out = '${{github.workspace}}Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' }
+            @{ Url = 'https://aka.ms/Microsoft.VCLibs.arm64.14.00.Desktop.appx' },
+            @{ Url = '${{github.workspace}}/Microsoft.UI.Xaml.2.8.arm64.appx' },
+            @{ Url = '${{github.workspace}}/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' }
         ) | ForEach-Object {
-            $dep = $_
-            if ($dep.Url -ne $null) {
-                Write-Host "Installing package from URL `$dep.Url`..."
-                Add-AppxPackage -Path $dep.Url
-            } else {
-                Write-Host "Installing package from `$dep.Out`..."
-                Add-AppxPackage -Path $dep.Out
-            }
+            Write-Host "Installing package from `$_.Url`..."
+            Add-AppxPackage -Path $_.Url
         }
 
         Repair-WinGetPackageManager -IncludePrerelease
