@@ -68,7 +68,7 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
-        $env:ARCH = "x86_64-pc-windows-msvc" `
+        $env:ARCH = '${{matrix.target}}' `
           -replace 'x86_64', 'x64' `
           -replace 'aarch64', 'arm64' `
           -replace 'i686', 'x86' `
