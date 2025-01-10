@@ -25,17 +25,7 @@ jobs:
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
-    - if: matrix.os != 'windows-11-preview_aarch64'
-      uses: hustcer/setup-nu@main
-      with:
-        version: '*'
-    - if: matrix.os == 'windows-11-preview_aarch64'
-      uses: robinraju/release-downloader@v1
-      with:
-        repository: 'llvm/llvm-project'
-        tag: 'llvmorg-19.1.5'
-        filename: 'LLVM-19.1.5-woa64.exe'
-    - name: Use nushell
+    - name: Install Build Tools
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
         function Log {
