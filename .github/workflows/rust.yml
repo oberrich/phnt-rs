@@ -51,6 +51,9 @@ jobs:
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        
+
         function Log {
           param(
             [Parameter(Mandatory=$true)] [string]$Message,
@@ -95,7 +98,7 @@ jobs:
 
         $exports | ForEach-Object  {
           $_ | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          Log -Message "Added $_ to \$GITHUB_PATH"
+          Log -Message "Added $_ to GITHUB_PATH"
         }
 
     - name: Install Rust
