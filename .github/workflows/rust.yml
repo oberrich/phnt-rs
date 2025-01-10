@@ -66,9 +66,9 @@ jobs:
         )
 
         Invoke-WebRequest -Uri 'https://aka.ms/Microsoft.VCLibs.arm64.14.00.Desktop.appx' -OutFile "${{github.workspace}}/Microsoft.VCLibs.arm64.14.00.Desktop.appx" -UseBasicParsing
-        Add-AppxPackage -Path "${{github.workspace}}/Microsoft.VCLibs.arm64.14.00.Desktop.appx"
-        Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe 
-        Add-AppxPackage -Path "${{github.workspace}}/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
+        Add-AppxPackage Microsoft.VCLibs.x64.14.00.Desktop.appx
+        Add-AppxPackage Microsoft.UI.Xaml.2.8.x64.appx
+        Add-AppxPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
 
         Repair-WinGetPackageManager -IncludePrerelease
         winget install nushell --accept-package-agreements --accept-source-agreements
