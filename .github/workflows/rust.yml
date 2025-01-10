@@ -81,9 +81,8 @@ jobs:
           "deps\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
         )
         
-        Write-Host "Installing dependencies..."
         $packages | ForEach-Object {
-          Write-Host "Installing dependencies..."
+          Write-Host "Installing package: $(Split-Path $_ -LeafBase)"
           Add-AppxPackage $_ -Verbose
         }
 
