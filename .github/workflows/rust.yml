@@ -60,21 +60,25 @@ jobs:
       run: |
         $progressPreference = 'silentlyContinue'
         $packages = @(
+            'https://aka.ms/vs/16/release/vc_redist.arm64.exe',
             '${{github.workspace}}/Microsoft.UI.Xaml.2.8.arm64.appx',
             '${{github.workspace}}/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle'
         )
 
         foreach ($package in $packages) {
-          Write-Host "Installing package from $package..."
-      
-          # If it's the Desktop App Installer, install it with dependencies
-          if ($package -eq '${{github.workspace}}/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle') {
-              Add-AppxPackage -Path $package -DependencyPath 'https://archive.org/download/microsoft.vclibs.140.00-14.0.29231.0-8wekyb3d8bbwe.appx/Microsoft.VCLibs.140.00_14.0.29231.0_arm64__8wekyb3d8bbwe.Appx', '${{github.workspace}}/Microsoft.UI.Xaml.2.8.arm64.appx'
-          }
-          else {
-              # Install the other packages without dependencies
-              Add-AppxPackage -Path $package
-          }
+            Write-Host "Installing package from $package..."
+            if ($package -match '\.exe$') {
+                $exePath = "$env:RUNNER_TEMP\$(Split-Path -Leaf $package)"
+                
+                Write-Host "Downloading $package to $exePath..."
+                Invoke-WebRequest -Uri $package -OutFile $exePath
+
+                Write-Host "Running EXE installer silently: $exePath"
+                Start-Process -FilePath $exePath -ArgumentList '/quiet', '/norestart' -Wait
+            } elseif ($package -match '\.appx$' -or $package -match '\.msixbundle$') {
+                Write-Host "Installing package: $package"
+                Add-AppxPackage -Path $package
+            }
         }
         
         Repair-WinGetPackageManager -IncludePrerelease
