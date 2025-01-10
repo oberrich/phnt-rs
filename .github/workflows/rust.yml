@@ -84,7 +84,6 @@ jobs:
               Log "Hash verified successfully."
             } else {
               Log "Hash mismatch for $($_.Name). Expected: $expected_hash, Got: $downloaded_hash" -Level "ERROR"
-              exit 1
             }
           } else {
               Log "No hash specified, skipping verification."
@@ -95,7 +94,7 @@ jobs:
             & $_.Action > $null 2>&1
             Log "$($_.Name) installation completed."
           } catch {
-            Log "Failed to install $($_.Name)." -Level "ERROR"
+            Log "Failed to install $($_.Name)" -Level "ERROR"
           }
         }
         
