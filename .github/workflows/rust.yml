@@ -72,6 +72,7 @@ jobs:
             Hash = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe.sha256';
             Args = @('--default-host', 'aarch64-pc-windows-msvc', '--default-toolchain', 'nightly', '-y') }
         )
+
         
         $deps | ForEach-Object {
           $dep = $_
