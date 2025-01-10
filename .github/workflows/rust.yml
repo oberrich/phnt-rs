@@ -59,8 +59,7 @@ jobs:
       shell: powershell 
       run: |
         $progressPreference = 'silentlyContinue'
-
-        $files = @(
+        $deps = @(
             @{ Url = 'https://aka.ms/Microsoft.VCLibs.arm64.14.00.Desktop.appx';
                Out = 'Microsoft.VCLibs.arm64.14.00.Desktop.appx' },
             @{ Url = 'https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.arm64.appx';
@@ -69,14 +68,14 @@ jobs:
                Out = '${{github.workspace}}/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' }
         )
 
-        foreach ($file in $files) {
-            if ($file.Url -nq $null) {
-              Write-Host "Downloading $($file.Out)..."
-              Invoke-WebRequest -Uri $file.Url -Url $file.Out
+        foreach ($dep in $deps) {
+            if ($dep.Url -ne $null) {
+              Write-Host "Downloading $($dep.Out)..."
+              Invoke-WebRequest -Uri $dep.Url -Url $dep.Out
             }
             
-            Write-Host "Installing package `$($file.Out)`..."
-            Add-AppxPackage -Path $file.Out
+            Write-Host "Installing package `$($dep.Out)`..."
+            Add-AppxPackage -Path $dep.Out
         }
 
         Repair-WinGetPackageManager -IncludePrerelease
