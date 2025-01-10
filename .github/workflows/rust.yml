@@ -60,12 +60,6 @@ jobs:
         }
 
         $installs = @(
-          @{ Name = 'LLVM 19.1.5', Action = {
-            & '${{github.workspace}}\LLVM-19.1.5-woa64.exe' /S
-          }},
-          @{ Name = 'Git 2.48.0-rc1'; Action = {
-            & '${{github.workspace}}\Git-2.48.0-rc1-arm64.exe' /VERYSILENT
-          }},
           @{ Name = 'Chocolatey'; Action = {
               Set-ExecutionPolicy Bypass -Scope Process -Force
               [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
@@ -77,6 +71,12 @@ jobs:
           @{ Name = 'Rust (nightly, aarch64)'; Action = {
               Invoke-WebRequest -Uri 'https://win.rustup.rs/aarch64' -OutFile '${{github.workspace}}\rustup-init.exe';
               & '${{github.workspace}}\rustup-init.exe' --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
+          }},
+          @{ Name = 'Git 2.48.0-rc1'; Action = {
+            & '${{github.workspace}}\Git-2.48.0-rc1-arm64.exe' /VERYSILENT
+          }},
+          @{ Name = 'LLVM 19.1.5'; Action = {
+            & '${{github.workspace}}\LLVM-19.1.5-woa64.exe' /S
           }}
         )
         
