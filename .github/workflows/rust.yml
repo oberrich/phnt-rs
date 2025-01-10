@@ -63,12 +63,12 @@ jobs:
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
 
         $installs = @(
-          # @{ Name = 'Chocolatey'; Action = {
-          #     iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1')) 2>$null
-          # }},
-          # @{ Name = 'Visual Studio 2022 Build Tools (aarch64)'; Action = {
-          #     choco install visualstudio2022buildtools -y --no-progress --silent --package-parameters '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621'
-          # }},
+          @{ Name = 'Chocolatey'; Action = {
+            iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+          }},
+          @{ Name = 'Visual Studio 2022 Build Tools (aarch64)'; Action = {
+              choco install visualstudio2022buildtools -y --no-progress --silent --package-parameters '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621'
+          }},
           @{ Name = 'Rust (nightly, aarch64)'; Action = {
               Invoke-WebRequest -Uri 'https://win.rustup.rs/aarch64' -OutFile '${{github.workspace}}\rustup-init.exe';
               & '${{github.workspace}}\rustup-init.exe' --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
@@ -84,7 +84,7 @@ jobs:
         $installs | ForEach-Object {
           Log "Starting installation of $($_.Name)..."
           try {
-            & $_.Action 2>$null
+            & $_.Action > $null 2>&1
             Log "$($_.Name) installation completed."
           } catch {
             Log "Failed to install $($_.Name)."
