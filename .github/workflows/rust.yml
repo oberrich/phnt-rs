@@ -87,7 +87,20 @@ jobs:
         }
 
         Write-Host "Installing nushell..."
-        winget install -e --id Nushell.Nushell -v 0.101.0 --accept-package-agreements --accept-source-agreements --silent
+        winget install -e --id Nushell.Nushell -v 0.101.0 --accept-package-agreements --accept-source-agreements --silent -ErrorAction SilentlyContinue
+
+        # Define the log file path using a glob pattern
+        $logPattern = "C:\Users\runneradmin\AppData\Local\Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\DiagOutputDir\WinGet-Nushell.Nushell*.log"
+
+        # Get the most recent log file matching the pattern (if there are multiple matches)
+        $logFile = Get-ChildItem -Path $logPattern | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+
+        # Output the log file contents
+        if ($logFile) {
+            Get-Content $logFile.FullName
+        } else {
+            Write-Host "No log file found matching the pattern."
+        }
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
