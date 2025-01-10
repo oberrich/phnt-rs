@@ -86,6 +86,8 @@ jobs:
           Add-AppxPackage $_ -Verbose
         }
 
+        Write-Host "Updating packages..."
+        winget update --all --silent
         Write-Host "Installing nushell..."
         winget install Nushell.Nushell --architecture arm64 --override "ALLUSERS=1" --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
 
