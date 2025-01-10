@@ -41,6 +41,12 @@ jobs:
         repository: 'llvm/llvm-project'
         tag: 'llvmorg-19.1.5'
         filename: 'LLVM-19.1.5-woa64.exe'
+    - if: matrix.os == 'windows-11-preview_aarch64'
+      uses: robinraju/release-downloader@v1
+      with:
+        repository: 'microsoft/winget-cli'
+        latest: true
+        filename: 'Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle'
     - name: "Install nushell"
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
@@ -50,7 +56,7 @@ jobs:
             [string]$packageUrl,   # URL to download the package from
             [string]$packageName   # Name of the package (for path management)
           )
-          $msixBundlePath = "$env:RUNNER_TEMP\$packageName.msixbundle"
+          $msixBundlePath = "${{github.workspace}}\$packageName.msixbundle"
           $archivePath = "$env:RUNNER_TEMP\$packageName.zip"
           $extractPath = "$env:RUNNER_TEMP\$packageName"
           $msixPath = "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller.msixbundle"
@@ -72,8 +78,6 @@ jobs:
             Remove-Item -Path $archivePath, $extractPath -Recurse
           }
           elseif ($packageUrl -like "*msixbundle*") {
-            Write-Host "Downloading MSIX bundle"
-            Invoke-WebRequest -Uri $packageUrl -OutFile $msixBundlePath -TimeoutSec 300
             Write-Host "Installing MSIX bundle"
             Add-AppxPackage -Path $msixBundlePath
             Remove-Item -Path "$msixBundlePath" -Force
