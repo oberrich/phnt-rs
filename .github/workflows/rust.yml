@@ -53,9 +53,6 @@ jobs:
         }
 
         $deps = @(
-          @{ Name = 'Chocolatey'; Hash = $null;
-            Url = 'https://chocolatey.org/install.ps1';
-            Args = @('-NoProfile', '-ExecutionPolicy Bypass', '-File', '${{github.workspace}}/install.ps1') },
           @{ Name = 'Visual Studio 2022 Build Tools (aarch64)'; Hash = $null;
             Url = 'https://aka.ms/vs/17/release/vs_buildtools.exe';
             Args = @('/S', '--add', 'Microsoft.VisualStudio.Component.VC.Tools.ARM64', '--add', 'Microsoft.VisualStudio.Component.Windows11SDK.22621') },
