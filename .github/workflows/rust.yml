@@ -40,11 +40,7 @@ jobs:
     - name: Install Build Tools
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
-        function Log {
-          param(
-            [Parameter(Mandatory=$true)] [string]$Message,
-            [string]$Level = "INFO"
-          )
+        function Log { param([string]$Message, [string]$Level = "INFO")
           $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
           if ($Level -eq "ERROR") {
             Write-Host "$timestamp [ERROR] - $Message" -ForegroundColor Red
@@ -52,10 +48,10 @@ jobs:
             Write-Host "$timestamp [$Level] - $Message"
           }
         }
-        
+
         Set-ExecutionPolicy Bypass -Scope Process -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-
+        
         $deps = @(
           @{ Name = 'Chocolatey'; Url = 'https://chocolatey.org/install.ps1'; Hash = $null;
              Action = { & './install.ps1' }},
@@ -78,8 +74,7 @@ jobs:
         $deps | ForEach-Object {
           $dep = $_
           if ($dep.Url -match "^https?://") {
-            # URL is an HTTPS URL, handle it by downloading
-            Log "Downloading $($dep.Name) from $($dep.Url)..."
+            Log "Downloading $($dep.Name) from '$($dep.Url)'..."
             $install_file = Join-Path "${{ github.workspace }}" (Split-Path $dep.Url -Leaf)
             Invoke-WebRequest -Uri $dep.Url -OutFile $install_file
           } else {
