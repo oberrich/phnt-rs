@@ -87,7 +87,7 @@ jobs:
         }
 
         Write-Host "Updating packages..."
-        winget update --all --silent
+        winget upgrade --all --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
         Write-Host "Installing nushell..."
         winget install Nushell.Nushell --architecture arm64 --override "ALLUSERS=1" --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
 
