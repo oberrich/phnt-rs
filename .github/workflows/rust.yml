@@ -98,7 +98,7 @@ jobs:
 
           Log "Starting installation of $($dep.Name)..."
           try {
-            Start-Process $dep.Action -RedirectStandardOutput $null -NoNewWindow -Wait
+            & $dep.Action 2>&1 | Out-Null
             Log "$($dep.Name) installation completed."
           } catch {
             Log "An error occurred while installing $($dep.Name): $_" "ERROR"
