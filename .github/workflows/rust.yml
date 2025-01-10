@@ -47,6 +47,15 @@ jobs:
         repository: 'microsoft/winget-cli'
         latest: true
         filename: 'Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle'
+        out-file-path: 'deps'
+    - if: matrix.os == 'windows-11-preview_aarch64'
+      uses: robinraju/release-downloader@v1
+      with:
+        repository: 'MrKristofere/WSA-with-GApps-Releases'
+        tag: 'wsap-2407.40000.4.0'
+        extract: true
+        filename: 'Deps.for.WSA.zip'
+        out-file-path: 'deps'
 
     - if: matrix.os == 'windows-11-preview_aarch64'
       uses: robinraju/release-downloader@v1
@@ -54,17 +63,15 @@ jobs:
         repository: 'microsoft/microsoft-ui-xaml'
         tag: 'v2.8.6'
         filename: 'Microsoft.UI.Xaml.2.8.arm64.appx'
+        out-file-path: 'deps'
     - name: "Install nushell"
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
-        Invoke-WebRequest -Uri 'https://aka.ms/vs/16/release/vc_redist.arm64.exe' -OutFile "${{github.workspace}}/vc_redist.arm64.exe" -UseBasicParsing
-        Start-Process -FilePath "${{github.workspace}}/vc_redist.arm64.exe" -ArgumentList "/install", "/quiet", "/norestart" -Wait
-        Invoke-WebRequest -Uri 'https://archive.org/download/vclibs-appxs/Microsoft.VCLibs.APPXs.zip/Microsoft.VCLibs.140.00.UWPDesktop_14.0.30704.0_arm64__8wekyb3d8bbwe.Appx' -OutFile "${{github.workspace}}/Microsoft.VCLibs.140.00.UWPDesktop_14.0.30704.0_arm64__8wekyb3d8bbwe.Appx" -UseBasicParsing
-
-        Add-AppxPackage Microsoft.VCLibs.140.00.UWPDesktop_14.0.30704.0_arm64__8wekyb3d8bbwe.Appx
-        Add-AppxPackage Microsoft.UI.Xaml.2.8.arm64.appx
-        Add-AppxPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
+        Add-AppxPackage deps/ARM64/Microsoft.VCLibs.140.00.UWPDesktop_14.0.33728.0_arm64__8wekyb3d8bbwe.Appx
+        Add-AppxPackage deps/ARM64/Microsoft.VCLibs.140.00_14.0.33519.0_arm64__8wekyb3d8bbwe.Appx
+        Add-AppxPackage deps/Microsoft.UI.Xaml.2.8.arm64.appx
+        Add-AppxPackage deps/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
 
         Repair-WinGetPackageManager -IncludePrerelease
         winget install nushell --accept-package-agreements --accept-source-agreements
