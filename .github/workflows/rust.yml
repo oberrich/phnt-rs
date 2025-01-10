@@ -59,17 +59,7 @@ jobs:
           Write-Host "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [$Level] - $Message"
         }
 
-        function Install {
-          param(
-            [Parameter(Mandatory=$true)] [string]$Name,
-            [Parameter(Mandatory=$true)] [scriptblock]$Action,
-            [string]$Level = "INFO"
-          )
-
-          Log -Level $Level -Message "Installing $SoftwareName..."
-          &$Action
-          Log -Level $Level -Message "$SoftwareName installation completed."
-        }
+        Export-ModuleMember -Function Log
 
         $installs = @(
             @{ Name = 'LLVM 19.1.5 (aarch64)'; Action = { & '${{github.workspace}}\LLVM-19.1.5-woa64.exe' /S } },
