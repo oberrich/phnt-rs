@@ -66,13 +66,13 @@ jobs:
         $installs | ForEach-Object {
           if ($_.Url -ne $null) {
             Log "Downloading $($_.Name) from $($_.Url)..."
-            $install_file = Join-Path ${{github.workspace}} (Split-Path $_.Url -Leaf)
+            $install_file = Join-Path '${{ github.workspace }}' (Split-Path $_.Url -Leaf)
             Invoke-WebRequest -Uri $_.Url -OutFile $install_file
           }
           
           if ($_.Hash -ne $null) {
             $expected_hash = if ($_.Hash -like "*.sha256") {
-              $hash_file = Join-Path ${{github.workspace}} (Split-Path $_.Hash -Leaf)
+              $hash_file = Join-Path '${{ github.workspace }}' (Split-Path $_.Hash -Leaf)
               Invoke-WebRequest -Uri $_.Hash -OutFile $hash_file
               (Get-Content -Path $hash_file).Trim()
             } else {
