@@ -59,15 +59,25 @@ jobs:
       shell: powershell 
       run: |
         $progressPreference = 'silentlyContinue'
-        $package = '${{github.workspace}}/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle';
-        $deps = @(
+        $packages = @(
+            'https://aka.ms/Microsoft.VCLibs.arm64.14.00.Desktop.appx',
             '${{github.workspace}}/Microsoft.UI.Xaml.2.8.arm64.appx',
-            'https://aka.ms/Microsoft.VCLibs.arm64.14.00.Desktop.appx'
+            '${{github.workspace}}/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle'
         )
 
-        Write-Host "Installing Microsoft.DesktopAppInstaller from "
-        Add-AppxPackage -Path $package -DependencyPath $deps
-
+        foreach ($package in $packages) {
+          Write-Host "Installing package from $package..."
+      
+          # If it's the Desktop App Installer, install it with dependencies
+          if ($package -eq '${{github.workspace}}/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle') {
+              Add-AppxPackage -Path $package -DependencyPath 'https://aka.ms/Microsoft.VCLibs.arm64.14.00.Desktop.appx', '${{github.workspace}}/Microsoft.UI.Xaml.2.8.arm64.appx'
+          }
+          else {
+              # Install the other packages without dependencies
+              Add-AppxPackage -Path $package
+          }
+        }
+        
         Repair-WinGetPackageManager -IncludePrerelease
         winget install nushell --accept-package-agreements --accept-source-agreements
 
