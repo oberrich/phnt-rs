@@ -59,8 +59,6 @@ jobs:
           Write-Host "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [$Level] - $Message"
         }
 
-        Export-ModuleMember -Function Log
-
         $installs = @(
             @{ Name = 'LLVM 19.1.5'; Action = { & '${{github.workspace}}\LLVM-19.1.5-woa64.exe' /S } },
             @{ Name = 'Git 2.48.0-rc1'; Action = { & '${{github.workspace}}\Git-2.48.0-rc1-arm64.exe' /VERYSILENT } },
