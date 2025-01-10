@@ -72,7 +72,7 @@ jobs:
         
         $installs | ForEach-Object {
           if ($_.Url -ne $null) {
-            Write-Host "Downloading $_.Name from $_.Url..."
+            Write-Host "Downloading $($_.Name) from $($_.Url)..."
             Invoke-WebRequest -Uri $_.Url -OutFile ("${{github.workspace}}\" + (Split-Path $_.Url -Leaf))
           }
 
@@ -122,7 +122,7 @@ jobs:
         
         $output = Get-ChildItem -Path "target/${{ matrix.target }}/release/build/**/$($arch)_bindgen.rs" -Recurse | Select-Object -First 1
         Copy-Item -Path $output.FullName -Destination "src/ffi/$($arch)_bindgen.rs"
-        Log "Moved $output to src/ffi/$($arch)_bindgen.rs"
+        Write-Host "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [INFO] - Moved $output to src/ffi/$($arch)_bindgen.rs"
 
     - name: Upload generated file as artifact
       uses: actions/upload-artifact@v4
