@@ -62,7 +62,7 @@ jobs:
         Invoke-WebRequest -Uri 'https://aka.ms/vs/16/release/vc_redist.arm64.exe' -OutFile "${{github.workspace}}/vc_redist.arm64.exe" -UseBasicParsing
         Start-Process -FilePath "${{github.workspace}}/vc_redist.arm64.exe" -ArgumentList "/install", "/quiet", "/norestart" -Wait
         
-        Add-AppxPackage Microsoft.VCLibs.arm64.14.00.Desktop.appx
+        Add-AppxPackage https://archive.org/download/vclibs-appxs/Microsoft.VCLibs.APPXs.zip/Microsoft.VCLibs.140.00.UWPDesktop_14.0.30704.0_arm64__8wekyb3d8bbwe.Appx
         Add-AppxPackage Microsoft.UI.Xaml.2.8.arm64.appx
         Add-AppxPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
 
