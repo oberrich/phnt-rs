@@ -56,37 +56,53 @@ jobs:
 
         $installs = @(
           @{ Name = 'Chocolatey'; Url = 'https://chocolatey.org/install.ps1'; Hash = $null; Action = { & "${{github.workspace}}\install.ps1" }},
-          @{ Name = 'Visual Studio 2022 Build Tools (aarch64)'; Hash = $null; Url = $null; Action = { choco install visualstudio2022buildtools -y --no-progress --silent --package-parameters '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621' }},
-          @{ Name = 'Rust (nightly, aarch64)'; Url = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe'; Hash = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe.sha256'; Action = { & '${{github.workspace}}\rustup-init.exe' --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y }},
-          @{ Name = 'LLVM 19.1.5'; Url = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.5/LLVM-19.1.5-woa64.exe'; Hash = '63D479C19C3908F8C973331EDC9B576485EAB6AB0809F58C79DF5D209FDD8F96'; Action = { & '${{github.workspace}}\LLVM-19.1.5-woa64.exe' /S }},
-          @{ Name = 'Git 2.48.0-rc1'; Url = 'https://github.com/git-for-windows/git/releases/download/v2.48.0-rc2.windows.1/Git-2.48.0-rc2-arm64.exe'; Hash = '712739bb49832d571732e3e74b111d7cb4a63cd622ef3e87d01efe35046d9a4f'; Action = { & '${{github.workspace}}\Git-2.48.0-rc2-arm64.exe' /VERYSILENT }}
+          @{ Name = 'Visual Studio 2022 Build Tools (aarch64)';
+             Hash = $null; Url = $null;
+             Action = { choco install visualstudio2022buildtools -y --no-progress --silent --package-parameters '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621' }
+          },
+          @{ Name = 'Rust (nightly, aarch64)';
+             Url = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe';
+             Hash = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe.sha256';
+             Action = { & '${{github.workspace}}\rustup-init.exe' --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y }
+          },
+          @{ Name = 'LLVM 19.1.5';
+             Url = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.5/LLVM-19.1.5-woa64.exe';
+             Hash = '63D479C19C3908F8C973331EDC9B576485EAB6AB0809F58C79DF5D209FDD8F96';
+             Action = { & '${{github.workspace}}\LLVM-19.1.5-woa64.exe' /S }},
+          @{ Name = 'Git 2.48.0-rc1';
+             Url = 'https://github.com/git-for-windows/git/releases/download/v2.48.0-rc2.windows.1/Git-2.48.0-rc2-arm64.exe';
+             Hash = '712739bb49832d571732e3e74b111d7cb4a63cd622ef3e87d01efe35046d9a4f';
+             Action = { & '${{github.workspace}}\Git-2.48.0-rc2-arm64.exe' /VERYSILENT
+           }}
         )
 
         $installs | ForEach-Object {
-          Log "Downloading $($_.Name) from $($_.Url)..."
-          $install_file = Join-Path ${{github.workspace}} (Split-Path $_.Url -Leaf)
-          Invoke-WebRequest -Uri $_.Url -OutFile $install_file
+          if ($_.Url) {
+            Log "Downloading $($_.Name) from $($_.Url)..."
+            $install_file = Join-Path ${{github.workspace}} (Split-Path $_.Url -Leaf)
+            Invoke-WebRequest -Uri $_.Url -OutFile $install_file
 
-          if ($_.Hash -ne $null) {
-              $expected_hash = if ($_.Hash -like "*.sha256") {
-                $hash_file = Join-Path ${{github.workspace}} (Split-Path $_.Hash -Leaf)
-                Invoke-WebRequest -Uri $_.Hash -OutFile $hash_file
-                (Get-Content -Path $hash_file).Trim()
-              } else {
-                $_.Hash
-              }
+            if ($_.Hash -ne $null) {
+                $expected_hash = if ($_.Hash -like "*.sha256") {
+                  $hash_file = Join-Path ${{github.workspace}} (Split-Path $_.Hash -Leaf)
+                  Invoke-WebRequest -Uri $_.Hash -OutFile $hash_file
+                  (Get-Content -Path $hash_file).Trim()
+                } else {
+                  $_.Hash
+                }
 
-              $downloaded_hash = (Get-FileHash -Path $install_file -Algorithm SHA256).Hash
-              if ($downloadedHash -eq $expected_hash) {
-                Log "$($_.Name) hash verified successfully."
-              } else {
-                Log "Hash mismatch for $($_.Name). Expected: $expected_hash, Got: $downloaded_hash" -Level "ERROR"
-                exit 1
-              }
-          } else {
-              Log "No hash specified for $($_.Name). Skipping hash verification."
+                $downloaded_hash = (Get-FileHash -Path $install_file -Algorithm SHA256).Hash
+                if ($downloadedHash -eq $expected_hash) {
+                  Log "$($_.Name) hash verified successfully."
+                } else {
+                  Log "Hash mismatch for $($_.Name). Expected: $expected_hash, Got: $downloaded_hash" -Level "ERROR"
+                  exit 1
+                }
+            } else {
+                Log "No hash specified for $($_.Name). Skipping hash verification."
+            }
           }
-
+          
           Log "Starting installation of $($_.Name)..."
           try {
               & $_.Action > $null 2>&1
