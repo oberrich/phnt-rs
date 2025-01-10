@@ -81,26 +81,27 @@ jobs:
             Log "Downloading $($_.Name) from $($_.Url)..."
             $install_file = Join-Path ${{github.workspace}} (Split-Path $_.Url -Leaf)
             Invoke-WebRequest -Uri $_.Url -OutFile $install_file
-
-            if ($_.Hash -ne $null) {
-                $expected_hash = if ($_.Hash -like "*.sha256") {
-                  $hash_file = Join-Path ${{github.workspace}} (Split-Path $_.Hash -Leaf)
-                  Invoke-WebRequest -Uri $_.Hash -OutFile $hash_file
-                  (Get-Content -Path $hash_file).Trim()
-                } else {
-                  $_.Hash
-                }
-
-                $downloaded_hash = (Get-FileHash -Path $install_file -Algorithm SHA256).Hash
-                if ($downloadedHash -eq $expected_hash) {
-                  Log "$($_.Name) hash verified successfully."
-                } else {
-                  Log "Hash mismatch for $($_.Name). Expected: $expected_hash, Got: $downloaded_hash" -Level "ERROR"
-                  exit 1
-                }
+          }
+      
+          # Handle hash verification if provided
+          if ($_.Hash -ne $null) {
+            $expected_hash = if ($_.Hash -like "*.sha256") {
+              $hash_file = Join-Path ${{github.workspace}} (Split-Path $_.Hash -Leaf)
+              Invoke-WebRequest -Uri $_.Hash -OutFile $hash_file
+              (Get-Content -Path $hash_file).Trim()
             } else {
-                Log "No hash specified for $($_.Name). Skipping hash verification."
+              $_.Hash
             }
+
+            $downloaded_hash = (Get-FileHash -Path $install_file -Algorithm SHA256).Hash
+            if ($downloaded_hash -eq $expected_hash) {
+                Log "$($_.Name) hash verified successfully."
+            } else {
+                Log "Hash mismatch for $($_.Name). Expected: $expected_hash, Got: $downloaded_hash" -Level "ERROR"
+                exit 1
+            }
+          } else {
+              Log "No hash specified for $($_.Name). Skipping hash verification."
           }
 
           Log "Starting installation of $($_.Name)..."
@@ -108,7 +109,7 @@ jobs:
               & $_.Action > $null 2>&1
               Log "$($_.Name) installation completed."
           } catch {
-              Log "Failed to install $($_.Name)."  -Level "ERROR"
+              Log "Failed to install $($_.Name)." -Level "ERROR"
           }
         }
       
