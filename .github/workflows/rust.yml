@@ -69,16 +69,16 @@ jobs:
           # @{ Name = 'Visual Studio 2022 Build Tools (aarch64)'; Action = {
           #     choco install visualstudio2022buildtools -y --no-progress --silent --package-parameters '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621'
           # }},
-          @{ Name = 'Rust (nightly, aarch64)'; Action = {
-              Invoke-WebRequest -Uri 'https://win.rustup.rs/aarch64' -OutFile '${{github.workspace}}\rustup-init.exe';
-              & '${{github.workspace}}\rustup-init.exe' --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
-          }},
+          # @{ Name = 'Rust (nightly, aarch64)'; Action = {
+          #     Invoke-WebRequest -Uri 'https://win.rustup.rs/aarch64' -OutFile '${{github.workspace}}\rustup-init.exe';
+          #     & '${{github.workspace}}\rustup-init.exe' --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
+          # }},
           @{ Name = 'Git 2.48.0-rc1'; Action = {
             & '${{github.workspace}}\Git-2.48.0-rc1-arm64.exe' /VERYSILENT
           }},
-          @{ Name = 'LLVM 19.1.5'; Action = {
-            & '${{github.workspace}}\LLVM-19.1.5-woa64.exe' /S
-          }}
+          # @{ Name = 'LLVM 19.1.5'; Action = {
+          #   & '${{github.workspace}}\LLVM-19.1.5-woa64.exe' /S
+          # }}
         )
         
         $installs | ForEach-Object {
