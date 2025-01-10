@@ -45,11 +45,8 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
-        Invoke-WebRequest -Uri     "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
-                          -OutFile "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller.msixbundle"
-        Add-AppxPackage   -Path    "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller.msixbundle"
-        Remove-Item       -Path    "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller.msixbundle" -Force
-        Repair-WinGetPackageManager -IncludePrerelease
+        Install-Script -Name winget-install
+        winget-install
 
         winget install nushell
         "C:\Program Files\nu\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
