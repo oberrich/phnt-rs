@@ -25,6 +25,12 @@ jobs:
             target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
     steps:
+    - if: matrix.os == 'windows-11-preview_aarch64'
+      uses: robinraju/release-downloader@v1
+      with:
+        repository: 'llvm/llvm-project'
+        tag: 'llvmorg-19.1.5'
+        filename: 'LLVM-19.1.5-woa64.exe'
     - name: Install Build Tools
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
@@ -54,7 +60,7 @@ jobs:
              Hash = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe.sha256';
              Action = { & './rustup-init.exe' --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y }},
           @{ Name = 'LLVM 19.1.5';
-             Url = 'https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.5/LLVM-19.1.5-woa64.exe';
+             Url = $null;
              Hash = '63D479C19C3908F8C973331EDC9B576485EAB6AB0809F58C79DF5D209FDD8F96';
              Action = { & './LLVM-19.1.5-woa64.exe' /S }},
           @{ Name = 'Git 2.48.0-rc1';
