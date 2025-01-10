@@ -43,7 +43,12 @@ jobs:
             [Parameter(Mandatory=$true)] [string]$Message,
             [string]$Level = "INFO"
           )
-          Write-Host "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [$Level] - $Message"
+          $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+          if ($Level -eq "ERROR") {
+              Write-Error "$timestamp [ERROR] - $Message"
+          } else {
+              Write-Host "$timestamp [$Level] - $Message"
+          }
         }
         
         Set-ExecutionPolicy Bypass -Scope Process -Force
@@ -63,18 +68,18 @@ jobs:
 
           if ($_.Hash) {
               $expectedHash = if ($_.Hash -like "*.sha256") {
-                  Invoke-WebRequest -Uri $_.Hash -OutFile (Join-Path ${{github.workspace}} (Split-Path $_.Hash -Leaf))
-                  (Get-Content -Path $hashFile).Trim()
+                Invoke-WebRequest -Uri $_.Hash -OutFile (Join-Path ${{github.workspace}} (Split-Path $_.Hash -Leaf))
+                (Get-Content -Path $hashFile).Trim()
               } else {
-                  $_.Hash
+                $_.Hash
               }
 
               $downloadedHash = (Get-FileHash -Path $filePath -Algorithm SHA256).Hash
               if ($downloadedHash -eq $expectedHash) {
-                  Log "$($_.Name) hash verified successfully."
+                Log "$($_.Name) hash verified successfully."
               } else {
-                  Log "Hash mismatch for $($_.Name). Expected: $expectedHash, Got: $downloadedHash"
-                  return
+                Log "Hash mismatch for $($_.Name). Expected: $expectedHash, Got: $downloadedHash" -Level "ERROR"
+                return
               }
           } else {
               Log "No hash specified for $($_.Name). Skipping hash verification."
@@ -85,7 +90,7 @@ jobs:
               & $_.Action > $null 2>&1
               Log "$($_.Name) installation completed."
           } catch {
-              Log "Failed to install $($_.Name)."
+              Log "Failed to install $($_.Name)."  -Level "ERROR"
           }
         }
       
