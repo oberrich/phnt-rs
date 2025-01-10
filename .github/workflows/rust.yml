@@ -69,7 +69,7 @@ jobs:
             Args = @('/S') },
           @{ Name = 'Rust (nightly, aarch64)';
             Url = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe';
-            Hash = 'VALID_HASH_VALUE_HERE'; # Replace with actual hash value
+            Hash = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe.sha256';
             Args = @('--default-host', 'aarch64-pc-windows-msvc', '--default-toolchain', 'nightly', '-y') }
         )
         $deps | ForEach-Object {
