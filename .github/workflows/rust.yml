@@ -121,12 +121,14 @@ jobs:
         
     - name: Extract architecture from target triple and move bindings
       run: |
-        let $arch = '${{ matrix.target }}' | split row '-' | first
-        let $arch = if $arch == 'i686' { 'x86' } else { $arch }
-        echo $'ARCH=($arch)' | save $env.GITHUB_ENV --append
-        let output = glob target/${{ matrix.target }}/release/build/**/$($arch)_bindgen.rs | first
-        cp $output $'src/ffi/($arch)_bindgen.rs'
-        echo $'Moved ($output) to src/ffi/($arch)_bindgen.rs'
+        $arch = '${{ matrix.target }}' -split '-' | Select-Object -First 1
+        $arch = if ($arch -eq 'i686') { 'x86' } else { $arch }
+        Add-Content -Path $env:GITHUB_ENV -Value "ARCH=$arch"
+        
+        $output = Get-ChildItem -Path "target/${{ matrix.target }}/release/build/**/$($arch)_bindgen.rs" -Recurse | Select-Object -First 1
+        Copy-Item -Path $output.FullName -Destination "src/ffi/$($arch)_bindgen.rs"
+        
+        Write-Host "Moved $output to src/ffi/$($arch)_bindgen.rs"
 
     - name: Upload generated file as artifact
       uses: actions/upload-artifact@v4
