@@ -40,6 +40,9 @@ jobs:
     - name: Install Build Tools
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+      
         function Log { param([string]$Message, [string]$Level = "INFO")
           $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
           if ($Level -eq "ERROR") {
@@ -49,9 +52,6 @@ jobs:
           }
         }
 
-        Set-ExecutionPolicy Bypass -Scope Process -Force
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-        
         $deps = @(
           @{ Name = 'Chocolatey'; Url = 'https://chocolatey.org/install.ps1'; Hash = $null;
              Action = { & './install.ps1' }},
@@ -78,10 +78,10 @@ jobs:
             $install_file = Join-Path "${{ github.workspace }}" (Split-Path $dep.Url -Leaf)
             Invoke-WebRequest -Uri $dep.Url -OutFile $install_file
           } else {
+            Log "Using local files from '$($dep.Url)'..."
             $install_file = $dep.Url
           }
           
-          Log "Installing $($dep.Name)..."
           if ($dep.Hash -ne $null) {
             $expected_hash = if ($dep.Hash -like "*.sha256") {
               $hash_file = Join-Path '${{ github.workspace }}' (Split-Path $dep.Hash -Leaf)
@@ -101,12 +101,9 @@ jobs:
               Log "No hash specified, skipping verification."
           }
 
-          try {
-            & $dep.Action 2>&1 | Out-Null
-            Log "$($dep.Name) installation completed."
-          } catch {
-            Log "An error occurred while installing $($dep.Name): $_" "ERROR"
-          }
+          Log "Installing $($dep.Name)..."
+          & $dep.Action 2>&1 | Out-Null
+          Log "$($dep.Name) installation completed."
         }
         
         $paths = @(
