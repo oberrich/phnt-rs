@@ -60,12 +60,11 @@ jobs:
         }
         
         Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
 
         $installs = @(
           # @{ Name = 'Chocolatey'; Action = {
-          #     Set-ExecutionPolicy Bypass -Scope Process -Force
-          #     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-          #     iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1')) | Out-Null
+          #     iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1')) 2>$null
           # }},
           # @{ Name = 'Visual Studio 2022 Build Tools (aarch64)'; Action = {
           #     choco install visualstudio2022buildtools -y --no-progress --silent --package-parameters '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621'
@@ -109,6 +108,8 @@ jobs:
         
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
       
     - name: Run tests and generate bindings
       env:
