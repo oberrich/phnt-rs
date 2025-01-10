@@ -41,35 +41,20 @@ jobs:
         repository: 'llvm/llvm-project'
         tag: 'llvmorg-19.1.5'
         filename: 'LLVM-19.1.5-woa64.exe'
-    - if: matrix.os == 'windows-11-preview_aarch64'
-      uses: robinraju/release-downloader@v1
-      with:
-        repository: 'nushell/nushell'
-        tag: '0.101.0'
-        filename: 'nu-0.101.0-${{ matrix.target }}.msi'
     - name: "Install nushell"
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
-        # Install NuGet provider for PowerShell
-        Install-PackageProvider -Name NuGet -Force | Out-Null
-
-        # Install Microsoft.WinGet.Client module from PSGallery
-        Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery | Out-Null
-
-        # Direct download and install of the latest Microsoft.DesktopAppInstaller
-        Invoke-WebRequest -Uri "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller.msixbundle"
-        Add-AppxPackage -Path "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller.msixbundle"
-
-        # Clean up the downloaded file
-        Remove-Item -Path "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller.msixbundle" -Force
-
-        # Repair the WinGet package manager
+        Install-PackageProvider -Name NuGet -Force
+        Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery
+        Invoke-WebRequest -Uri     "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
+                          -OutFile "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller.msixbundle"
+        Add-AppxPackage   -Path    "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller.msixbundle"
+        Remove-Item       -Path    "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller.msixbundle" -Force
         Repair-WinGetPackageManager -IncludePrerelease
 
         winget install nushell
         "C:\Program Files\nu\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
- 
 
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
