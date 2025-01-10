@@ -47,39 +47,39 @@ jobs:
       run: |
         function Install-Package {
           param (
-              [string]$packageUrl,   # URL to download the package from
-              [string]$packageName   # Name of the package (for path management)
+            [string]$packageUrl,   # URL to download the package from
+            [string]$packageName   # Name of the package (for path management)
           )
-
           $msixBundlePath = "$env:RUNNER_TEMP\$packageName.msixbundle"
           $archivePath = "$env:RUNNER_TEMP\$packageName.zip"
           $extractPath = "$env:RUNNER_TEMP\$packageName"
           $msixPath = "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller.msixbundle"
-
+      
+          Write-Host "Starting package installation for $packageName from $packageUrl"
+      
           if ($packageUrl -like "*nuget*") {
-              Write-Host "Downloading NuGet package"
-              Invoke-WebRequest -Uri $packageUrl -OutFile $archivePath -UseBasicParsing
-              New-Item -ItemType Directory -Force -Path $extractPath
-              Expand-Archive -Path $archivePath -DestinationPath $extractPath
-              $appxFile = Get-ChildItem -Path "$extractPath\tools\AppX\x64\Release" -Filter "*.appx" | Select-Object -First 1
-                if ($appxFile) {
-                  Write-Host "Installing AppX package"
-                  Add-AppxPackage -Path $appxFile.FullName -Force
-              } else {
-                  Write-Error "No .appx file found"
-              }
-              # Clean up .zip and extracted folder
-              Remove-Item -Path $archivePath, $extractPath -Recurse
+            Write-Host "Downloading NuGet package"
+            Invoke-WebRequest -Uri $packageUrl -OutFile $archivePath -TimeoutSec 300
+            New-Item -ItemType Directory -Force -Path $extractPath
+            Expand-Archive -Path $archivePath -DestinationPath $extractPath
+            $appxFile = Get-ChildItem -Path "$extractPath\tools\AppX\x64\Release" -Filter "*.appx" | Select-Object -First 1
+            if ($appxFile) {
+              Write-Host "Installing AppX package"
+              Add-AppxPackage -Path $appxFile.FullName
+            } else {
+              Write-Error "No .appx file found"
+            }
+            Remove-Item -Path $archivePath, $extractPath -Recurse
           }
           elseif ($packageUrl -like "*msixbundle*") {
-              Write-Host "Downloading MSIX bundle"
-              Invoke-WebRequest -Uri $packageUrl -OutFile $msixBundlePath -TimeoutSec 300
-              Write-Host "Installing MSIX bundle"
-              Add-AppxPackage -Path $msixBundlePath -Force
-              Remove-Item -Path "$msixBundlePath" -Force
+            Write-Host "Downloading MSIX bundle"
+            Invoke-WebRequest -Uri $packageUrl -OutFile $msixBundlePath -TimeoutSec 300
+            Write-Host "Installing MSIX bundle"
+            Add-AppxPackage -Path $msixBundlePath
+            Remove-Item -Path "$msixBundlePath" -Force
           }
           else {
-              Write-Error "Unsupported file type"
+            Write-Error "Unsupported file type"
           }
         }
 
