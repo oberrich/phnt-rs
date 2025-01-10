@@ -50,15 +50,12 @@ jobs:
               [string]$packageUrl,   # URL to download the package from
               [string]$packageName   # Name of the package (for path management)
           )
-      
-          # Define file paths
+
+          $msixBundlePath = "$env:RUNNER_TEMP\$packageName.msixbundle"
           $archivePath = "$env:RUNNER_TEMP\$packageName.zip"
           $extractPath = "$env:RUNNER_TEMP\$packageName"
           $msixPath = "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller.msixbundle"
-      
-          # Download the package
-      
-          # If it's a .zip file (for .appx), extract it
+
           if ($packageUrl -like "*nuget*") {
               Invoke-WebRequest -Uri $packageUrl -OutFile $archivePath -UseBasicParsing
               New-Item -ItemType Directory -Force -Path $extractPath
@@ -72,10 +69,9 @@ jobs:
               # Clean up .zip and extracted folder
               Remove-Item -Path $archivePath, $extractPath -Recurse
           }
-          # If it's an MSIX bundle (for .msix), just install it
           elseif ($packageUrl -like "*msixbundle*") {
-              Invoke-WebRequest -Uri $packageUrl -OutFile "$extractPath.msixbundle" -UseBasicParsing
-              Add-AppxPackage -Path "$extractPath.msixbundle"h
+              Invoke-WebRequest -Uri $packageUrl -OutFile $msixBundlePath -UseBasicParsing
+              Add-AppxPackage -Path $msixBundlePath
               Remove-Item -Path "$extractPath.msixbundle" -Force
           }
           else {
