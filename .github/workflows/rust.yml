@@ -102,8 +102,7 @@ jobs:
           }
 
           Log "Installing $($dep.Name)..."
-          # Execute the command directly
-          Start-Process -FilePath cmd.exe -ArgumentList "/c $($dep.Action)" -NoNewWindow -Wait
+          & $dep.Action
           Log "$($dep.Name) installation completed."
         }
         
