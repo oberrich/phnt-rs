@@ -82,7 +82,7 @@ jobs:
         )
         
         $packages | ForEach-Object {
-          Write-Host "Installing package: $(Split-Path $_ -LeafBase)"
+          Write-Host "Installing package: $(Split-Path $_ -Leaf)"
           Add-AppxPackage $_ -Verbose
         }
 
