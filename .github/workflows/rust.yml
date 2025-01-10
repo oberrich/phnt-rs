@@ -72,7 +72,7 @@ jobs:
         
         $installs | ForEach-Object {
           if ($_.Url -ne $null) {
-            Write-Host "Downloading $_.Name from $_.Url..."
+            Write-Host "Downloading $($_.Name) from $($_.Url)..."
             Invoke-WebRequest -Uri $_.Url -OutFile "${{github.workspace}}\" + (Split-Path $_.Url -Leaf)
           }
 
