@@ -1,12 +1,12 @@
-// Generated at 2025-01-09 05:25:06.833886700 +00:00
+// Generated at 2025-01-10 10:48:37.716456500 +00:00
 #[cfg(not(target_arch = "x86"))]
 compile_error!("These bindings can only be used on `x86` architectures. To generate bindings for your target architecture, consider using the `regenerate` feature.");
 
+pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
 pub use nt_string::unicode_string::NtUnicodeString as UNICODE_STRING;
+pub use windows_sys::Win32::Foundation::BOOLEAN as BOOLEAN;
 pub use nt_string::unicode_string::NtUnicodeString as _UNICODE_STRING;
 pub use windows_sys::Win32::Foundation::BOOL as BOOL;
-pub use windows_sys::Win32::Foundation::BOOLEAN as BOOLEAN;
-pub use windows_sys::Win32::Foundation::NTSTATUS as NTSTATUS;
 
 pub const PHNT_VERSION: u32 = self::PHNT_WIN11_24H2;
 pub const PHNT_MODE: u32 = self::PHNT_MODE_USER;
