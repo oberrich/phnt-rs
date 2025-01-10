@@ -59,10 +59,27 @@ jobs:
       shell: powershell 
       run: |
         $progressPreference = 'silentlyContinue'
-        Install-PackageProvider -Name NuGet -Force | Out-Null
-        Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery | Out-Null
-        Repair-WinGetPackageManager -IncludePrerelease
 
+        $files = @(
+            @{ Url = 'https://aka.ms/Microsoft.VCLibs.arm64.14.00.Desktop.appx';
+               Out = 'Microsoft.VCLibs.arm64.14.00.Desktop.appx' },
+            @{ Url = 'https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.arm64.appx';
+               Out = 'Microsoft.UI.Xaml.2.8.x64.appx' },
+            @{ Url = $null;
+               Out = '${{github.workspace}}/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' }
+        )
+
+        foreach ($file in $files) {
+            if ($file.Url -nq $null) {
+              Write-Host "Downloading $($file.Out)..."
+              Invoke-WebRequest -Uri $file.Url -Url $file.Out
+            }
+            
+            Write-Host "Installing package `$($file.Out)`..."
+            Add-AppxPackage -Path $file.Out
+        }
+
+        Repair-WinGetPackageManager -IncludePrerelease
         winget install nushell --accept-package-agreements --accept-source-agreements
 
     - name: Use nushell
