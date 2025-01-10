@@ -114,7 +114,7 @@ jobs:
         )
 
         $paths | ForEach-Object  {
-          Add-Content -Path $env:GITHUB_PATH -Value $_
+          Add-Content -Path $env:GITHUB_PATH -Value $_ -Encoding utf8
           Log "Added $_ to `$GITHUB_PATH"
         }
 
