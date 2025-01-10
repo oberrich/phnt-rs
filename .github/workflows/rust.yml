@@ -126,7 +126,7 @@ jobs:
         components: rustfmt
     
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
       with:
         submodules: 'recursive'
 
@@ -159,7 +159,7 @@ jobs:
     if: success() # Run only if the generate-bindgen job succeeds
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
         
       - name: Download generated files
         uses: actions/download-artifact@v4
