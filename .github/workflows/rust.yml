@@ -74,8 +74,7 @@ jobs:
         Add-AppxPackage deps/Microsoft.UI.Xaml.2.8.arm64.appx
         Add-AppxPackage deps/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
         winget upgrade --all --accept-source-agreements --accept-package-agreements
-        winget install nushell --accept-package-agreements --accept-source-agreements --silent
-
+        winget install -e --id Nushell.Nushell -v 0.94.0 --accept-package-agreements --accept-source-agreements --silent
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
