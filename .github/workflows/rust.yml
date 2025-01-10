@@ -56,8 +56,9 @@ jobs:
           @{ Name = 'Chocolatey'; Hash = $null;
              Url = 'https://chocolatey.org/install.ps1';
              Action = { & ./install.ps1 }},
-          @{ Name = 'Visual Studio 2022 Build Tools (aarch64)'; Hash = $null; Url = $null;
-             Action = { & choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621" -y --no-progress --silent }},
+          @{ Name = 'Visual Studio 2022 Build Tools (aarch64)'; Hash = $null;
+             Url = 'https://aka.ms/vs/17/release/vs_buildtools.exe';
+             Action = { Start-Process -FilePath 'vs_buildtools.exe' -ArgumentList '/S', '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64', --add Microsoft.VisualStudio.Component.Windows11SDK.22621' -NoNewWindow -Wait
           @{ Name = 'Git 2.48.0-rc1'; Url = '${{ github.workspace }}/Git-2.48.0-rc2-arm64.exe';
              Hash = '712739bb49832d571732e3e74b111d7cb4a63cd622ef3e87d01efe35046d9a4f';
              Action = { & ./Git-2.48.0-rc2-arm64.exe /VERYSILENT /GitAndUnixToolsOnPath /NoAutoCrlf }},
