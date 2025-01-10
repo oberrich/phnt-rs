@@ -45,8 +45,6 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
-        Install-PackageProvider -Name NuGet -Force
-        Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery
         Invoke-WebRequest -Uri     "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
                           -OutFile "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller.msixbundle"
         Add-AppxPackage   -Path    "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller.msixbundle"
