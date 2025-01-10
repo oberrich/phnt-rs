@@ -58,16 +58,9 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
-        Write-Host "Installing vc_redist.arm64..."
-        Invoke-WebRequest -Uri "https://aka.ms/vs/16/release/vc_redist.arm64.exe" -OutFile "$env:RUNNER_TEMP\vc_redist.arm64.exe"
-        Start-Process -FilePath "$env:RUNNER_TEMP\vc_redist.arm64.exe" -ArgumentList "/quiet", "/norestart" -Wait
-
-        Write-Host "Installing package `Microsoft.UI.Xaml.2.8.arm64`"
-        Add-AppxPackage ${{github.workspace}}\Microsoft.UI.Xaml.2.8.arm64.appx
-
-        Write-Host "Installing package `Microsoft.DesktopAppInstaller_8wekyb3d8bbwe`"
-        Add-AppxPackage -Path '${{github.workspace}}\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle'
-        Remove-Item -Path '${{github.workspace}}\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -Force
+        $progressPreference = 'silentlyContinue'
+        Install-PackageProvider -Name NuGet -Force | Out-Null
+        Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery | Out-Null
         Repair-WinGetPackageManager -IncludePrerelease
 
         winget install nushell --accept-package-agreements --accept-source-agreements
