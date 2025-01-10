@@ -89,7 +89,7 @@ jobs:
         Write-Host "Updating packages..."
         winget upgrade --all --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
         Write-Host "Installing nushell..."
-        winget install Nushell.Nushell --architecture arm64 --override "ALLUSERS=1" --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
+        winget install --scope machine -e --id Nushell.Nushell --version 0.94 --architecture arm64 --override "ALLUSERS=1" --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
 
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
