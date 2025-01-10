@@ -76,9 +76,9 @@ jobs:
           
         Write-Host "Host architecture: $ARCH"
         $packages = @(
-          "deps\$ARCH\Microsoft.VCLibs.140.00.UWPDesktop_14.0.33728.0_$ARCH__8wekyb3d8bbwe.Appx",
-          "deps\$ARCH\Microsoft.UI.Xaml.2.8_8.2310.30001.0_$ARCH__8wekyb3d8bbwe.Appx",
-          "deps\Microsoft.UI.Xaml.2.8.$ARCH.appx",
+          "deps\$ARCH\Microsoft.VCLibs.140.00.UWPDesktop_14.0.33728.0_$($ARCH)__8wekyb3d8bbwe.Appx",
+          "deps\$ARCH\Microsoft.UI.Xaml.2.8_8.2310.30001.0_$($ARCH)__8wekyb3d8bbwe.Appx",
+          "deps\Microsoft.UI.Xaml.2.8.$($ARCH).appx",
           "deps\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
         )
         
