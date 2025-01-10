@@ -60,7 +60,7 @@ jobs:
           @{ Name = 'LLVM 19.1.5';
              Url = '${{ github.workspace }}/LLVM-19.1.5-woa64.exe';
              Hash = '63D479C19C3908F8C973331EDC9B576485EAB6AB0809F58C79DF5D209FDD8F96';
-             Action = { & './LLVM-19.1.5-woa64.exe' /S }},
+             Action = { Start-Process -FilePath "LLVM-19.1.5-woa64.exe" -ArgumentList '/S' -NoNewWindow -Wait }},
           @{ Name = 'Rust (nightly, aarch64)';
              Url = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe';
              Hash = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe.sha256';
@@ -102,7 +102,7 @@ jobs:
           }
 
           Log "Installing $($dep.Name)..."
-          Start-Process -FilePath $dep.Action -ArgumentList "/VERYSILENT" -NoNewWindow -Wait
+          & $dep.Action
           Log "$($dep.Name) installation completed."
         }
         
