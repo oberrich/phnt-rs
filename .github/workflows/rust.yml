@@ -31,6 +31,12 @@ jobs:
         repository: 'llvm/llvm-project'
         tag: 'llvmorg-19.1.5'
         filename: 'LLVM-19.1.5-woa64.exe'
+    - if: matrix.os == 'windows-11-preview_aarch64'
+      uses: robinraju/release-downloader@v1
+      with:
+        repository: 'git-for-windows/git'
+        tag: 'v2.48.0-rc2.windows.1'
+        filename: 'Git-2.48.0-rc2-arm64.exe'
     - name: Install Build Tools
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
@@ -59,11 +65,12 @@ jobs:
              Url = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe';
              Hash = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe.sha256';
              Action = { & './rustup-init.exe' --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y }},
-          @{ Name = 'LLVM 19.1.5'; Url = 'LLVM-19.1.5-woa64.exe';
+          @{ Name = 'LLVM 19.1.5';
+             Url = '${{ github.workspace }}/LLVM-19.1.5-woa64.exe';
              Hash = '63D479C19C3908F8C973331EDC9B576485EAB6AB0809F58C79DF5D209FDD8F96';
              Action = { & './LLVM-19.1.5-woa64.exe' /S }},
           @{ Name = 'Git 2.48.0-rc1';
-             Url = 'https://github.com/git-for-windows/git/releases/download/v2.48.0-rc2.windows.1/Git-2.48.0-rc2-arm64.exe';
+             Url = '${{ github.workspace }}/Git-2.48.0-rc2-arm64.exe';
              Hash = '712739bb49832d571732e3e74b111d7cb4a63cd622ef3e87d01efe35046d9a4f';
              Action = { & './Git-2.48.0-rc2-arm64.exe' /VERYSILENT }}
         )
@@ -76,7 +83,7 @@ jobs:
             $install_file = Join-Path "${{ github.workspace }}" (Split-Path $dep.Url -Leaf)
             Invoke-WebRequest -Uri $dep.Url -OutFile $install_file
           } else {
-            $install_file = Join-Path "${{ github.workspace }}" $dep.Url
+            $install_file = $dep.Url
           }
           
           if ($dep.Hash -ne $null) {
