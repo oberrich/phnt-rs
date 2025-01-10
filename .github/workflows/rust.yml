@@ -87,12 +87,9 @@ jobs:
         }
 
         Write-Host "Installing nushell..."
-        winget install -e --id Nushell.Nushell -v 0.101.0 --override "ALLUSERS=1" --accept-package-agreements --accept-source-agreements --disable-interactivity --silent -ErrorAction SilentlyContinue
+        winget install -e --id Nushell.Nushell -v 0.101.0 --override "ALLUSERS=1" --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
 
-        # Define the log file path using a glob pattern
         $logPattern = "C:\Users\runneradmin\AppData\Local\Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\DiagOutputDir\WinGet-Nushell.Nushell*.log"
-
-        # Get the most recent log file matching the pattern (if there are multiple matches)
         $logFile = Get-ChildItem -Path $logPattern | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 
         # Output the log file contents
