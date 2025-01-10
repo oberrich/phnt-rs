@@ -89,7 +89,13 @@ jobs:
         Write-Host "Upgrading dependencies..."
         winget upgrade --all --accept-source-agreements --accept-package-agreements
         Write-Host "Installing nushell..."
-        winget install -e --id Nushell.Nushell -v 0.101.0 --accept-package-agreements --accept-source-agreements --silent
+        # Define the URL for the MSI package
+        $msiUrl = "https://github.com/nushell/nushell/releases/download/0.101.0/nu-0.101.0-aarch64-pc-windows-msvc.msi"
+        $msiPath = "$env:TEMP\nu-0.101.0-aarch64-pc-windows-msvc.msi"
+
+        Invoke-WebRequest -Uri $msiUrl -OutFile $msiPath
+        Start-Process msiexec.exe -ArgumentList "/i", $msiPath, "/quiet", "/log", "$env:TEMP\nu_install.log" -Wait
+        Get-Content "$env:TEMP\nu_install.log" -Tail 150
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
