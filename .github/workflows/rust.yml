@@ -72,19 +72,22 @@ jobs:
         }
 
         $installs = @(
-            @{ Name = 'LLVM 19.1.5 (aarch64)'; Action = { & '${{github.workspace}}\LLVM-19.1.5-woa64.exe' /S } },
-            @{ Name = 'Git 2.48.0-rc1 (aarch64)'; Action = { & '${{github.workspace}}\Git-2.48.0-rc1-arm64.exe' /VERYSILENT } },
-            @{ Name = 'Visual Studio 2022 Build Tools (aarch64'; Action = { choco install visualstudio2022buildtools -y --no-progress --package-parameters '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621' } },
-            @{ Name = 'Rust (nightly, aarch64)'; Action = {
-                Invoke-WebRequest -Uri 'https://win.rustup.rs/aarch64' -OutFile '${{github.workspace}}\rustup-init.exe'
-                & '${{github.workspace}}\rustup-init.exe' --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
-            } }
+            @{ Name = 'LLVM 19.1.5 (aarch64)'; 
+              Action = { & '$env:GITHUB_WORKSPACE\LLVM-19.1.5-woa64.exe' /S } },
+            @{ Name = 'Git 2.48.0-rc1 (aarch64)'; 
+              Action = { & '$env:GITHUB_WORKSPACE\Git-2.48.0-rc1-arm64.exe' /VERYSILENT } },
+            @{ Name = 'Visual Studio 2022 Build Tools (aarch64)';  Action = { choco install visualstudio2022buildtools -y --no-progress --package-parameters '--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621' } },
+            @{ Name = 'Rust (nightly, aarch64)'; 
+              Action = { 
+                  Invoke-WebRequest -Uri 'https://win.rustup.rs/aarch64' -OutFile '$env:GITHUB_WORKSPACE\rustup-init.exe'
+                  & '$env:GITHUB_WORKSPACE\rustup-init.exe' --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y
+              } }
         )
-
-        foreach ($install in $installs) {
-          Log -Message "Starting installation of $($install.Name)..."
-          &$install.Action
-          Log -Message "$($install.Name) installation completed."
+        
+        $installs | ForEach-Object {
+            Log -Message "Starting installation of $($_.Name)..."
+            & $_.Action
+            Log -Message "$($_.Name) installation completed."
         }
       
         $exports = @(
