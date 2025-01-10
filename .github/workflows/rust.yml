@@ -82,7 +82,7 @@ jobs:
           "$env:ProgramFiles\Git\cmd",       # Git
           "$env:ProgramFiles\Git\bin",       # Bash
           "$env:ProgramData\chocolatey\bin", # Chocolatey
-          "$env:USERPROFILE\.cargo\bin",     # Rust
+          "$env:USERPROFILE\.cargo\bin"      # Rust
         )
 
         $exports | ForEach-Object  {
