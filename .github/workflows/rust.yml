@@ -82,9 +82,13 @@ jobs:
         )
         
         $installs | ForEach-Object {
-            Log -Message "Starting installation of $($_.Name)..."
-            & $_.Action
-            Log -Message "$($_.Name) installation completed."
+          Log "Starting installation of $($_.Name)..."
+          try {
+            & $_.Action 2>$null
+            Log "$($_.Name) installation completed."
+          } catch {
+            Log "Failed to install $($_.Name)."
+          }
         }
       
         $exports = @(
@@ -95,8 +99,8 @@ jobs:
         )
 
         $exports | ForEach-Object  {
-          Add-Content -Path $env:GITHUB_PATH -Value $_ -Encoding utf8
-          Log -Message "Added $_ to GITHUB_PATH"
+          $_ | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Log "Added $_ to GITHUB_PATH"
         }
 
     - name: Install Rust
@@ -105,11 +109,6 @@ jobs:
       with:
         targets: ${{ matrix.target }}
         components: rustfmt
-        
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
       
     - name: Run tests and generate bindings
       env:
