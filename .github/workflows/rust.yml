@@ -58,9 +58,9 @@ jobs:
           )
       
           # Use GitHub workspace for temporary paths
-          $msixBundlePath = "$env:GITHUB_WORKSPACE\$packageName.msixbundle"
-          $archivePath = "$env:GITHUB_WORKSPACE\$packageName.zip"
-          $extractPath = "$env:GITHUB_WORKSPACE\$packageName"
+          $msixBundlePath = "${{github.workspace}}\$packageName.msixbundle"
+          $archivePath = "$env:RUNNER_TEMP\$packageName.zip"
+          $extractPath = "$env:RUNNER_TEMP\$packageName"
       
           Write-Host "Starting package installation for $packageName"
       
