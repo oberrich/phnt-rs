@@ -59,14 +59,14 @@ jobs:
       shell: powershell 
       run: |
         $progressPreference = 'silentlyContinue'
-        $packages = @(
-            'https://aka.ms/Microsoft.VCLibs.arm64.14.00.Desktop.appx',
+        $package = '${{github.workspace}}/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle';
+        $deps = @(
             '${{github.workspace}}/Microsoft.UI.Xaml.2.8.arm64.appx',
-            '${{github.workspace}}/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle'
+            'https://aka.ms/Microsoft.VCLibs.arm64.14.00.Desktop.appx'
         )
 
-        Write-Host "Installing Microsoft.DesktopAppInstaller from $($packages[2])..."
-        Add-AppxPackage -Path $packages[2] -DependencyPath $packages[0],$packages[1]
+        Write-Host "Installing Microsoft.DesktopAppInstaller from "
+        Add-AppxPackage -Path $package -DependencyPath $deps
 
         Repair-WinGetPackageManager -IncludePrerelease
         winget install nushell --accept-package-agreements --accept-source-agreements
