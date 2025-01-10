@@ -77,7 +77,7 @@ jobs:
             Log "Downloading $($dep.Name) from '$($dep.Url)'..."
             $install_file = Join-Path "${{ github.workspace }}" (Split-Path $dep.Url -Leaf)
             Invoke-WebRequest -Uri $dep.Url -OutFile $install_file
-          } else {
+          } elseif ($dep.Url -ne $null) {
             Log "Using local files from '$($dep.Url)'..."
             $install_file = $dep.Url
           }
