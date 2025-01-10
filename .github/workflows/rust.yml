@@ -58,13 +58,14 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
-        # Install vc_redist
+        Write-Host "Installing vc_redist.arm64..."
         Invoke-WebRequest -Uri "https://aka.ms/vs/16/release/vc_redist.arm64.exe" -OutFile "$env:RUNNER_TEMP\vc_redist.arm64.exe"
         Start-Process -FilePath "$env:RUNNER_TEMP\vc_redist.arm64.exe" -ArgumentList "/quiet", "/norestart" -Wait
-        # Install UI.Xaml.2.8 dependency
-        Write-Host "Starting package installation for Microsoft.UI.Xaml.2.8.arm64"
+
+        Write-Host "Installing package `Microsoft.UI.Xaml.2.8.arm64`"
         Add-AppxPackage ${{github.workspace}}\Microsoft.UI.Xaml.2.8.arm64.appx
-        Write-Host "Starting package installation for Microsoft.DesktopAppInstaller_8wekyb3d8bbwe"
+
+        Write-Host "Installing package `Microsoft.DesktopAppInstaller_8wekyb3d8bbwe`"
         Add-AppxPackage -Path '${{github.workspace}}\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle'
         Remove-Item -Path '${{github.workspace}}\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -Force
         Repair-WinGetPackageManager -IncludePrerelease
