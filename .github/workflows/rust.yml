@@ -11,7 +11,7 @@ jobs:
   bindgen:
     defaults:
       run:
-        shell: nu {0}
+        shell: powershell
     strategy:
       matrix:
         os: [windows-11-preview_aarch64, windows-2025]
@@ -64,31 +64,6 @@ jobs:
         tag: 'v2.8.6'
         filename: 'Microsoft.UI.Xaml.2.8.arm64.appx'
         out-file-path: 'deps'
-    - name: "Install nushell"
-      if: matrix.os == 'windows-11-preview_aarch64'
-      shell: powershell 
-      run: |
-        $ARCH = '${{matrix.target}}' `
-          -replace 'x86_64', 'x64' `
-          -replace 'aarch64', 'arm64' `
-          -replace 'i686', 'x86' `
-          -split '-' | Select-Object -First 1
-          
-        Write-Host "Host architecture: $ARCH"
-        $packages = @(
-          "deps\$ARCH\Microsoft.VCLibs.140.00.UWPDesktop_14.0.33728.0_$($ARCH)__8wekyb3d8bbwe.Appx",
-          "deps\$ARCH\Microsoft.UI.Xaml.2.8_8.2310.30001.0_$($ARCH)__8wekyb3d8bbwe.Appx",
-          "deps\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
-        )
-        
-        $packages | ForEach-Object {
-          Write-Host "Installing package: $(Split-Path $_ -Leaf)"
-          Add-AppxPackage $_ -Verbose
-        }
-
-        Write-Host "Installing nushell..."
-        winget install --scope machine -e --id Nushell.Nushell --architecture arm64 --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
-
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
       run: |
