@@ -75,7 +75,7 @@ jobs:
                 Invoke-WebRequest -Uri $package -OutFile $exePath -UseBasicParsing
 
                 Write-Host "Running EXE installer silently: $exePath"
-                Start-Process -FilePath $exePath -ArgumentList '/quiet', '/norestart' -Wait
+                Start-Process -FilePath $exePath -ArgumentList '/install', '/passive', '/norestart' -Wait -PassThru
             } elseif ($package -match '\.appx$' -or $package -match '\.msixbundle$') {
                 Write-Host "Installing package: $package"
                 Add-AppxPackage -Path $package
