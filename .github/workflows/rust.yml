@@ -73,6 +73,7 @@ jobs:
               if ($appxFile) {
                   Write-Host "Installing AppX package"
                   Add-AppxPackage -Path $appxFile.FullName
+                  Get-AppPackageLog -ActivityID 5e05761a-1229-0000-e8b1-6b3afa62db01
               } else {
                   Write-Error "No .appx file found"
               }
