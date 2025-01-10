@@ -57,10 +57,10 @@ jobs:
           $msixPath = "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller.msixbundle"
       
           # Download the package
-          Invoke-WebRequest -Uri $packageUrl -OutFile $archivePath -UseBasicParsing
       
           # If it's a .zip file (for .appx), extract it
           if ($packageUrl -like "*nuget*") {
+              Invoke-WebRequest -Uri $packageUrl -OutFile $archivePath -UseBasicParsing
               New-Item -ItemType Directory -Force -Path $extractPath
               Expand-Archive -Path $archivePath -DestinationPath $extractPath
               $appxFile = Get-ChildItem -Path "$extractPath\tools\AppX\x64\Release" -Filter "*.appx" | Select-Object -First 1
@@ -74,9 +74,9 @@ jobs:
           }
           # If it's an MSIX bundle (for .msix), just install it
           elseif ($packageUrl -like "*msixbundle*") {
-              Add-AppxPackage -Path $archivePath
-              # Clean up MSIX bundle
-              Remove-Item -Path $archivePath -Force
+              Invoke-WebRequest -Uri $packageUrl -OutFile "$extractPath.msixbundle" -UseBasicParsing
+              Add-AppxPackage -Path "$extractPath.msixbundle"h
+              Remove-Item -Path "$extractPath.msixbundle" -Force
           }
           else {
               Write-Error "Unsupported file type"
