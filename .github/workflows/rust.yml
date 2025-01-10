@@ -87,7 +87,7 @@ jobs:
         }
 
         Write-Host "Installing nushell..."
-        winget install -e --id Nushell.Nushell -v 0.101.0 --accept-package-agreements --accept-source-agreements --silent -ErrorAction SilentlyContinue
+        winget install -e --id Nushell.Nushell -v 0.101.0 --scope machine --accept-package-agreements --accept-source-agreements --silent -ErrorAction SilentlyContinue
 
         # Define the log file path using a glob pattern
         $logPattern = "C:\Users\runneradmin\AppData\Local\Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\DiagOutputDir\WinGet-Nushell.Nushell*.log"
