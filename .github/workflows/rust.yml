@@ -57,12 +57,14 @@ jobs:
           $msixPath = "$env:RUNNER_TEMP\Microsoft.DesktopAppInstaller.msixbundle"
 
           if ($packageUrl -like "*nuget*") {
+              Write-Host "Downloading NuGet package"
               Invoke-WebRequest -Uri $packageUrl -OutFile $archivePath -UseBasicParsing
               New-Item -ItemType Directory -Force -Path $extractPath
               Expand-Archive -Path $archivePath -DestinationPath $extractPath
               $appxFile = Get-ChildItem -Path "$extractPath\tools\AppX\x64\Release" -Filter "*.appx" | Select-Object -First 1
-              if ($appxFile) {
-                  Add-AppxPackage -Path $appxFile.FullName
+                if ($appxFile) {
+                  Write-Host "Installing AppX package"
+                  Add-AppxPackage -Path $appxFile.FullName -Force
               } else {
                   Write-Error "No .appx file found"
               }
@@ -70,27 +72,25 @@ jobs:
               Remove-Item -Path $archivePath, $extractPath -Recurse
           }
           elseif ($packageUrl -like "*msixbundle*") {
-              Invoke-WebRequest -Uri $packageUrl -OutFile $msixBundlePath -UseBasicParsing
-              Add-AppxPackage -Path $msixBundlePath
-              Remove-Item -Path "$extractPath.msixbundle" -Force
+              Write-Host "Downloading MSIX bundle"
+              Invoke-WebRequest -Uri $packageUrl -OutFile $msixBundlePath -TimeoutSec 300
+              Write-Host "Installing MSIX bundle"
+              Add-AppxPackage -Path $msixBundlePath -Force
+              Remove-Item -Path "$msixBundlePath" -Force
           }
           else {
               Write-Error "Unsupported file type"
           }
         }
-        # Define URLs and paths
+
         $nugetUrl = "https://www.nuget.org/api/v2/package/Microsoft.UI.Xaml/"
         $msixUrl = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
         
-        # Install the .appx package
         Install-Package -packageUrl $nugetUrl -packageName "Microsoft.UI.Xaml"
-        
-        # Install the MSIX bundle
         Install-Package -packageUrl $msixUrl -packageName "Microsoft.DesktopAppInstaller"
         
-        # Repair WinGet package manager and install Nushell
         Repair-WinGetPackageManager -IncludePrerelease
-        winget install nushell
+        winget install nushell --accept-package-agreements --accept-source-agreements
 
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
