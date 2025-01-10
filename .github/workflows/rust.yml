@@ -53,18 +53,18 @@ jobs:
       with:
         repository: 'microsoft/microsoft-ui-xaml'
         tag: 'v2.8.6'
-        filename: 'Microsoft.UI.Xaml.2.8.ARM64.appx'
+        filename: 'Microsoft.UI.Xaml.2.8.arm64.appx'
     - name: "Install nushell"
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
-        Add-AppxPackage ${{github.workspace}}\Microsoft.UI.Xaml.2.8.ARM64.appx
+        Add-AppxPackage ${{github.workspace}}\Microsoft.UI.Xaml.2.8.arm64.appx
         Write-Host "Starting package installation for Microsoft.DesktopAppInstaller_8wekyb3d8bbwe"
         $msixBundlePath = "${{github.workspace}}\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
         Add-AppxPackage -Path $msixBundlePath
         Remove-Item -Path $msixBundlePath -Force
         Repair-WinGetPackageManager -IncludePrerelease
-        
+
         winget install nushell --accept-package-agreements --accept-source-agreements
 
     - name: Use nushell
