@@ -54,23 +54,24 @@ jobs:
 
         $deps = @(
           @{ Name = 'Chocolatey'; Hash = $null;
-             Url = 'https://chocolatey.org/install.ps1';
-             Action = { & ./install.ps1 }},
+            Url = 'https://chocolatey.org/install.ps1';
+            Args = @('-NoProfile', '-ExecutionPolicy Bypass', '-File', '${{github.workspace}}/install.ps1') },
           @{ Name = 'Visual Studio 2022 Build Tools (aarch64)'; Hash = $null;
-             Url = 'https://aka.ms/vs/17/release/vs_buildtools.exe';
-             Action = { Start-Process -FilePath 'vs_buildtools.exe' -ArgumentList '/S', '--add', 'Microsoft.VisualStudio.Component.VC.Tools.ARM64', '--add', 'Microsoft.VisualStudio.Component.Windows11SDK.22621' -NoNewWindow -Wait }},
-          @{ Name = 'Git 2.48.0-rc1'; Url = '${{ github.workspace }}/Git-2.48.0-rc2-arm64.exe';
-             Hash = '712739bb49832d571732e3e74b111d7cb4a63cd622ef3e87d01efe35046d9a4f';
-             Action = { & ./Git-2.48.0-rc2-arm64.exe /VERYSILENT /GitAndUnixToolsOnPath /NoAutoCrlf }},
-          @{ Name = 'LLVM 19.1.5'; Url = '${{ github.workspace }}/LLVM-19.1.5-woa64.exe';
-             Hash = '63D479C19C3908F8C973331EDC9B576485EAB6AB0809F58C79DF5D209FDD8F96';
-             Action = { Start-Process -FilePath 'LLVM-19.1.5-woa64.exe' -ArgumentList '/S' -NoNewWindow -Wait }},
+            Url = 'https://aka.ms/vs/17/release/vs_buildtools.exe';
+            Args = @('/S', '--add', 'Microsoft.VisualStudio.Component.VC.Tools.ARM64', '--add', 'Microsoft.VisualStudio.Component.Windows11SDK.22621') },
+          @{ Name = 'Git 2.48.0-rc1'; 
+            Url = "${{github.workspace}}/Git-2.48.0-rc2-arm64.exe";
+            Hash = '712739bb49832d571732e3e74b111d7cb4a63cd622ef3e87d01efe35046d9a4f';
+            Args = @('/VERYSILENT', '/GitAndUnixToolsOnPath', '/NoAutoCrlf') },
+          @{ Name = 'LLVM 19.1.5'; 
+            Url = "${{github.workspace}}/LLVM-19.1.5-woa64.exe";
+            Hash = '63D479C19C3908F8C973331EDC9B576485EAB6AB0809F58C79DF5D209FDD8F96';
+            Args = @('/S') },
           @{ Name = 'Rust (nightly, aarch64)';
-             Url = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe';
-             Hash = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe.sha256';
-             Action = { & ./rustup-init.exe --default-host aarch64-pc-windows-msvc --default-toolchain nightly -y }}
+            Url = 'https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe';
+            Hash = 'VALID_HASH_VALUE_HERE'; # Replace with actual hash value
+            Args = @('--default-host', 'aarch64-pc-windows-msvc', '--default-toolchain', 'nightly', '-y') }
         )
-
         $deps | ForEach-Object {
           $dep = $_
           if ($dep.Url -match "^https?://") {
@@ -102,7 +103,7 @@ jobs:
           }
 
           Log "Installing $($dep.Name)..."
-          & $dep.Action
+          Start-Process -FilePath $install_file -ArgumentList $dep.ArgumentList -NoNewWindow -Wait
           Log "$($dep.Name) installation completed."
         }
         
