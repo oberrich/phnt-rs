@@ -58,7 +58,7 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
-        Start-Process -FilePath "https://aka.ms/vs/16/release/vc_redist.arm64.exe" -ArgumentList "/quiet", "/norestart" -Wait
+        Start-Process -FilePath (Invoke-WebRequest -Uri "https://aka.ms/vs/16/release/vc_redist.arm64.exe" -OutFile "$env:RUNNER_TEMP\vc_redist.arm64.exe"; "$env:RUNNER_TEMP\vc_redist.arm64.exe") -ArgumentList "/quiet", "/norestart" -Wait
         Add-AppxPackage ${{github.workspace}}\Microsoft.UI.Xaml.2.8.arm64.appx
         Write-Host "Starting package installation for Microsoft.DesktopAppInstaller_8wekyb3d8bbwe"
         $msixBundlePath = "${{github.workspace}}\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
