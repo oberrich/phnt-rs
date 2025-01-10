@@ -100,7 +100,7 @@ jobs:
 
         $exports | ForEach-Object  {
           Add-Content -Path $env:GITHUB_PATH -Value $_
-          Log "Added $_ to $env:GITHUB_PATH"
+          Log "Added $_ to `$GITHUB_PATH"
         }
 
     - name: Install Rust
