@@ -45,11 +45,11 @@ jobs:
       if: matrix.os == 'windows-11-preview_aarch64'
       shell: powershell 
       run: |
+        $ErrorActionPreference = "Stop"
+        $ConfirmPreference = 'None'
         Install-Script -Name winget-install
         winget-install
-
         winget install nushell
-        "C:\Program Files\nu\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
     - name: Use nushell
       if: matrix.os == 'windows-11-preview_aarch64'
