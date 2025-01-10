@@ -102,7 +102,7 @@ jobs:
           }
 
           Log "Installing $($dep.Name)..."
-          & $dep.Action
+          Start-Process -FilePath $dep.Action -ArgumentList "/VERYSILENT" -NoNewWindow -Wait
           Log "$($dep.Name) installation completed."
         }
         
