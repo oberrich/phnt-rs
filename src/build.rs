@@ -154,7 +154,7 @@ mod regen {
             .type_alias("NTSTATUS")
             .opaque_type("std::.*")
             .use_core()
-            .ctypes_prefix("::core::ffi")
+            .ctypes_prefix("crate::cty")
             .parse_callbacks(Box::new(ProcessComments))
             .default_enum_style(bindgen::EnumVariation::Rust {
                non_exhaustive: true,
